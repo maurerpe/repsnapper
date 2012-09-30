@@ -49,7 +49,6 @@ SHARED_SRC= \
 SHARED_INC= \
 	src/transform3d.h \
 	src/arcball.h \
-	src/convert.h \
 	src/gllight.h \
 	src/miniball.h \
 	src/model.h \
