@@ -29,7 +29,7 @@
 enum RR_logtype  { LOG_COMM, LOG_ERROR, LOG_ECHO };
 enum TempType { TEMP_NOZZLE, TEMP_BED, TEMP_LAST };
 
-
+#define PRINTRUN  1
 // use Glib::IOChannel instead of libreprap
 #define IOCHANNEL 0
 
@@ -38,6 +38,11 @@ enum TempType { TEMP_NOZZLE, TEMP_BED, TEMP_LAST };
 #undef IOCHANNEL
 #define IOCHANNEL 1
 #endif
+
+#if PRINTRUN
+# include "printer_printrun.h"
+
+#else // NOT PRINTRUN
 
 #if IOCHANNEL
 //#include "reprap_serial.h"
@@ -55,7 +60,8 @@ class RRSerial;
 
 typedef struct rr_dev_t *rr_dev;
 
-#endif
+#endif // not IOCHANNEL
+
 
 class Printer
 {
@@ -112,9 +118,10 @@ class Printer
 	void error (const char *message, const char *secondary);
 
 	SerialState get_serial_state () { return serial_state; }
+
+	bool do_connect (bool connect);
 	void serial_try_connect (bool connect);
 	sigc::signal< void, SerialState > signal_serial_state_changed;
-
 	double get_temp (TempType t) { return temps[(int)t]; }
 	sigc::signal< void > signal_temp_changed;
 
@@ -145,7 +152,7 @@ class Printer
   /* double getCurrentPrintingZ(); */
 
 	bool RunExtruder(double extruder_speed, double extruder_length, bool reverse,
-			 int extruder_no=-1);
+			 int extruder_no=-1, char extruder_char='E');
   bool SendNow(string str, long lineno = -1);
 
   void parse_response (string line);
@@ -212,6 +219,7 @@ class Printer
 	GCodeIter *gcode_iter;
 };
 
+#endif // not PRINTRUN
 
 // Exception safe guard to stop people printing
 // GCode while loading it / converting etc.
@@ -230,3 +238,4 @@ PrintInhibitor(Printer *p) : printer (p)
     printer->signal_inhibit_changed.emit();
   }
 };
+

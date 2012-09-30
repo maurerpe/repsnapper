@@ -404,9 +404,12 @@ void View::fan_enabled_toggled (Gtk::ToggleButton *button)
 
 void View::run_extruder ()
 {
+  uint ext = m_model->settings.selectedExtruder;
   m_printer->RunExtruder (m_extruder_speed->get_value(),
 			  m_extruder_length->get_value(),
-			  m_extruder_reverse->get_active());
+			  m_extruder_reverse->get_active(),
+			  m_model->settings.selectedExtruder,
+			  m_model->settings.Extruders[ext].GCLetter[0]);
 }
 
 void View::clear_logs()

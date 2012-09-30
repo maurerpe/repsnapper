@@ -29,6 +29,7 @@ src/ui/view.cpp
 src/printer/printer.cpp
 src/printer/printer2.cpp
 src/printer/printer_iochannel.cpp
+src/printer/printer_printrun.cpp
 src/printer/printer_libreprap.cpp
 src/printer/reprap_serial.cpp
 src/slicer/clipping.cpp

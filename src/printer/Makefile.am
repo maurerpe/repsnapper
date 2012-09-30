@@ -16,5 +16,5 @@ SHARED_SRC += \
 
 SHARED_INC += \
 	src/printer/reprap_serial.h \
-	src/printer/printer.h
-
+	src/printer/printer.h \
+	src/printer/printcore_py.h

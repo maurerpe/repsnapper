@@ -80,12 +80,14 @@ built_header_make=src/gitversion.h
 
 BUILT_SOURCES += $(built_header_make)
 EXTRA_DIST += $(built_header_make) \
-	src/printer_libreprap.cpp \
-        src/printer_iochannel.cpp
+	src/printer/printer_printrun.cpp \
+	src/printer/printer_printrun.h \
+	src/printer/printer_libreprap.cpp \
+        src/printer/printer_iochannel.cpp
 
 repsnapper_LDFLAGS = $(EXTRA_LDFLAGS)
 
-repsnapper_LDADD = libreprap.la libclipper.la libpoly2tri.la liblmfit.la libamf.la $(OPENMP_CFLAGS) $(OPENVRML_LIBS) $(GTKMM_LIBS) $(GL_LIBS) $(XMLPP_LIBS) $(LIBZIP_LIBS) $(BOOST_LDFLAGS)
+repsnapper_LDADD = libreprap.la libclipper.la libpoly2tri.la liblmfit.la libamf.la $(OPENMP_CFLAGS) $(OPENVRML_LIBS) $(GTKMM_LIBS) $(GL_LIBS) $(XMLPP_LIBS) $(LIBZIP_LIBS) $(BOOST_LDFLAGS) -lpython2.7
 
 repsnapperdatadir = $(datadir)/@PACKAGE@
 dist_repsnapperdata_DATA = src/repsnapper.ui

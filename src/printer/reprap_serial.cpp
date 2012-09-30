@@ -572,25 +572,6 @@ void RRSerial::reset_printer() const
 }
 
 
-bool RRSerial::test_port(const string serialname)
-{
-    // try {
-    //   Glib::RefPtr<Glib::IOChannel> ioc =
-    // 	Glib::IOChannel::create_from_fd(ports[i], "w+");
-    //   ioc->close(false);
-    //   cerr << "device " << ports[i] << " is connectable" << endl;
-    // }
-    // catch (FileError e) {
-    //   ports.erase(ports.begin()+i);
-    // }
-
-  int device_fd = open(serialname.c_str(), O_RDWR );
-  if (device_fd < 0) {
-    return false;
-  }
-  close(device_fd);
-  return true;
-}
 //#endif // IOCHANNEL
 
 

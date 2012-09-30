@@ -20,6 +20,8 @@
 #include "stdafx.h"
 #include "printer.h"
 #include "model.h"
+#include "ui/view.h"
+#include "ui/progress.h"
 
 // everything taken out of model2.cpp
 
@@ -114,3 +116,298 @@ bool Printer::Goto(string axis, double position)
   alert (_("Goto called with unknown axis"));
   return false;
 }
+
+///////////////////////////////////////////////////////////////////
+// these are common printer methods for all types of connections
+// from printer.cpp
+
+
+// we try to change the state of the connection
+void Printer::serial_try_connect (bool connect)
+{
+  assert(m_model != NULL); // Need a model first
+
+  if (connect) {
+    // CONNECT:
+
+    signal_serial_state_changed.emit (SERIAL_CONNECTING);
+    if (do_connect(connect)) {
+      signal_serial_state_changed.emit (SERIAL_CONNECTED);
+      UpdateTemperatureMonitor();
+    } else
+      signal_serial_state_changed.emit (SERIAL_DISCONNECTED);
+
+  } else {
+    // DISCONNECT:
+
+    if (printing) {
+      error (_("Cannot disconnect"),
+	     _("printer is printing"));
+      signal_serial_state_changed.emit (SERIAL_CONNECTED);
+    }
+    else {
+      signal_serial_state_changed.emit (SERIAL_DISCONNECTING);
+      if (do_connect(connect)) { // do disconnect
+	signal_serial_state_changed.emit (SERIAL_DISCONNECTED);
+	Pause();
+	temp_timeout.disconnect();
+      }	else
+	signal_serial_state_changed.emit (SERIAL_CONNECTED);
+    }
+  }
+}
+
+
+void Printer::alert (const char *message)
+{
+  if (m_view) m_view->err_log(string(message)+"\n");
+  signal_alert.emit (Gtk::MESSAGE_INFO, message, NULL);
+}
+
+void Printer::error (const char *message, const char *secondary)
+{
+  if (m_view) m_view->err_log(string(message)  + " - " + string(secondary)+"\n");
+  signal_alert.emit (Gtk::MESSAGE_ERROR, message, secondary);
+}
+
+bool Printer::temp_timeout_cb()
+{
+  if (IsConnected() && m_model && m_model->settings.Misc.TempReadingEnabled)
+    SendNow("M105");
+  UpdateTemperatureMonitor();
+  return true;
+}
+
+void Printer::UpdateTemperatureMonitor()
+{
+  if (temp_timeout.connected())
+    temp_timeout.disconnect();
+  if (IsConnected() && m_model && m_model->settings.Misc.TempReadingEnabled) {
+    const unsigned int seconds = m_model->settings.Display.TempUpdateSpeed;
+    temp_timeout = Glib::signal_timeout().connect_seconds
+      (sigc::mem_fun(*this, &Printer::temp_timeout_cb), seconds);
+  }
+}
+
+void Printer::setModel(Model *model)
+{
+  m_model = model;
+  UpdateTemperatureMonitor();
+}
+
+void Printer::Restart()
+{
+  Print();
+}
+
+void Printer::ContinuePauseButton(bool paused)
+{
+  if (paused)
+    Pause();
+  else
+    Continue();
+}
+
+void Printer::Kick()
+{
+  if (!IsConnected()) return;
+  cerr << "Kick" << endl;
+  Continue();
+}
+
+void Printer::ResetButton()
+{
+  Reset();
+}
+
+void Printer::PrintButton()
+{
+  if (!IsConnected()) return;
+  if (printing)
+    Restart();
+  else
+    Print();
+}
+
+void Printer::StopButton()
+{
+  if (!IsConnected()) return;
+  Stop();
+}
+
+bool Printer::SelectExtruder(int extruder_no)
+{
+  if (extruder_no >= 0){
+    ostringstream os;
+    os << "T" << extruder_no;
+    return SendNow(os.str());
+  }
+  return true; // do nothing
+}
+
+bool Printer::SetTemp(TempType type, float value, int extruder_no)
+{
+  ostringstream os;
+  switch (type) {
+  case TEMP_NOZZLE:
+    os << "M104 S";
+    break;
+  case TEMP_BED:
+    os << "M140 S";
+    break;
+  default:
+    cerr << "No such Temptype: " << type << endl;
+    return false;
+  }
+  os << value << endl;
+  if (extruder_no >= 0)
+    if (!SelectExtruder(extruder_no)) return false;
+  return SendNow(os.str());
+}
+
+
+void Printer::SimplePrint()
+{
+  if (printing)
+    alert (_("Already printing.\nCannot start printing"));
+
+  // if (!rr_dev_is_connected (device))
+  if (!IsConnected())
+    serial_try_connect (true);
+  Print();
+}
+
+bool Printer::RunExtruder (double extruder_speed, double extruder_length,
+			   bool reverse, int extruder_no, char extruder_char)
+{
+  assert(m_model != NULL); // Need a model first
+
+  if (extruder_no >= 0)
+    if (!SelectExtruder(extruder_no)) return false;
+
+  std::stringstream oss;
+  string command("G1 F");
+  oss << extruder_speed;
+  command += oss.str();
+  if (!SendNow(command)) return false;
+  oss.str("");
+  oss << "G92 " << extruder_char << "0";
+  // set extruder zero
+  if (!SendNow(oss.str())) return false;
+  oss.str("");
+  oss << "G1 " << extruder_char;
+  string command2(oss.str());
+
+  if (reverse)
+    oss << "-";
+  oss <<  extruder_length;
+  if (!SendNow(oss.str())) return false;
+  if (!SendNow("G1 F1500.0")) return false;
+  oss.str("");
+  oss << "G92 " << extruder_char << "0";
+  return SendNow(oss.str());	// set extruder zero
+}
+
+void Printer::set_printing (bool pprinting)
+{
+  if (printing == pprinting)
+    return;
+  printing = pprinting;
+  if (m_view) {
+    if (printing){
+      if (gcode_iter) {
+	m_view->get_view_progress()->start (_("Printing"),
+					    gcode_iter->m_line_count);
+      }
+    } else {
+      m_view->get_view_progress()->stop (_("Done"));
+    }
+  }
+
+  printing_changed.emit();
+}
+
+
+#include <fcntl.h>
+
+bool Printer::test_port(const string serialname)
+{
+    // try {
+    //   Glib::RefPtr<Glib::IOChannel> ioc =
+    // 	Glib::IOChannel::create_from_fd(ports[i], "w+");
+    //   ioc->close(false);
+    //   cerr << "device " << ports[i] << " is connectable" << endl;
+    // }
+    // catch (FileError e) {
+    //   ports.erase(ports.begin()+i);
+    // }
+  int device_fd = open(serialname.c_str(), O_RDWR );
+  if (device_fd < 0) {
+    return false;
+  }
+  close(device_fd);
+  return true;
+}
+
+
+#ifdef WIN32
+#define DEV_PATH ""
+#define DEV_PREFIXES {"COM"}
+#else
+#define DEV_PATH "/dev/"
+#define DEV_PREFIXES {"ttyUSB", "ttyACM", "cuaU"}
+#endif
+
+vector<string> Printer::find_ports() const
+{
+
+  vector<string> ports;
+
+
+#ifdef WIN32
+  // FIXME how to find ports on windows?
+  ports.push_back("COM1");
+  ports.push_back("COM2");
+  ports.push_back("COM3");
+  ports.push_back("COM4");
+  ports.push_back("COM5");
+  ports.push_back("COM6");
+  ports.push_back("COM7");
+  ports.push_back("COM8");
+  ports.push_back("COM9");
+#else
+
+  Glib::Dir dir(DEV_PATH);
+  while (true) {
+    const string dev_prefixes[] = DEV_PREFIXES;
+    const size_t npref = sizeof(dev_prefixes)/sizeof(string);
+    string name = dir.read_name();
+    if (name == "") break;
+    for(size_t i = 0; i < npref; i++) {
+      if (name.find(dev_prefixes[i]) == 0) {
+	//cerr << i << " found port " << name << endl;
+	ports.push_back(DEV_PATH+name);
+	break;
+      }
+    }
+  }
+  for (int i = ports.size()-1; i >= 0; i--) {
+    if (!test_port(ports[i]))
+      ports.erase(ports.begin()+i);
+    else
+      cerr << "Found some device at " << ports[i] << endl;
+  }
+#endif
+
+  return ports;
+}
+
+
+// double Printer::getCurrentPrintingZ() {
+//   if (gcode_iter){
+//     Command command = gcode_iter->getCurrentCommand(Vector3d(0,0,0));
+//     return command.where.z();
+//   }
+//   return 0;
+// }
+

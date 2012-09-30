@@ -32,12 +32,15 @@
 #include "ui/progress.h"
 #include "model.h"
 
-#if IOCHANNEL
-#  include "printer_iochannel.cpp"
+#if PRINTRUN
+#  include "printer_printrun.cpp"
 #else
-#  include "printer_libreprap.cpp"
+#  if IOCHANNEL
+#    include "printer_iochannel.cpp"
+#  else
+#    include "printer_libreprap.cpp"
+#  endif
 #endif
-
 
 ///////////////////////////////////////////////////////////////////////
 

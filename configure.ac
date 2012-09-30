@@ -127,11 +127,23 @@ Darwin*)
 esac
 
 
+
 AM_CONDITIONAL(WIN32_BUILD, test "x$WIN32_BUILD" = "xyes")
 
 AC_SUBST(GL_LIBS)
 AC_SUBST(EXTRA_LDFLAGS)
 AC_SUBST(EXTRA_CFLAGS)
+
+
+AC_PATH_PROGS(PYTHON, [python2.7 python2.6])
+AC_ARG_VAR(PYTHON, [Python interpreter])
+AC_CHECK_HEADER(python2.7/Python.h, , AC_MSG_ERROR([cannot find headers for python2.7]))
+#PKG_CHECK_MODULES(PYTHON, python = 2.7)
+LDFLAGS="$LDFLAGS $EXTRA_LDFLAGS"
+AC_CHECK_LIB(python2.7, Py_Initialize, [PYTHON_LIBS="${xPYTHON_LIBS}"],
+		AC_MSG_ERROR([cannot find python2.7 lib - install Python 2.7]))
+
+
 
 dnl Convert install path to use \\ for substitution in the win32 nsi script
 prefix_win=`echo $prefix | sed -e 's|/|\\\\|g'`

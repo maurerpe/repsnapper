@@ -128,7 +128,7 @@ const string MCODES[] = {"G92", "", "",
 			 "G90", "G91", // abs. rel. pos
 			 "M82", "M83", // abs. E, relative E
 			 "G92", "T", "G1", "G1" ,
-			 "M106", "M107",
+			 "M106", "M107", // fan on, fan off
 			 "M105", // temp?
 			 "M104", "M140",
 			 "G92",

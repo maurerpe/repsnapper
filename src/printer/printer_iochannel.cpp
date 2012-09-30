@@ -156,27 +156,6 @@ void Printer::Continue()
   rr_serial->start_printing();
 }
 
-void Printer::Kick()
-{
-  if (!IsConnected()) return;
-  cerr << "Kick" << endl;
-  Continue();
-}
-
-void Printer::PrintButton()
-{
-  if (!IsConnected()) return;
-  if (printing)
-    Restart();
-  else
-    Print();
-}
-
-void Printer::StopButton()
-{
-  if (!IsConnected()) return;
-  Stop();
-}
 
 void Printer::ResetButton()
 {

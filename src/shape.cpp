@@ -56,7 +56,7 @@ void Shape::setTriangles(const vector<Triangle> &triangles_)
   }
 
   //PlaceOnPlatform();
-  cerr << _("Shape has volume ") << volume() << _(" mm^3 and ")
+  cerr << _("Shape has volume ") << volume()/1000 << _(" cm^3 and ")
        << triangles.size() << _(" triangles") << endl;
 }
 
