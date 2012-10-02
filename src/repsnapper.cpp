@@ -45,6 +45,7 @@ public:
 	string printerdevice_path;
   string svg_output_path;
   bool svg_single_output;
+  bool connect_printer;
 	std::vector<std::string> files;
 private:
 	void init ()
@@ -97,7 +98,9 @@ public:
 			else if (param && (!strcmp (arg, "-p") ||
 					   !strcmp (arg, "--printnow")))
 			        printerdevice_path = argv[++i];
-
+			else if (param && (!strcmp (arg, "-c") ||
+					   !strcmp (arg, "--connect")))
+			        connect_printer = true;
 			else if (param && (!strcmp (arg, "-o") ||
 					   !strcmp (arg, "--output")))
 				gcode_output_path = argv[++i];
@@ -325,6 +328,10 @@ int main(int argc, char **argv)
     model->Read(Gio::File::create_for_path(opts.files[i]));
 
   model->ModelChanged();
+
+  if (opts.connect_printer) {
+    mainwin->GetPrinter()->serial_try_connect(true);
+  }
 
   tk.run();
 

@@ -61,18 +61,6 @@ void Printer::comm_log(string s)
   m_view->comm_log(s);
 }
 
-void Printer::alert (const char *message)
-{
-  if (m_view) m_view->err_log(string(message)+"\n");
-  signal_alert.emit (Gtk::MESSAGE_INFO, message, NULL);
-}
-
-void Printer::error (const char *message, const char *secondary)
-{
-  if (m_view) m_view->err_log(string(message)  + " - " + string(secondary)+"\n");
-  signal_alert.emit (Gtk::MESSAGE_ERROR, message, secondary);
-}
-
 // void Printer::update_core_settings ()
 // {
 //   if (m_model) {
@@ -85,52 +73,13 @@ void Printer::error (const char *message, const char *secondary)
 //   }
 // }
 
-bool Printer::temp_timeout_cb()
-{
-  if (IsConnected() && m_model && m_model->settings.Misc.TempReadingEnabled)
-    SendNow("M105");
-  UpdateTemperatureMonitor();
-  return true;
-}
-
-void Printer::UpdateTemperatureMonitor()
-{
-  if (temp_timeout.connected())
-    temp_timeout.disconnect();
-  if (IsConnected() && m_model && m_model->settings.Misc.TempReadingEnabled) {
-    const unsigned int timeout = m_model->settings.Display.TempUpdateSpeed;
-    temp_timeout = Glib::signal_timeout().connect_seconds
-      (sigc::mem_fun(*this, &Printer::temp_timeout_cb), timeout);
-  }
-}
-
-void Printer::setModel(Model *model)
-{
-  m_model = model;
-  UpdateTemperatureMonitor();
-}
-
-void Printer::Restart()
-{
-  if (device==NULL) return;
-  Print();
-}
-
-void Printer::ContinuePauseButton(bool paused)
-{
-  if (device==NULL) return;
-  if (paused)
-    Pause();
-  else
-    Continue();
-}
-
 void Printer::Pause()
 {
   set_printing (false);
   if (device==NULL) return;
   rr_dev_set_paused (device, RR_PRIO_NORMAL, 1);
 }
+
 
 void Printer::Continue()
 {
@@ -139,29 +88,7 @@ void Printer::Continue()
   rr_dev_set_paused (device, RR_PRIO_NORMAL, 0);
 }
 
-void Printer::Kick()
-{
-  if (device==NULL) return;
-  rr_dev_kick (device);
-  Continue();
-}
-
-void Printer::PrintButton()
-{
-  if (device==NULL) return;
-  if (printing)
-    Restart();
-  else
-    Print();
-}
-
-void Printer::StopButton()
-{
-  if (device==NULL) return;
-  Stop();
-}
-
-void Printer::ResetButton()
+void Printer::Reset()
 {
   if (device==NULL) return;
   Stop();
@@ -176,9 +103,8 @@ bool Printer::IsConnected()
 
 
 // we try to change the state of the connection
-void Printer::serial_try_connect (bool connect)
+bool Printer::do_connect (bool connect)
 {
-
   int result;
   assert(m_model != NULL); // Need a model first
 
@@ -193,88 +119,28 @@ void Printer::serial_try_connect (bool connect)
 			    rr_wait_wr_fn, cl,
 			    rr_log_fn, cl);
 
-    signal_serial_state_changed.emit (SERIAL_CONNECTING);
-
     result = rr_dev_open (device,
 			  m_model->settings.Hardware.PortName.c_str(),
 			  m_model->settings.Hardware.SerialSpeed);
 
     if(result < 0) {
-      signal_serial_state_changed.emit (SERIAL_DISCONNECTED);
-      error (_("Failed to connect to device"),
-             _("an error occured while connecting"));
+      return false;
     } else {
       rr_dev_reset (device);
-      signal_serial_state_changed.emit (SERIAL_CONNECTED);
-      UpdateTemperatureMonitor();
+      return true;
     }
   } else {
-    if (printing) {
-      error (_("Cannot disconnect"),
-             _("printer is printing"));
-      signal_serial_state_changed.emit (SERIAL_CONNECTED);
-    }
-    else {
-      signal_serial_state_changed.emit (SERIAL_DISCONNECTING);
-      devconn.disconnect();
-      if (device)
-	rr_dev_close (device);
-      devconn.disconnect();
-      signal_serial_state_changed.emit (SERIAL_DISCONNECTED);
-      Pause();
-      temp_timeout.disconnect();
-      if (device)
-	rr_dev_free (device);
-      device = NULL;
-    }
-  }
-
-  if (connect) {
-    UpdateTemperatureMonitor();
-  } else {
+    devconn.disconnect();
+    if (device)
+      rr_dev_close (device);
+    devconn.disconnect();
+    if (device)
+      rr_dev_free (device);
+    device = NULL;
+    return true;
   }
 }
 
-bool Printer::SelectExtruder(int extruder_no)
-{
-  if (extruder_no >= 0){
-    ostringstream os;
-    os << "T" << extruder_no;
-    return SendNow(os.str());
-  }
-  return true; // do nothing
-}
-
-bool Printer::SetTemp(TempType type, float value, int extruder_no)
-{
-  ostringstream os;
-  switch (type) {
-  case TEMP_NOZZLE:
-    os << "M104 S";
-    break;
-  case TEMP_BED:
-    os << "M140 S";
-    break;
-  default:
-    cerr << "No such Temptype: " << type << endl;
-    return false;
-  }
-  os << value << endl;
-  if (extruder_no >= 0)
-    if (!SelectExtruder(extruder_no)) return false;
-  return SendNow(os.str());
-}
-
-
-void Printer::SimplePrint()
-{
-  if (printing)
-    alert (_("Already printing.\nCannot start printing"));
-
-  if (!rr_dev_is_connected (device))
-    serial_try_connect (true);
-  Print();
-}
 
 void Printer::Print()
 {
@@ -300,44 +166,6 @@ long Printer::get_next_line(string &line)
   return -1;
 }
 
-bool Printer::RunExtruder (double extruder_speed, double extruder_length,
-			   bool reverse, int extruder_no)
-{
-  //static bool extruderIsRunning = false; // 3D
-
-  assert(m_model != NULL); // Need a model first
-
-  // if (m_model->settings.Slicing.Use3DGcode) {
-  //   if (extruderIsRunning)
-  //     SendNow("M103");
-  //   else
-  //     SendNow("M101");
-  //   extruderIsRunning = !extruderIsRunning;
-  //   return;
-  // }
-
-  if (extruder_no >= 0)
-    if (!SelectExtruder(extruder_no)) return false;
-
-  std::stringstream oss;
-  string command("G1 F");
-  oss << extruder_speed;
-  command += oss.str();
-  if (!SendNow(command)) return false;
-  oss.str("");
-
-  // set extruder zero
-  if (!SendNow("G92 E0")) return false;
-  oss << extruder_length;
-  string command2("G1 E");
-
-  if (reverse)
-    command2+="-";
-  command2+=oss.str();
-  if (!SendNow(command2)) return false;
-  if (!SendNow("G1 F1500.0")) return false;
-  return SendNow("G92 E0");	// set extruder zero
-}
 
 
 bool Printer::SendNow(string str, long lineno)
@@ -368,35 +196,6 @@ void Printer::Stop()
   }
   rr_dev_reset (device);
 }
-
-
-void Printer::set_printing (bool pprinting)
-{
-  if (printing == pprinting)
-    return;
-  printing = pprinting;
-  if (m_view) {
-    if (printing){
-      if (gcode_iter) {
-	m_view->get_view_progress()->start (_("Printing"),
-					    gcode_iter->m_line_count);
-      }
-    } else {
-      m_view->get_view_progress()->stop (_("Done"));
-    }
-  }
-
-  printing_changed.emit();
-}
-
-// double Printer::getCurrentPrintingZ() {
-//   if (gcode_iter){
-//     Command command = gcode_iter->getCurrentCommand(Vector3d(0,0,0));
-//     return command.where.z();
-//   }
-//   return 0;
-// }
-
 
 
 vector<string> Printer::find_ports() const

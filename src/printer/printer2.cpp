@@ -129,17 +129,17 @@ void Printer::serial_try_connect (bool connect)
 
   if (connect) {
     // CONNECT:
-
     signal_serial_state_changed.emit (SERIAL_CONNECTING);
     if (do_connect(connect)) {
       signal_serial_state_changed.emit (SERIAL_CONNECTED);
       UpdateTemperatureMonitor();
-    } else
+    } else {
       signal_serial_state_changed.emit (SERIAL_DISCONNECTED);
-
+      error (_("Failed to connect to device"),
+             _("an error occured while connecting"));
+    }
   } else {
     // DISCONNECT:
-
     if (printing) {
       error (_("Cannot disconnect"),
 	     _("printer is printing"));
@@ -151,8 +151,9 @@ void Printer::serial_try_connect (bool connect)
 	signal_serial_state_changed.emit (SERIAL_DISCONNECTED);
 	Pause();
 	temp_timeout.disconnect();
-      }	else
+      }	else {
 	signal_serial_state_changed.emit (SERIAL_CONNECTED);
+      }
     }
   }
 }
@@ -271,7 +272,6 @@ void Printer::SimplePrint()
   if (printing)
     alert (_("Already printing.\nCannot start printing"));
 
-  // if (!rr_dev_is_connected (device))
   if (!IsConnected())
     serial_try_connect (true);
   Print();
@@ -328,6 +328,74 @@ void Printer::set_printing (bool pprinting)
 }
 
 
+
+
+const Glib::RefPtr<Glib::Regex> templineRE_T =
+	  Glib::Regex::create("(?ims)T\\:(?<temp>[\\-\\.\\d]+?)\\s+?");
+const Glib::RefPtr<Glib::Regex> templineRE_B =
+	  Glib::Regex::create("(?ims)B\\:(?<temp>[\\-\\.\\d]+?)\\s+?");
+const Glib::RefPtr<Glib::Regex> numRE =
+	  Glib::Regex::create("(?ims)\\:(?<num>[\\-\\.\\d]+)");
+
+
+void Printer::parse_response (string line)
+{
+  string line_lower = line;
+  std::transform(line_lower.begin(), line_lower.end(), line_lower.begin(), ::tolower);
+
+  if (line_lower.find("resend:") != string::npos
+      || line.find("rs:") != string::npos ) {
+    Glib::MatchInfo match_info;
+    vector<string> matches;
+    if (numRE->match(line, match_info)) {
+      std::istringstream iss(match_info.fetch_named("num").c_str());
+      unsigned long lineno; iss >> lineno;
+      unsigned long gcodeline  = set_resend(lineno);
+      cerr << "RESEND line " << lineno << " is code line " << gcodeline << endl;
+      gcode_iter->set_to_lineno(gcodeline);
+      return;
+    }
+    log(line, LOG_ERROR);
+  }
+  if (line_lower.find("ok") == 0) { // ok at beginning
+    // cerr << "-- OK --" <<endl;
+  }
+  if (line.find("T:") != string::npos) {
+    //cerr << line << " - " << status << endl;
+    Glib::MatchInfo match_info;
+    vector<string> matches;
+    string name;
+    if (templineRE_T->match(line, match_info)) {
+      std::istringstream iss(match_info.fetch_named("temp").c_str());
+      double temp; iss >> temp;
+      //cerr << "nozzle: " << temp << endl;
+      temps[TEMP_NOZZLE] = temp;
+    }
+    if (templineRE_B->match(line, match_info)) {
+      std::istringstream iss(match_info.fetch_named("temp").c_str());
+      double temp; iss >> temp;
+      temps[TEMP_BED] = temp;
+      //cerr << "bed: " << temp << endl;
+    }
+    signal_temp_changed.emit();
+  }
+  else if (line_lower.find("echo:") != string::npos) {
+    log(line, LOG_ECHO);
+    //cerr << line << endl;
+  }
+  else if (line_lower.find("error") != string::npos) {
+    log(line, LOG_ERROR);
+    //cerr << line << endl;
+  }
+  else {
+    //cerr  << line << endl;
+  }
+}
+
+
+
+
+
 #include <fcntl.h>
 
 bool Printer::test_port(const string serialname)
@@ -357,6 +425,10 @@ bool Printer::test_port(const string serialname)
 #define DEV_PATH "/dev/"
 #define DEV_PREFIXES {"ttyUSB", "ttyACM", "cuaU"}
 #endif
+
+
+// not for libreprap
+#if PYSERIAL || PRINTRUN || IOCHANNEL
 
 vector<string> Printer::find_ports() const
 {
@@ -402,6 +474,7 @@ vector<string> Printer::find_ports() const
   return ports;
 }
 
+#endif
 
 // double Printer::getCurrentPrintingZ() {
 //   if (gcode_iter){

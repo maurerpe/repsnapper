@@ -30,6 +30,7 @@ enum RR_logtype  { LOG_COMM, LOG_ERROR, LOG_ECHO };
 enum TempType { TEMP_NOZZLE, TEMP_BED, TEMP_LAST };
 
 #define PRINTRUN  1
+#define PYSERIAL  0
 // use Glib::IOChannel instead of libreprap
 #define IOCHANNEL 0
 
@@ -89,6 +90,7 @@ class Printer
 	View *m_view;
 	Model *m_model;
 
+  static bool test_port(const string serialname);
 
 #if IOCHANNEL
   sigc::connection watchprint_timeout;
@@ -188,6 +190,7 @@ class Printer
 	void ContinuePauseButton(bool paused);
 	void ResetButton();
 
+  unsigned long set_resend(unsigned long print_lineno);
 
   long get_next_line(string &line);
 

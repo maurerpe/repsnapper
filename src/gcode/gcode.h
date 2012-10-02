@@ -47,6 +47,7 @@ class GCodeIter
   Command getCurrentCommand(Vector3d defaultwhere,
 			    const vector<char> &E_letters);
   void set_to_lineno(long lineno);
+  Glib::ustring all_text() const;
 };
 
 class GCode

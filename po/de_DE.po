@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: repsnapper 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-09-27 08:25+0200\n"
-"PO-Revision-Date: 2012-09-27 08:31+0200\n"
+"PO-Revision-Date: 2012-10-02 17:25+0200\n"
 "Last-Translator: martin.dieringer@gmx.de\n"
 "Language-Team:  <gb@li.org>\n"
 "Language: de_DE\n"
@@ -532,7 +532,7 @@ msgstr "Konnte nicht mit dem Gerät verbinden"
 
 #: ../src/printer/printer.cpp:418 ../src/printer/printer_libreprap.cpp:205
 msgid "an error occured while connecting"
-msgstr "Kann nicht in Ausgangsposition, während gedruckt wird"
+msgstr "Fehler beim Verbinden"
 
 #: ../src/printer/printer.cpp:486 ../src/printer/printer_iochannel.cpp:329
 #: ../src/printer/printer_libreprap.cpp:272

@@ -911,6 +911,12 @@ std::string GCodeIter::next_line_stripped()
   return line;
 }
 
+Glib::ustring GCodeIter::all_text() const
+{
+  return m_buffer->get_text();
+}
+
+
 bool GCodeIter::finished()
 {
   return m_cur_line > m_line_count;

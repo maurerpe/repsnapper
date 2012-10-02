@@ -78,18 +78,6 @@ bool Printer::log_timeout_cb()
   return true;
 }
 
-void Printer::alert (const char *message)
-{
-  if (m_view) m_view->err_log(string(message)+"\n");
-  signal_alert.emit (Gtk::MESSAGE_INFO, message, NULL);
-}
-
-void Printer::error (const char *message, const char *secondary)
-{
-  if (m_view) m_view->err_log(string(message)  + " - " + string(secondary)+"\n");
-  signal_alert.emit (Gtk::MESSAGE_ERROR, message, secondary);
-}
-
 // void Printer::update_core_settings ()
 // {
 //   if (m_model) {
@@ -102,46 +90,6 @@ void Printer::error (const char *message, const char *secondary)
 //   }
 // }
 
-bool Printer::temp_timeout_cb()
-{
-  if (IsConnected() && m_model && m_model->settings.Misc.TempReadingEnabled)
-    SendNow("M105");
-  UpdateTemperatureMonitor();
-  return true;
-}
-
-void Printer::UpdateTemperatureMonitor()
-{
-  if (temp_timeout.connected())
-    temp_timeout.disconnect();
-  if (IsConnected() && m_model && m_model->settings.Misc.TempReadingEnabled) {
-    const unsigned int timeout = m_model->settings.Display.TempUpdateSpeed;
-    temp_timeout = Glib::signal_timeout().connect_seconds
-      (sigc::mem_fun(*this, &Printer::temp_timeout_cb), timeout);
-  }
-}
-
-void Printer::setModel(Model *model)
-{
-  m_model = model;
-
-  UpdateTemperatureMonitor();
-}
-
-void Printer::Restart()
-{
-  if (!IsConnected()) return;
-  Print();
-}
-
-void Printer::ContinuePauseButton(bool paused)
-{
-  if (!IsConnected()) return;
-  if (paused)
-    Pause();
-  else
-    Continue();
-}
 
 void Printer::Pause()
 {
@@ -156,10 +104,9 @@ void Printer::Continue()
   rr_serial->start_printing();
 }
 
-
-void Printer::ResetButton()
+void Printer::Reset()
 {
-  if (!IsConnected()) return;
+  //if (!IsConnected()) return;
   Stop();
   rr_serial->reset_printer();
 }
@@ -170,147 +117,25 @@ bool Printer::IsConnected()
 }
 
 
-const Glib::RefPtr<Glib::Regex> templineRE_T =
-			    Glib::Regex::create("(?ims)T\\:(?<temp>[\\-\\.\\d]+?)\\s+?");
-const Glib::RefPtr<Glib::Regex> templineRE_B =
-			    Glib::Regex::create("(?ims)B\\:(?<temp>[\\-\\.\\d]+?)\\s+?");
-const Glib::RefPtr<Glib::Regex> numRE =
-			    Glib::Regex::create("(?ims)\\:(?<num>[\\-\\.\\d]+)");
-
-
-void Printer::parse_response (string line)
-{
-  size_t pos;
-  pos = line.find("Resend:");
-  if (pos != string::npos) {
-    Glib::MatchInfo match_info;
-    vector<string> matches;
-    if (numRE->match(line, match_info)) {
-      std::istringstream iss(match_info.fetch_named("num").c_str());
-      unsigned long lineno; iss >> lineno;
-      unsigned long gcodeline  = rr_serial->set_resend(lineno);
-      cerr << "RESEND line " << lineno << " is code line " << gcodeline << endl;
-      gcode_iter->set_to_lineno(gcodeline);
-      return;
-    }
-    log(line, LOG_ERROR);
-  }
-  if (line.find("ok") == 0) { // ok at beginning
-    // cerr << "-- OK --" <<endl;
-  }
-  if (line.find("T:") != string::npos) {
-    //cerr << line << " - " << status << endl;
-    Glib::MatchInfo match_info;
-    vector<string> matches;
-    string name;
-    if (templineRE_T->match(line, match_info)) {
-      std::istringstream iss(match_info.fetch_named("temp").c_str());
-      double temp; iss >> temp;
-      //cerr << "nozzle: " << temp << endl;
-      temps[TEMP_NOZZLE] = temp;
-    }
-    if (templineRE_B->match(line, match_info)) {
-      std::istringstream iss(match_info.fetch_named("temp").c_str());
-      double temp; iss >> temp;
-      temps[TEMP_BED] = temp;
-      //cerr << "bed: " << temp << endl;
-    }
-    signal_temp_changed.emit();
-  }
-  else if (line.find("echo:") != string::npos) {
-    log(line, LOG_ECHO);
-    //cerr << line << endl;
-  }
-  else if (line.find("Error") != string::npos) {
-    log(line, LOG_ERROR);
-    //cerr << line << endl;
-  }
-  else {
-    //cerr  << line << endl;
-  }
-}
-
-
 // we try to change the state of the connection
-void Printer::serial_try_connect (bool connect)
+bool Printer::do_connect (bool connect)
 {
-
   if (connect) {
-    signal_serial_state_changed.emit (SERIAL_CONNECTING);
     const char * serialname = m_model->settings.Hardware.PortName.c_str();
     bool connected = rr_serial->connect(serialname);
     if (connected) {
-      signal_serial_state_changed.emit (SERIAL_CONNECTED);
-      // if (m_view)
-      // 	m_view->set_logging(true);
       log_timeout = Glib::signal_timeout().connect
         (sigc::mem_fun(*this, &Printer::log_timeout_cb), 500);
-    } else
-      signal_serial_state_changed.emit (SERIAL_DISCONNECTED);
-
-  } else {
-    if (printing) {
-      error (_("Cannot disconnect"),
-             _("printer is printing"));
-      signal_serial_state_changed.emit (SERIAL_CONNECTED);
-    } else {
-      signal_serial_state_changed.emit (SERIAL_DISCONNECTING);
-      if (rr_serial->disconnect())
-	signal_serial_state_changed.emit (SERIAL_DISCONNECTED);
-      // if (m_view)
-      // 	m_view->set_logging(false);
-      if (log_timeout.connected())
-      	log_timeout.disconnect();
     }
-  }
-
-
-  if (connect) {
-    UpdateTemperatureMonitor();
+    return connected;
   } else {
+    bool disconnected  = rr_serial->disconnect();
+    if (disconnected && log_timeout.connected())
+      log_timeout.disconnect();
+    return disconnected;
   }
 }
 
-bool Printer::SelectExtruder(int extruder_no)
-{
-  if (extruder_no >= 0){
-    ostringstream os;
-    os << "T" << extruder_no;
-    return SendNow(os.str());
-  }
-  return true; // do nothing
-}
-
-bool Printer::SetTemp(TempType type, float value, int extruder_no)
-{
-  ostringstream os;
-  switch (type) {
-  case TEMP_NOZZLE:
-    os << "M104 S";
-    break;
-  case TEMP_BED:
-    os << "M140 S";
-    break;
-  default:
-    cerr << "No such Temptype: " << type << endl;
-    return false;
-  }
-  os << value << endl;
-  if (extruder_no >= 0)
-    if (!SelectExtruder(extruder_no)) return false;
-  return SendNow(os.str());
-}
-
-
-void Printer::SimplePrint()
-{
-  if (printing)
-    alert (_("Already printing.\nCannot start printing"));
-
-  if (!IsConnected())
-    serial_try_connect (true);
-  Print();
-}
 
 void Printer::Print()
 {
@@ -339,6 +164,12 @@ bool Printer::watchprint_timeout_cb()
   return true;
 }
 
+unsigned long Printer::set_resend(unsigned long print_lineno)
+{
+  return rr_serial->set_resend(print_lineno);
+}
+
+
 long Printer::get_next_line(string &line)
 {
   if (gcode_iter && printing && !gcode_iter->finished()) {
@@ -356,45 +187,6 @@ long Printer::get_next_line(string &line)
     }
     return -1;
   }
-}
-
-bool Printer::RunExtruder (double extruder_speed, double extruder_length,
-			   bool reverse, int extruder_no)
-{
-  //static bool extruderIsRunning = false; // 3D
-
-  assert(m_model != NULL); // Need a model first
-
-  // if (m_model->settings.Slicing.Use3DGcode) {
-  //   if (extruderIsRunning)
-  //     SendNow("M103");
-  //   else
-  //     SendNow("M101");
-  //   extruderIsRunning = !extruderIsRunning;
-  //   return;
-  // }
-
-  if (extruder_no >= 0)
-    if (!SelectExtruder(extruder_no)) return false;
-
-  std::stringstream oss;
-  string command("G1 F");
-  oss << extruder_speed;
-  command += oss.str();
-  if (!SendNow(command)) return false;
-  oss.str("");
-
-  // set extruder zero
-  if (!SendNow("G92 E0")) return false;
-  oss << extruder_length;
-  string command2("G1 E");
-
-  if (reverse)
-    command2+="-";
-  command2+=oss.str();
-  if (!SendNow(command2)) return false;
-  if (!SendNow("G1 F1500.0")) return false;
-  return SendNow("G92 E0");	// set extruder zero
 }
 
 
@@ -416,83 +208,3 @@ void Printer::Stop()
   if (!IsConnected()) return;
   set_printing (false);
 }
-
-
-void Printer::set_printing (bool pprinting)
-{
-  if (printing == pprinting)
-    return;
-  printing = pprinting;
-  if (m_view) {
-    if (printing) {
-      if (gcode_iter) {
-	m_view->get_view_progress()->start (_("Printing"),
-					    gcode_iter->m_line_count);
-      }
-    } else {
-      m_view->get_view_progress()->stop (_("Done"));
-    }
-  }
-
-  if (printing){
-    watchprint_timeout = Glib::signal_timeout().connect
-      (sigc::mem_fun(*this, &Printer::watchprint_timeout_cb), 700);
-  } else {
-    watchprint_timeout.disconnect();
-    rr_serial->stop_printing();
-  }
-  printing_changed.emit();
-}
-
-// double Printer::getCurrentPrintingZ() {
-//   if (gcode_iter){
-//     Command command = gcode_iter->getCurrentCommand(Vector3d(0,0,0));
-//     return command.where.z();
-//   }
-//   return 0;
-// }
-
-
-
-vector<string> Printer::find_ports() const
-{
-  vector<string> ports;
-
-#ifdef WIN32
-  // FIXME how to find ports on windows?
-  ports.push_back("COM1");
-  ports.push_back("COM2");
-  ports.push_back("COM3");
-  ports.push_back("COM4");
-  ports.push_back("COM5");
-  ports.push_back("COM6");
-  ports.push_back("COM7");
-  ports.push_back("COM8");
-  ports.push_back("COM9");
-  return ports;
-#endif
-
-  Glib::Dir dir(DEV_PATH);
-  while (true) {
-    const string dev_prefixes[] = DEV_PREFIXES;
-    const size_t npref = sizeof(dev_prefixes)/sizeof(string);
-    string name = dir.read_name();
-    if (name == "") break;
-    for(size_t i = 0; i < npref; i++) {
-      if (name.find(dev_prefixes[i]) == 0) {
-	//cerr << i << " found port " << name << endl;
-	ports.push_back(DEV_PATH+name);
-	break;
-      }
-    }
-  }
-  for (int i = ports.size()-1; i >= 0; i--) {
-    if (!RRSerial::test_port(ports[i]))
-      ; //ports.erase(ports.begin()+i);
-    else
-      cerr << "can connect device " << ports[i] << endl;
-  }
-
-  return ports;
-}
-

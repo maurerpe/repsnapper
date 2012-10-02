@@ -28,8 +28,12 @@ class Printer
 
   PyObject *pyPrintCore, *pyName, *pyModule, *pyDict, *pyFunc, *pyValue, *pyArgs, *pyCall;
   PyObject * p_get_attr(const char * name) const;
+  PyThreadState * pyThreadState;
 
-
+  Glib::Thread * listen_thread;
+  void listen_thread_run ();
+  bool run_listen;
+  Glib::Mutex print_mutex;
 
   bool printing;
   void run_print ();
@@ -119,7 +123,8 @@ class Printer
 
   bool RunExtruder(double extruder_speed, double extruder_length, bool reverse,
 		   int extruder_no=-1, char extruder_char='E');
-  bool SendNow(string str, long lineno = -1);
+  bool Send(string str);
+  bool SendNow(string str);
 
   void parse_response (string line);
 
@@ -143,6 +148,7 @@ class Printer
   void ContinuePauseButton(bool paused);
   void ResetButton();
 
+  unsigned long set_resend(unsigned long print_lineno);
 
   long get_next_line(string &line);
 

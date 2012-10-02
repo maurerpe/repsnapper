@@ -228,6 +228,8 @@ class View : public Gtk::Window
   void DrawGrid ();
   void showCurrentPrinting(unsigned long line);
 
+  Printer * GetPrinter() {return m_printer;}
+
   Glib::Mutex mutex;
 
 };
