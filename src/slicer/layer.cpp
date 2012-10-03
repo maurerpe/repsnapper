@@ -1069,7 +1069,7 @@ void Layer::Draw(const Settings &settings)
     draw_polys(bridgePillars,        GL_LINE_LOOP, 3, 3, YELLOW,0.7, randomized);
     if (previous!=NULL) {
       vector<Poly> overhangs = getOverhangs();
-      draw_polys(overhangs, GL_LINE_LOOP, 1, 3, VIOLET, 0.8, randomized);
+      //draw_polys(overhangs, GL_LINE_LOOP, 1, 3, VIOLET, 0.8, randomized);
       //draw_polys_surface(overhangs, Min, Max, Z, thickness/5, VIOLET , 0.5);
 
       Cairo::RefPtr<Cairo::ImageSurface> surface;

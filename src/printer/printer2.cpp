@@ -77,8 +77,8 @@ bool Printer::Move(string axis, double distance)
 	speed = settings->Hardware.MaxMoveSpeedXY * 60;
 
       std::ostringstream oss;
-      oss << "G1 F" << speed;
-      if (!SendNow(oss.str())) return false;
+      // oss << "G1 F" << speed;
+      // if (!SendNow(oss.str())) return false;
       oss.str("");
       oss << "G1 " << axis << distance << " F" << speed;
       if (!SendNow(oss.str())) return false;
@@ -320,6 +320,7 @@ void Printer::set_printing (bool pprinting)
 					    gcode_iter->m_line_count);
       }
     } else {
+      signal_now_printing.emit(0);
       m_view->get_view_progress()->stop (_("Done"));
     }
   }

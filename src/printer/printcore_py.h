@@ -38,8 +38,8 @@ const char * printcore_py = "\n\
 # You should have received a copy of the GNU General Public License\n\
 # along with Printrun.  If not, see <http://www.gnu.org/licenses/>.\n\
 \n\
-from serial import * #Serial, SerialException\n\
 from threading import Thread\n\
+from serial import * #Serial, SerialException\n\
 from select import error as SelectError\n\
 import time, getopt, sys\n\
 \n\
@@ -96,8 +96,9 @@ class printcore():\n\
         if baud is not None:\n\
             self.baud=baud\n\
         if self.port is not None and self.baud is not None:\n\
-            self.printer=Serial(self.port,self.baud,timeout=0.5)\n\
+            self.printer=Serial(self.port,self.baud,timeout=2)\n\
             self.clear=True\n\
+            self.online = self.is_online()\n\
             #thread = Thread(target=self._listen).start()\n\
             #print \"thread?\",thread\n\
 \n\
@@ -113,21 +114,22 @@ class printcore():\n\
     def _listen_single(self):\n\
         \"\"\"This function acts on messages from the firmware\n\
         \"\"\"\n\
+        #print \"PY LISTEN SINGLE\"\n\
         try:\n\
             line=self.printer.readline()\n\
-            print \"line:\",line\n\
+            #print \"line:\",line\n\
         except SelectError, e:\n\
             if 'Bad file descriptor' in e.args[1]:\n\
                 print \"Can't read from printer (disconnected?).\"\n\
-                return False\n\
+                return None\n\
             else:\n\
                 print \"error\"\n\
         except SerialException, e:\n\
             print \"Can't read from printer (disconnected?).\"\n\
-            return False\n\
+            return None\n\
         except OSError, e:\n\
             print \"Can't read from printer (disconnected?).\"\n\
-            return False\n\
+            return None\n\
 \n\
         if(len(line)>1):\n\
             self.log+=[line]\n\
@@ -139,7 +141,7 @@ class printcore():\n\
             if self.loud:\n\
                 print \"RECV: \",line.rstrip()\n\
         if(line.startswith('DEBUG_')):\n\
-            return True\n\
+            return line\n\
         if(line.startswith(tuple(self.greetings)) or line.startswith('ok')):\n\
             self.clear=True\n\
         if(line.startswith(tuple(self.greetings)) or line.startswith('ok') or \"T:\" in line):\n\
@@ -174,18 +176,19 @@ class printcore():\n\
                     toresend=int(line.split()[1])\n\
             self.resendfrom=toresend\n\
             self.clear=True\n\
-        print \"end _listen_single\"\n\
-        return True\n\
+        #print \"end _listen_single\"\n\
+        return line\n\
 \n\
 \n\
     def _listen(self):\n\
         self.clear=True\n\
         self.send_now(\"M105\")\n\
         while(True):\n\
+            time.sleep(1.0)\n\
             if(not self.printer or not self.printer.isOpen):\n\
                 break\n\
-            if not self._listen_single(): break\n\
-        time.sleep(1.0)\n\
+            if self._listen_single() == None: break\n\
+        #print \"end _listen\"\n\
         self.clear=True\n\
         #callback for disconnect\n\
 \n\
@@ -224,7 +227,7 @@ class printcore():\n\
         \"\"\"\n\
         self.paused=True\n\
         self.printing=False\n\
-        time.sleep(1)\n\
+        #time.sleep(1)\n\
 \n\
     def resume(self):\n\
         \"\"\"Resumes a paused print.\n\
@@ -241,7 +244,7 @@ class printcore():\n\
             self.mainqueue+=[command]\n\
         else:\n\
             while not self.clear:\n\
-                print \"not clear\"\n\
+                #print \"not clear\"\n\
                 time.sleep(0.001)\n\
             self._send(command,self.lineno,True)\n\
             self.lineno+=1\n\
@@ -255,7 +258,7 @@ class printcore():\n\
             self.priqueue+=[command]\n\
         else:\n\
             while not self.clear:\n\
-                print \"not clear\"\n\
+                #print \"not clear\"\n\
                 time.sleep(0.001)\n\
             self._send(command)\n\
         #callback for command sent\n\
@@ -268,7 +271,7 @@ class printcore():\n\
             except:\n\
                 pass\n\
         while(self.printing and self.printer and self.online):\n\
-            print \"print thread\"\n\
+            #print \"print thread\"\n\
             self._sendnext()\n\
         self.log=[]\n\
         self.sent=[]\n\
@@ -283,7 +286,7 @@ class printcore():\n\
         if(not self.printer):\n\
             return\n\
         while not self.clear:\n\
-            print \"not clear\"\n\
+            #print \"not clear\"\n\
             time.sleep(0.001)\n\
         self.clear=False\n\
         if not (self.printing and self.printer and self.online):\n\
@@ -318,7 +321,7 @@ class printcore():\n\
 \n\
     def _send(self, command, lineno=0, calcchecksum=False):\n\
         command = command.upper();\n\
-        print \"_send\", command\n\
+        #    print \"_send\", command\n\
         if(calcchecksum):\n\
             prefix=\"N\"+str(lineno)+\" \"+command\n\
             command=prefix+\"*\"+str(self._checksum(prefix))\n\
@@ -341,5 +344,11 @@ class printcore():\n\
 \n\
     def is_online(self):\n\
         return (self.printer != None)\n\
+\n\
+    def current_printing(self):\n\
+        if not self.printing:\n\
+            return 0\n\
+        return self.lineno\n\
+\n\
 \n\
 ";

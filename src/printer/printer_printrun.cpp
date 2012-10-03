@@ -26,10 +26,11 @@
 #include "printcore_py.h"
 #endif
 
+
 // passing const char to Python ...
 #define CHARS(var,str) \
-  char var[sizeof(str)];	  \
-  strncpy(var, str, sizeof(str)); \
+  char var[sizeof(str)];		\
+  strncpy(var, str, sizeof(str));	\
   var[sizeof(var) - 1] = '\0'
 
 
@@ -42,6 +43,7 @@ Printer::Printer(View *view)
      m_model(NULL),
      inhibit_print (false)
 {
+  current_printing_lineno = 0;
   gcode_iter = NULL;
   m_view = view;
 
@@ -56,6 +58,8 @@ Printer::Printer(View *view)
   // release the lock
   //PyEval_ReleaseLock();
   //Py_BEGIN_ALLOW_THREADS;
+  PyRun_SimpleString("from threading import *\n");
+
 #if FROMFILE
   cerr << "running file printcore.py ..." << endl;
   PyRun_SimpleString("import sys\nsys.path.append('.')\n");
@@ -101,55 +105,93 @@ Printer::~Printer()
 }
 
 
+// PyObject * pyMethod (PyObject * pObj, const char * method_,
+// 		     const char * format_ = NULL,
+// 		     const char * arg1_   = NULL,
+// 		     const char * arg2_   = NULL)
+// {
+//   PyObject * ret = NULL;
+//   if (!method_) return ret;
+//   CHARS (method, method_);
+//   cerr << method_ << method << endl;
+//   if (format_) {
+//     CHARS (format, format_);
+//     cerr << format_ << ":" <<format <<"'"<< endl;
+//     if (arg1_) {
+//       CHARS (arg1, arg1_);
+//       if (arg2_) {
+// 	CHARS (arg2, arg2_);
+// 	ret = PyObject_CallMethod(pObj, method, format, arg1, arg2);
+//       } else
+// 	ret = PyObject_CallMethod(pObj, method, format, arg1);
+//     }
+//   }
+//   else
+//     ret = PyObject_CallMethod(pObj, method, NULL);
+//   if(!ret)
+//     PyErr_Print();
+//   return ret;
+// }
+
 void Printer::listen_thread_run()
 {
+  string line;
 
   while(run_listen) {
-    cerr <<"call _listen_single" << endl;
+    //cerr <<"call _listen_single" << endl;
 
     if (pyPrintCore) {
       //Glib::Mutex::Lock lock (print_mutex);
+      PyObject *pLine = NULL;
       //PyThreadState *_save = PyEval_SaveThread();
       //cerr << "save " << _save << endl;
+#if 0
       PyGILState_STATE gstate = PyGILState_Ensure();
-#if 1
       PyObject *printer = PyObject_GetAttrString(pyPrintCore, "printer");
       if(!printer) {
 	PyErr_Print();
       } else {
-	CHARS (readline, "readline");
+	CHARS (meth, "readline");
 	cerr <<"now" << endl;
-	PyObject *pLine = PyObject_CallMethod(printer, readline, NULL);
+	pLine = PyObject_CallMethod(printer, meth, NULL);
 	cerr <<"end" << endl;
-
-	if(!pLine) {
-	  PyErr_Print();
-	}
-	else {
-	  string line = string(PyString_AsString(pLine));
-	  cerr << "line: " << line << endl;
-	  parse_response(line);
-	}
       }
       //Py_END_ALLOW_THREADS;
-#else
-      CHARS (meth, "_listen_single");
-      //CHARS (meth, "_listen");
-      cerr << "_listen" << endl;
-      PyObject *pValue =
-	PyObject_CallMethod(pyPrintCore, meth, NULL);
-      if(!pValue) {
-	PyErr_Print();
-	return;
-      }
-
-#endif
       PyGILState_Release(gstate);
+#else
+      //CHARS (meth, "_listen_single");
+      CHARS (listen, "_listen_single");
+      //cerr << "_listen_single" << endl;
+      pLine = PyObject_CallMethod(pyPrintCore, listen, NULL);
+#endif
       // PyEval_RestoreThread(_save);
+      if(pLine) {
+	line = string(PyString_AsString(pLine));
+	//cerr << "line: " << line << endl;
+	parse_response(line);
+      }
+      else {
+	PyErr_Print();
+	line = "";
+      }
+      CHARS (get_current, "current_printing");
+      pLine = PyObject_CallMethod(pyPrintCore, get_current, NULL);
+      if(pLine) {
+	current_printing_lineno = PyInt_AsLong(pLine);
+	//m2cerr << "current printing line: " << current_printing_lineno << endl;
+      } else
+	PyErr_Print();
     }
-    cerr <<"end _listen_single" << endl;
-    Glib::usleep(100000);
+    //cerr <<"end _listen_single :" <<line << ":" << endl;
+    //if (line == "")
+    Glib::usleep(2000);
+    {
+      // Glib::Mutex::Lock lock (print_mutex);
+      // if (current_printing_lineno >= 0)
+      //  	signal_now_printing.emit(current_printing_lineno);
+    }
   }
+  cerr << "END LISTEN THREAD" << endl;
   return;
 }
 
@@ -170,6 +212,7 @@ bool Printer::do_connect (bool connect)
       const int speed = m_model->settings.Hardware.SerialSpeed;
       //PyGILState_STATE gstate;
       // gstate = PyGILState_Ensure();
+
       pValue = PyObject_CallMethod(pyPrintCore, meth, format,
 				   port, speed);
       // PyGILState_Release(gstate);
@@ -245,13 +288,14 @@ void Printer::log(string s, RR_logtype type)
 
 void Printer::Pause()
 {
-  if (!IsConnected())
-    return;
+  // if (!IsConnected())
+  //   return;
   if (pyPrintCore) {
     Glib::Mutex::Lock lock (print_mutex);
+    PyGILState_STATE gstate = PyGILState_Ensure();
     CHARS (meth, "pause");
-    PyObject *pValue =
-      PyObject_CallMethod(pyPrintCore, meth, NULL);
+    PyObject *pValue = PyObject_CallMethod(pyPrintCore, meth, NULL);
+    PyGILState_Release(gstate);
     if(!pValue) {
       PyErr_Print();
       return;
@@ -262,14 +306,15 @@ void Printer::Pause()
 
 void Printer::Continue()
 {
-  if (!IsConnected())
-    return;
+  // if (!IsConnected())
+  //   return;
   if (pyPrintCore) {
     Glib::Mutex::Lock lock (print_mutex);
+    PyGILState_STATE gstate = PyGILState_Ensure();
     //Py_BEGIN_ALLOW_THREADS;
     CHARS (meth, "resume");
-    PyObject *pValue =
-      PyObject_CallMethod(pyPrintCore, meth, NULL);
+    PyObject *pValue = PyObject_CallMethod(pyPrintCore, meth, NULL);
+    PyGILState_Release(gstate);
     if(!pValue) {
       PyErr_Print();
       return;
@@ -303,9 +348,9 @@ bool Printer::IsConnected()
 {
   bool ret = false;
   if (pyPrintCore) {
-    //Glib::Mutex::Lock lock (print_mutex);
+    Glib::Mutex::Lock lock (print_mutex);
     PyGILState_STATE gstate = PyGILState_Ensure();
-
+    //PyOS_AfterFork();
     //Py_BEGIN_ALLOW_THREADS;
     CHARS (meth, "is_online");
     PyObject *pValue =
@@ -331,9 +376,9 @@ void Printer::Reset()
   //   return;
   cerr << "reset?"<< endl;
   if (pyPrintCore) {
+    Glib::Mutex::Lock lock (print_mutex);
     //Py_BEGIN_ALLOW_THREADS;
     PyGILState_STATE gstate = PyGILState_Ensure();
-    //Glib::Mutex::Lock lock (print_mutex);
     CHARS (meth, "reset");
     PyObject *pValue =
       PyObject_CallMethod(pyPrintCore, meth, NULL);
@@ -349,10 +394,10 @@ void Printer::Reset()
 
 void Printer::Print()
 {
-  if (!IsConnected()) {
-    alert (_("Not connected to printer.\nCannot start printing"));
-    return;
-  }
+  // if (!IsConnected()) {
+  //   alert (_("Not connected to printer.\nCannot start printing"));
+  //   return;
+  // }
 
   delete (gcode_iter);
   gcode_iter = m_model->gcode.get_iter();
@@ -367,11 +412,12 @@ void Printer::Print()
     CHARS (meth, "startprint_text");
     CHARS (format, "s");
     pValue = PyObject_CallMethod(pyPrintCore, meth, format, text.c_str());
-    PyGILState_Release(gstate);
     if(!pValue) {
       PyErr_Print();
+      PyGILState_Release(gstate);
       return;
-    }
+    } else
+      PyGILState_Release(gstate);
   }
   set_printing (true);
 
@@ -419,23 +465,23 @@ long Printer::get_next_line(string &line)
 // add to queue
 bool Printer::Send(string str)
 {
-  if (!IsConnected()) {
-    error (_("Can't send command"), _("You must first connect to a device!"));
-    return false;
-  }
+  // if (!IsConnected()) {
+  //   error (_("Can't send command"), _("You must first connect to a device!"));
+  //   return false;
+  // }
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 
   if (pyPrintCore) {
-    //Glib::Mutex::Lock lock (print_mutex);
+    Glib::Mutex::Lock lock (print_mutex);
     //Py_BEGIN_ALLOW_THREADS;
     PyObject *pValue = NULL;
     PyGILState_STATE gstate = PyGILState_Ensure();
-    CHARS (meth, "send");
-    CHARS (format, "s");
+    PyOS_AfterFork();
+    CHARS(meth,"send");
+    CHARS(format,"s");
     pValue = PyObject_CallMethod(pyPrintCore, meth, format, str.c_str());
     PyGILState_Release(gstate);
     if(!pValue) {
-      PyErr_Print();
       return false;
     }
     //Py_END_ALLOW_THREADS;
@@ -446,23 +492,23 @@ bool Printer::Send(string str)
 // send immediately
 bool Printer::SendNow(string str)
 {
-  if (!IsConnected()) {
-    error (_("Can't send command"), _("You must first connect to a device!"));
-    return false;
-  }
+  // if (!IsConnected()) {
+  //   error (_("Can't send command"), _("You must first connect to a device!"));
+  //   return false;
+  // }
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-  //cerr << "sendnow "<<str  << endl;
+  cerr << "sendnow "<<str  << endl;
   if (pyPrintCore) {
-    //Glib::Mutex::Lock lock (print_mutex);
+    Glib::Mutex::Lock lock (print_mutex);
     //Py_BEGIN_ALLOW_THREADS;
     PyObject *pValue = NULL;
     PyGILState_STATE gstate = PyGILState_Ensure();
-    CHARS (meth, "send_now");
-    CHARS (format, "s");
+    PyOS_AfterFork();
+    CHARS(meth,"send_now");
+    CHARS(format,"s");
     pValue = PyObject_CallMethod(pyPrintCore, meth, format, str.c_str());
     PyGILState_Release(gstate);
     if(!pValue) {
-      PyErr_Print();
       return false;
     }
     //Py_END_ALLOW_THREADS;

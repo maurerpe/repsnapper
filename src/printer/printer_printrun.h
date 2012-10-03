@@ -119,6 +119,8 @@ class Printer
 
   bool SelectExtruder(int extruder_no=-1);
 
+  long current_printing_lineno;
+
   /* double getCurrentPrintingZ(); */
 
   bool RunExtruder(double extruder_speed, double extruder_length, bool reverse,
