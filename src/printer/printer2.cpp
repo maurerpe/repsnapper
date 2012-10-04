@@ -196,11 +196,6 @@ void Printer::setModel(Model *model)
   UpdateTemperatureMonitor();
 }
 
-void Printer::Restart()
-{
-  Print();
-}
-
 void Printer::ContinuePauseButton(bool paused)
 {
   if (paused)
@@ -209,12 +204,11 @@ void Printer::ContinuePauseButton(bool paused)
     Continue();
 }
 
-void Printer::Kick()
-{
-  if (!IsConnected()) return;
-  cerr << "Kick" << endl;
-  Continue();
-}
+// void Printer::Kick()
+// {
+//   cerr << "Kick" << endl;
+//   Continue();
+// }
 
 void Printer::ResetButton()
 {
@@ -223,16 +217,11 @@ void Printer::ResetButton()
 
 void Printer::PrintButton()
 {
-  if (!IsConnected()) return;
-  if (printing)
-    Restart();
-  else
-    Print();
+  Print();
 }
 
 void Printer::StopButton()
 {
-  if (!IsConnected()) return;
   Stop();
 }
 
@@ -269,9 +258,6 @@ bool Printer::SetTemp(TempType type, float value, int extruder_no)
 
 void Printer::SimplePrint()
 {
-  if (printing)
-    alert (_("Already printing.\nCannot start printing"));
-
   if (!IsConnected())
     serial_try_connect (true);
   Print();

@@ -111,8 +111,7 @@ class Printer
   void Pause();
   void Stop();
   void Continue();
-  void Kick();
-  void Restart();
+  //void Kick();
   void Reset();
 
   bool SetTemp(TempType type, float value, int extruder_no=-1);

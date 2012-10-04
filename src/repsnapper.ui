@@ -13,6 +13,11 @@
     <property name="short_label">Calibrate</property>
     <property name="tooltip">An interactive calibration routine</property>
   </object>
+  <object class="GtkAction" id="Fullscreen">
+    <property name="label">Fullscreen</property>
+    <property name="short_label" translatable="yes">Fullscreen</property>
+    <property name="tooltip">Toggle Fullscreen</property>
+  </object>
   <object class="GtkAction" id="LoadSettings">
     <property name="label" translatable="yes">Load Settings</property>
     <property name="short_label" translatable="yes">Load Settings</property>
@@ -73,11 +78,6 @@
     <property name="value">8</property>
     <property name="step_increment">0.10000000000000001</property>
     <property name="page_increment">10</property>
-  </object>
-  <object class="GtkAction" id="Fullscreen">
-    <property name="label">Fullscreen</property>
-    <property name="short_label" translatable="yes">Fullscreen</property>
-    <property name="tooltip">Toggle Fullscreen</property>
   </object>
   <object class="GtkWindow" id="PrinterControlWindowTest">
     <property name="can_focus">False</property>
@@ -2660,8 +2660,8 @@ Otherwise the STL will contain separate Objects and it will be in ASCII mode (so
                                         </child>
                                         <child>
                                           <object class="GtkToolButton" id="p_kick">
-                                            <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="no_show_all">True</property>
                                             <property name="tooltip_text" translatable="yes">Kick</property>
                                             <property name="use_action_appearance">False</property>
                                             <property name="label" translatable="yes">Kick</property>
