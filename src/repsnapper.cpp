@@ -52,6 +52,7 @@ private:
 	{
 		// specify defaults here or in the block below
 		use_gui = true;
+		connect_printer = false;
 	}
 	void version ()
 	{

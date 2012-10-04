@@ -66,6 +66,7 @@ typedef struct rr_dev_t *rr_dev;
 
 class Printer
 {
+        bool connected;
 	bool printing;
 	void run_print ();
 

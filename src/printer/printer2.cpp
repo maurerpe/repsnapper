@@ -25,7 +25,10 @@
 
 // everything taken out of model2.cpp
 
-bool Printer::SwitchPower(bool on) {
+bool Printer::SwitchPower(bool on)
+{
+  if (!connected)
+    return false;
   if(printing)
     {
       alert(_("Can't switch power while printing"));
@@ -40,6 +43,8 @@ bool Printer::SwitchPower(bool on) {
 
 bool Printer::Home(string axis)
 {
+  if (!connected)
+    return false;
   if(printing)
     {
       alert(_("Can't go home while printing"));
@@ -60,6 +65,8 @@ bool Printer::Home(string axis)
 
 bool Printer::Move(string axis, double distance)
 {
+  if (!connected)
+    return false;
   assert (m_model != NULL);
   Settings *settings = &m_model->settings;
   if (printing)
@@ -90,6 +97,8 @@ bool Printer::Move(string axis, double distance)
 
 bool Printer::Goto(string axis, double position)
 {
+  if (!connected)
+    return false;
   assert (m_model != NULL);
   Settings *settings = &m_model->settings;
   if (printing)
@@ -132,9 +141,11 @@ void Printer::serial_try_connect (bool connect)
     signal_serial_state_changed.emit (SERIAL_CONNECTING);
     if (do_connect(connect)) {
       signal_serial_state_changed.emit (SERIAL_CONNECTED);
+      connected = true;
       UpdateTemperatureMonitor();
     } else {
       signal_serial_state_changed.emit (SERIAL_DISCONNECTED);
+      connected = false;
       error (_("Failed to connect to device"),
              _("an error occured while connecting"));
     }
@@ -149,10 +160,12 @@ void Printer::serial_try_connect (bool connect)
       signal_serial_state_changed.emit (SERIAL_DISCONNECTING);
       if (do_connect(connect)) { // do disconnect
 	signal_serial_state_changed.emit (SERIAL_DISCONNECTED);
+	connected = false;
 	Pause();
 	temp_timeout.disconnect();
       }	else {
 	signal_serial_state_changed.emit (SERIAL_CONNECTED);
+	connected = true;
       }
     }
   }
@@ -173,7 +186,9 @@ void Printer::error (const char *message, const char *secondary)
 
 bool Printer::temp_timeout_cb()
 {
-  if (IsConnected() && m_model && m_model->settings.Misc.TempReadingEnabled)
+  if (!connected)
+    return false;
+  if (m_model && m_model->settings.Misc.TempReadingEnabled)
     SendNow("M105");
   UpdateTemperatureMonitor();
   return true;
@@ -183,7 +198,7 @@ void Printer::UpdateTemperatureMonitor()
 {
   if (temp_timeout.connected())
     temp_timeout.disconnect();
-  if (IsConnected() && m_model && m_model->settings.Misc.TempReadingEnabled) {
+  if (m_model && m_model->settings.Misc.TempReadingEnabled) {
     const unsigned int seconds = m_model->settings.Display.TempUpdateSpeed;
     temp_timeout = Glib::signal_timeout().connect_seconds
       (sigc::mem_fun(*this, &Printer::temp_timeout_cb), seconds);
@@ -198,6 +213,8 @@ void Printer::setModel(Model *model)
 
 void Printer::ContinuePauseButton(bool paused)
 {
+  if (!connected)
+    return;
   if (paused)
     Pause();
   else
@@ -212,22 +229,28 @@ void Printer::ContinuePauseButton(bool paused)
 
 void Printer::ResetButton()
 {
+  if (!connected)
+    return;
   Reset();
 }
 
 void Printer::PrintButton()
 {
+  if (!connected)
+    return;
   Print();
 }
 
 void Printer::StopButton()
 {
+  if (!connected)
+    return;
   Stop();
 }
 
 bool Printer::SelectExtruder(int extruder_no)
 {
-  if (extruder_no >= 0){
+  if (connected && extruder_no >= 0){
     ostringstream os;
     os << "T" << extruder_no;
     return SendNow(os.str());
@@ -237,6 +260,8 @@ bool Printer::SelectExtruder(int extruder_no)
 
 bool Printer::SetTemp(TempType type, float value, int extruder_no)
 {
+  if (!connected)
+    return false;
   ostringstream os;
   switch (type) {
   case TEMP_NOZZLE:
@@ -258,14 +283,16 @@ bool Printer::SetTemp(TempType type, float value, int extruder_no)
 
 void Printer::SimplePrint()
 {
-  if (!IsConnected())
+  if (!connected)
     serial_try_connect (true);
   Print();
 }
 
 bool Printer::RunExtruder (double extruder_speed, double extruder_length,
-			   bool reverse, int extruder_no, char extruder_char)
+			   int extruder_no, char extruder_char)
 {
+  if (!connected)
+    return false;
   assert(m_model != NULL); // Need a model first
 
   if (extruder_no >= 0)

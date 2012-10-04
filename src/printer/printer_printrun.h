@@ -35,6 +35,8 @@ class Printer
   bool run_listen;
   Glib::Mutex print_mutex;
 
+
+  bool connected;
   bool printing;
   void run_print ();
 

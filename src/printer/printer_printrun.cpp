@@ -36,12 +36,12 @@
 
 
 Printer::Printer(View *view)
- :   printing (false),
-     lastdonelines(0),
-     lasttimeshown(0),
-     debug_output(false),
-     m_model(NULL),
-     inhibit_print (false)
+ :
+  connected(false), printing (false),
+  lastdonelines(0),  lasttimeshown(0),
+  debug_output(false),
+  m_model(NULL),
+  inhibit_print (false)
 {
   current_printing_lineno = 0;
   gcode_iter = NULL;
@@ -288,8 +288,8 @@ void Printer::log(string s, RR_logtype type)
 
 void Printer::Pause()
 {
-  // if (!IsConnected())
-  //   return;
+  if (!connected)
+     return;
   if (pyPrintCore) {
     Glib::Mutex::Lock lock (print_mutex);
     PyGILState_STATE gstate = PyGILState_Ensure();
@@ -306,8 +306,8 @@ void Printer::Pause()
 
 void Printer::Continue()
 {
-  // if (!IsConnected())
-  //   return;
+  if (!connected)
+     return;
   if (pyPrintCore) {
     Glib::Mutex::Lock lock (print_mutex);
     PyGILState_STATE gstate = PyGILState_Ensure();
@@ -359,6 +359,7 @@ bool Printer::IsConnected()
     if(!pValue) return false;
     long blong = PyInt_AsLong(pValue);
     ret = (blong == 1);
+    connected = ret;
     //Py_END_ALLOW_THREADS;
     PyGILState_Release(gstate);
   }
@@ -372,8 +373,8 @@ bool Printer::IsConnected()
 
 void Printer::Reset()
 {
-  // if (!IsConnected())
-  //   return;
+  if (!connected)
+     return;
   cerr << "reset?"<< endl;
   if (pyPrintCore) {
     Glib::Mutex::Lock lock (print_mutex);
@@ -394,10 +395,8 @@ void Printer::Reset()
 
 void Printer::Print()
 {
-  // if (!IsConnected()) {
-  //   alert (_("Not connected to printer.\nCannot start printing"));
-  //   return;
-  // }
+  if (!connected)
+     return;
 
   delete (gcode_iter);
   gcode_iter = m_model->gcode.get_iter();
@@ -465,10 +464,9 @@ long Printer::get_next_line(string &line)
 // add to queue
 bool Printer::Send(string str)
 {
-  // if (!IsConnected()) {
-  //   error (_("Can't send command"), _("You must first connect to a device!"));
-  //   return false;
-  // }
+  if (!connected)
+     return false;
+
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 
   if (pyPrintCore) {
@@ -492,10 +490,9 @@ bool Printer::Send(string str)
 // send immediately
 bool Printer::SendNow(string str)
 {
-  // if (!IsConnected()) {
-  //   error (_("Can't send command"), _("You must first connect to a device!"));
-  //   return false;
-  // }
+  if (!connected)
+     return false;
+
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);
   cerr << "sendnow "<<str  << endl;
   if (pyPrintCore) {
