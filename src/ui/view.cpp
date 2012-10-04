@@ -1884,7 +1884,7 @@ void View::DrawGrid()
 
 	// bottom
         glBegin(GL_TRIANGLE_STRIP);
-        glNormal3f(0.0f, 0.0f, 1.0f);
+        glNormal3f (0.0f, 0.0f, 1.0f);
 	glVertex3f (pM.x(), pM.y(), 0.0f);
 	glVertex3f (0.0f, 0.0f, 0.0f);
 	glVertex3f (volume.x() - pM.x(), pM.y(), 0.0f);
@@ -1897,9 +1897,10 @@ void View::DrawGrid()
 	glVertex3f (0.0f, 0.0f, 0.0f);
         glEnd();
 
+	glDisable (GL_DEPTH_TEST);
 	// top
         glBegin(GL_TRIANGLE_STRIP);
-        glNormal3f(0.0f, 0.0f, 1.0f);
+        glNormal3f (0.0f, 0.0f, 1.0f);
 	glVertex3f (pM.x(), pM.y(), volume.z());
 	glVertex3f (0.0f, 0.0f, volume.z());
 	glVertex3f (volume.x() - pM.x(), pM.y(), volume.z());
@@ -1920,6 +1921,7 @@ void View::DrawGrid()
 	// glVertex3f (pM.x(), pM.y()+10.0f, 0.0f);
         // glEnd();
 
+	glEnable (GL_DEPTH_TEST);
         // Draw print surface
 	float mat_diffuse_white[] = {0.2f, 0.2f, 0.2f, 0.2f};
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse_white);
