@@ -94,7 +94,8 @@ class Printer
   void serial_try_connect (bool connect);
   sigc::signal< void, SerialState > signal_serial_state_changed;
 
-  double get_temp (TempType t) { return temps[(int)t]; }
+  double get_temp (TempType t);
+
   sigc::signal< void > signal_temp_changed;
 
   sigc::signal< void > printing_changed;
@@ -124,7 +125,7 @@ class Printer
 
   /* double getCurrentPrintingZ(); */
 
-  bool RunExtruder(double extruder_speed, double extruder_length, bool reverse,
+  bool RunExtruder(double extruder_speed, double extruder_length,
 		   int extruder_no=-1, char extruder_char='E');
   bool Send(string str);
   bool SendNow(string str);

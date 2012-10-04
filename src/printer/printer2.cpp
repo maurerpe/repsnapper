@@ -311,8 +311,8 @@ bool Printer::RunExtruder (double extruder_speed, double extruder_length,
   oss << "G1 " << extruder_char;
   string command2(oss.str());
 
-  if (reverse)
-    oss << "-";
+  // if (reverse)
+  //   oss << "-";
   oss <<  extruder_length;
   if (!SendNow(oss.str())) return false;
   if (!SendNow("G1 F1500.0")) return false;
@@ -406,6 +406,11 @@ void Printer::parse_response (string line)
   }
 }
 
+
+double Printer::get_temp (TempType t)
+{
+  return temps[(int)t];
+}
 
 
 
