@@ -1985,6 +1985,7 @@ void View::Draw (vector<Gtk::TreeModel::Path> &selected, bool objects_only)
 void View::showCurrentPrinting(unsigned long lineno)
 {
   //Glib::Mutex::Lock lock(mutex);
+#if 1
   if (lineno == 0) {
     m_progress->stop(_("Done"));
     return;
@@ -1995,7 +1996,10 @@ void View::showCurrentPrinting(unsigned long lineno)
     m_printer->Pause();
     printing_changed();
   }
+#endif
+#if 0
   m_model->setCurrentPrintingLine(lineno);
+#endif
   queue_draw();
   // while(Gtk::Main::events_pending()) {
   //   Gtk::Main::iteration();

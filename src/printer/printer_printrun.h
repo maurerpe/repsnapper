@@ -26,7 +26,8 @@
 class Printer
 {
 
-  PyObject *pyPrintCore, *pyName, *pyModule, *pyDict, *pyFunc, *pyValue, *pyArgs, *pyCall;
+  PyObject *pyPrintCore;
+  PyObject *pyPrinter;
   PyObject * p_get_attr(const char * name) const;
   PyThreadState * pyThreadState;
 

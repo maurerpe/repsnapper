@@ -127,7 +127,6 @@ bool ViewProgress::update (const double value, bool take_priority)
     const long left = (long)(total-used);
     m_label->set_label(label+" ("+timeleft_str(left)+")");
   }
-
   if (take_priority)
     while( gtk_events_pending () )
       gtk_main_iteration ();

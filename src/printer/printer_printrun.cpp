@@ -46,6 +46,7 @@ Printer::Printer(View *view)
   current_printing_lineno = 0;
   gcode_iter = NULL;
   m_view = view;
+  pyPrinter = NULL;
 
   listen_thread = 0;
 
@@ -63,15 +64,15 @@ Printer::Printer(View *view)
 #if FROMFILE
   cerr << "running file printcore.py ..." << endl;
   PyRun_SimpleString("import sys\nsys.path.append('.')\n");
-  pyName = PyString_FromString("printcore");
-  pyModule = PyImport_Import(pyName);
+  PyObject *pyName = PyString_FromString("printcore");
+  PyObject *pyModule = PyImport_Import(pyName);
 #else
   //cerr << printcore_py << endl;
   if (PyRun_SimpleString(printcore_py) != 0)  {
     cerr << "Could not run printcore python code" << endl;
     return;
   }
-  pyModule = PyImport_AddModule("__main__");
+  PyObject * pyModule = PyImport_AddModule("__main__");
 #endif
 
   if (!pyModule)
@@ -80,7 +81,7 @@ Printer::Printer(View *view)
   PyRun_SimpleString("print 'Python Version',sys.version\n");
 
   //cerr << "mo " << pyModule << endl;
-  pyDict = PyModule_GetDict(pyModule);
+  PyObject * pyDict = PyModule_GetDict(pyModule);
 
   // Create an instance
   CHARS (cl, "printcore");
@@ -96,7 +97,6 @@ Printer::Printer(View *view)
 Printer::~Printer()
 {
   Stop();
-  cerr << "disconnecting ... ";
   serial_try_connect(false);
   cerr << "ok" << endl;
   if (Py_IsInitialized())
@@ -146,18 +146,15 @@ void Printer::listen_thread_run()
       //PyThreadState *_save = PyEval_SaveThread();
       //cerr << "save " << _save << endl;
 #if 0
-      PyGILState_STATE gstate = PyGILState_Ensure();
-      PyObject *printer = PyObject_GetAttrString(pyPrintCore, "printer");
-      if(!printer) {
-	PyErr_Print();
+      //PyGILState_STATE gstate = PyGILState_Ensure();
+      if(!pyPrinter) {
+	cerr << "no pySerial connection" << endl;
       } else {
-	CHARS (meth, "readline");
-	cerr <<"now" << endl;
-	pLine = PyObject_CallMethod(printer, meth, NULL);
-	cerr <<"end" << endl;
+	CHARS (rline, "readline");
+	pLine = PyObject_CallMethod(pyPrinter, rline, NULL);
       }
       //Py_END_ALLOW_THREADS;
-      PyGILState_Release(gstate);
+      //PyGILState_Release(gstate);
 #else
       //CHARS (meth, "_listen_single");
       CHARS (listen, "_listen_single");
@@ -178,18 +175,20 @@ void Printer::listen_thread_run()
       pLine = PyObject_CallMethod(pyPrintCore, get_current, NULL);
       if(pLine) {
 	current_printing_lineno = PyInt_AsLong(pLine);
-	//m2cerr << "current printing line: " << current_printing_lineno << endl;
+	//cerr << "current printing line: " << current_printing_lineno << endl;
       } else
 	PyErr_Print();
     }
     //cerr <<"end _listen_single :" <<line << ":" << endl;
     //if (line == "")
-    Glib::usleep(2000);
     {
-      // Glib::Mutex::Lock lock (print_mutex);
-      // if (current_printing_lineno >= 0)
-      //  	signal_now_printing.emit(current_printing_lineno);
+      if (0 && printing) {
+	//Glib::Mutex::Lock lock (print_mutex);
+	if (current_printing_lineno >= 0)
+	  signal_now_printing.emit(current_printing_lineno);
+      }
     }
+    Glib::usleep(2000);
   }
   cerr << "END LISTEN THREAD" << endl;
   return;
@@ -221,6 +220,10 @@ bool Printer::do_connect (bool connect)
 	return false;
       }
       cerr << "ok" << endl;
+      pyPrinter = PyObject_GetAttrString(pyPrintCore, "printer");
+      if(!pyPrinter) {
+	PyErr_Print();
+      }
       //Py_END_ALLOW_THREADS;
       PyGILState_Release(gstate);
     }
@@ -240,25 +243,26 @@ bool Printer::do_connect (bool connect)
     return true;
 
   } else { // disconnect
-      run_listen = false;
-      if (listen_thread != 0) {
-	if (listen_thread->joinable())
-	  listen_thread->join();
-	listen_thread = 0;
+    run_listen = false;
+    if (listen_thread != 0) {
+      if (listen_thread->joinable())
+	listen_thread->join();
+      listen_thread = 0;
+    }
+    bool result = true;
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    if (pyPrintCore) {
+      CHARS (meth,  "disconnect");
+      PyObject *pValue =
+	PyObject_CallMethod(pyPrintCore, meth, NULL);
+      if(!pValue) {
+	PyErr_Print();
+	result = false;
       }
-      bool result = true;
-      PyGILState_STATE gstate = PyGILState_Ensure();
-      if (pyPrintCore) {
-	CHARS (meth,  "disconnect");
-	PyObject *pValue =
-	  PyObject_CallMethod(pyPrintCore, meth, NULL);
-	if(!pValue) {
-	  PyErr_Print();
-	  result = false;
-	}
-      }
-      PyGILState_Release(gstate);
-      return result;
+    }
+    pyPrinter = NULL;
+    PyGILState_Release(gstate);
+    return result;
   }
 }
 
