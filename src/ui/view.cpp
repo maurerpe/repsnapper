@@ -404,11 +404,11 @@ void View::fan_enabled_toggled (Gtk::ToggleButton *button)
 
 void View::run_extruder ()
 {
-  uint ext = m_model->settings.selectedExtruder;
-  m_printer->RunExtruder (m_extruder_speed->get_value(),
+  uint num = m_extruder_row->get_selected();
+  m_printer->RunExtruder (m_extruder_speed->get_value() * 60,
 			  m_extruder_length->get_value(),
-			  m_model->settings.selectedExtruder,
-			  m_model->settings.Extruders[ext].GCLetter[0]);
+			  num,
+			  m_model->settings.Extruders[num].GCLetter[0]);
 }
 
 void View::clear_logs()
@@ -1945,7 +1945,6 @@ void View::DrawGrid()
 // called from Render::on_expose_event
 void View::Draw (vector<Gtk::TreeModel::Path> &selected, bool objects_only)
 {
-
 	// Draw the grid, pushed back so it can be seen
 	// when viewed from below.
         if (!objects_only) {
