@@ -97,18 +97,20 @@ bool find_moverange(double minlength, uint startindex,
 		    const vector<PLine3> &lines)
 {
   uint i = startindex;
+  uint tries = 0;
   while (i < lines.size()-2) {
     if (move_start (i, movestart, lines)) {        // find move start
       if (!move_end (movestart, moveend, lines)) // find move end
 	continue;
     } else break;
 
-    if ( Printlines::length(lines, movestart, moveend) >= minlength )
+    if ( Printlines::length(lines, movestart, moveend) >= minlength ){
       return true;
-
-    if (i==moveend+1) return false;
+    }
+    if (i==moveend+1) break;
     i = moveend+1; // not long enough, continue search
   }
+  cerr << " not found " << endl;
   return false;
 }
 
@@ -276,11 +278,18 @@ uint Printlines::makeAntioozeRetract(vector<PLine3> &lines,
   uint
     movestart  = 0, moveend = 0, // move-only range
     tractstart = 0, pushend = 0; // ends of ranges of retract and repush
+  Glib::TimeVal time,lasttime;
+  lasttime.assign_current_time();
   while ( find_nextmoves(AOmindistance,
 			 moveend+1, // set
 			 movestart,  moveend, // get
 			 tractstart, pushend, // get
 			 lines) ) {
+
+
+    time.assign_current_time();
+    cout << movestart << "\t" <<(time - lasttime).as_double() << endl;
+    lasttime = time;
 
     if (movestart > linescount-1) break;
 
