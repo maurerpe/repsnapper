@@ -70,7 +70,7 @@ bool move_start(uint from, uint &movestart, const vector<PLine3> &lines)
     i++;
     movestart = i;
   }
-  while (movestart<lines.size()-1 && lines[movestart].is_command()) movestart++;
+  while (movestart<num_lines-1 && lines[movestart].is_command()) movestart++;
   if (!lines[movestart].is_move()) return false;
   if (movestart == num_lines-1) return false;
   return true;
@@ -85,7 +85,7 @@ bool move_end(uint from, uint &moveend, const vector<PLine3> &lines)
     moveend = i;
     i++;
   }
-  while (moveend>0 && lines[moveend].is_command()) moveend--;
+  while (moveend>from && lines[moveend].is_command()) moveend--;
   if (!lines[moveend].is_move()) return false;
   if (moveend > num_lines-1) moveend = num_lines-1;
   return true;
@@ -101,7 +101,7 @@ bool find_moverange(double minlength, uint startindex,
     if (move_start (i, movestart, lines)) {        // find move start
       if (!move_end (movestart, moveend, lines)) // find move end
 	continue;
-    }
+    } else break;
 
     if ( Printlines::length(lines, movestart, moveend) >= minlength )
       return true;
