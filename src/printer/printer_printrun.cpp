@@ -478,7 +478,7 @@ bool Printer::Send(string str)
     //Py_BEGIN_ALLOW_THREADS;
     PyObject *pValue = NULL;
     PyGILState_STATE gstate = PyGILState_Ensure();
-    PyOS_AfterFork();
+    //PyOS_AfterFork();
     CHARS(meth,"send");
     CHARS(format,"s");
     pValue = PyObject_CallMethod(pyPrintCore, meth, format, str.c_str());
@@ -504,7 +504,7 @@ bool Printer::SendNow(string str)
     //Py_BEGIN_ALLOW_THREADS;
     PyObject *pValue = NULL;
     PyGILState_STATE gstate = PyGILState_Ensure();
-    PyOS_AfterFork();
+    //PyOS_AfterFork();
     CHARS(meth,"send_now");
     CHARS(format,"s");
     pValue = PyObject_CallMethod(pyPrintCore, meth, format, str.c_str());
