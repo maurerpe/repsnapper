@@ -99,8 +99,8 @@ public:
 			else if (param && (!strcmp (arg, "-p") ||
 					   !strcmp (arg, "--printnow")))
 			        printerdevice_path = argv[++i];
-			else if (param && (!strcmp (arg, "-c") ||
-					   !strcmp (arg, "--connect")))
+			else if ((!strcmp (arg, "-c") ||
+				  !strcmp (arg, "--connect")))
 			        connect_printer = true;
 			else if (param && (!strcmp (arg, "-o") ||
 					   !strcmp (arg, "--output")))
