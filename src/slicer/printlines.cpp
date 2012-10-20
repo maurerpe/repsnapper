@@ -239,10 +239,15 @@ int PLine3::getCommands(Vector3d &lastpos, vector<Command> &commands,
 
   comm_speed = min(comm_speed, max_abs_speed(maxEspeed, maxAOspeed));
 
+
   if (abs(absolute_extrusion) < 0.00001)
     comm_speed = max(minspeed, speed); // in case speed is too low
 
-  extrudedMaterial += absolute_extrusion; // allowed to push/pull at arbitrary speed
+  if (!isnan(absolute_extrusion))
+    // allowed to push/pull at arbitrary speed
+    extrudedMaterial += absolute_extrusion;
+  else
+    cerr << "absolute Extrusion (retract) is NaN!" << endl << info() << endl;
 
   // slow down if too fast for z axis
   const double dZ = lifted_to.z() - lifted_from.z();
@@ -324,8 +329,14 @@ vector<PLine2> PLine2::division(const vector<Vector2d> &points) const
     totlength += newlines[i].length();
   }
   for (uint i = 0; i < newlines.size(); i++){
-    const double factor = newlines[i].length() / totlength;
+    double factor;
+    if (totlength>0)
+      factor = newlines[i].length() / totlength;
+    else
+      factor = 1./newlines.size();
     newlines[i].absolute_extrusion *= factor;
+    assert(!isnan(newlines[i].absolute_extrusion));
+
   }
   return newlines;
 }
@@ -348,7 +359,11 @@ vector<PLine3> PLine3::division(const vector<Vector3d> &points) const
     totlength += newlines[i].length();
   }
   for (uint i = 0; i < newlines.size(); i++){
-    const double factor = newlines[i].length() / totlength;
+    double factor;
+    if (totlength>0)
+      factor = newlines[i].length() / totlength;
+    else
+      factor = 1./newlines.size();
     newlines[i].absolute_extrusion *= factor;
     newlines[i].extrusion *= factor;
   }
