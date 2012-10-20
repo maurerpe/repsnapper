@@ -20,7 +20,7 @@
 
 #include "printer_printrun.h"
 
-#define FROMFILE 0
+#define FROMFILE 1
 #if FROMFILE
 #else
 #include "printcore_py.h"
@@ -34,6 +34,48 @@
   var[sizeof(var) - 1] = '\0'
 
 
+long last_lineno;
+vector <string> last_readlines;
+
+static PyObject * py_set_currentline(PyObject *self, PyObject *args)
+{
+  cerr << " py_set_currentline: " ;
+  long lineno = 0;
+  int res = PyArg_Parse(args, "l", &lineno);    /* one argument? */
+  if (res) {
+    last_lineno = lineno;
+    cerr << lineno<< endl;
+  }
+  else cerr << "?? error" << endl;
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject * py_readline(PyObject *self, PyObject *args)
+{
+  cerr << " py_readline: " ;
+  PyObject *line;
+  int res = PyArg_Parse(args, "s", line);    /* one argument? */
+  if (res)  {
+    string linestr = string(PyString_AsString(line));
+    last_readlines.push_back(linestr);
+    cerr << linestr << endl;
+    Py_XDECREF(line);
+  }
+  else cerr << "?? error" << endl;
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static struct PyMethodDef py_methods[] = {
+    {"set_currentlineno",  /* name in python */
+     py_set_currentline,  /* method here */
+     METH_O, "doc"},   /* single argument */
+    {"readline",  /* name in python */
+     py_readline,  /* method here */
+     METH_O, "doc"},   /* single argument */
+    {NULL, NULL}
+  };
 
 Printer::Printer(View *view)
  :
@@ -52,20 +94,25 @@ Printer::Printer(View *view)
 
   Py_Initialize();
   PyEval_InitThreads();
+  //  PyEval_ReleaseLock();
   //PyEval_AcquireLock();
   pyThreadState = NULL;
   // save a pointer to the main PyThreadState object
   //pyThreadState = PyThreadState_Get();
   // release the lock
-  //PyEval_ReleaseLock();
+
   //Py_BEGIN_ALLOW_THREADS;
   PyRun_SimpleString("from threading import *\n");
+
+
+  Py_InitModule("callbacks", py_methods);
 
 #if FROMFILE
   cerr << "running file printcore.py ..." << endl;
   PyRun_SimpleString("import sys\nsys.path.append('.')\n");
   PyObject *pyName = PyString_FromString("printcore");
   PyObject *pyModule = PyImport_Import(pyName);
+  Py_DECREF(pyName);
 #else
   //cerr << printcore_py << endl;
   if (PyRun_SimpleString(printcore_py) != 0)  {
@@ -91,6 +138,17 @@ Printer::Printer(View *view)
   }
   if (!pyPrintCore)
     cerr << "error loading core module" << endl;
+
+  Py_DECREF(pyDict);
+
+  // PyObject * pyCDict = PyModule_GetDict(pyPrintCore);
+  // if (!pyCDict)
+  //   cerr << "error getting core dict" << endl;
+
+  // get lineno attribute
+
+  Py_DECREF(pyClass);
+  //Py_DECREF(pyModule);
   //Py_END_ALLOW_THREADS;
 }
 
@@ -98,11 +156,11 @@ Printer::~Printer()
 {
   Stop();
   serial_try_connect(false);
-  cerr << "ok" << endl;
   if (Py_IsInitialized())
     Py_Finalize();
   Py_Finalize();
 }
+
 
 
 // PyObject * pyMethod (PyObject * pObj, const char * method_,
@@ -136,59 +194,92 @@ Printer::~Printer()
 void Printer::listen_thread_run()
 {
   string line;
+  CHARS (readline, "readline");
+  CHARS (listen_single, "_listen_single");
+  CHARS (lineno, "lineno");
 
   while(run_listen) {
-    //cerr <<"call _listen_single" << endl;
 
+    //cerr <<"call _listen_single" << endl;
     if (pyPrintCore) {
       //Glib::Mutex::Lock lock (print_mutex);
+      //PyEval_AcquireLock();
+      //PyGILState_STATE gstate = PyGILState_Ensure();
+
       PyObject *pLine = NULL;
       //PyThreadState *_save = PyEval_SaveThread();
       //cerr << "save " << _save << endl;
 #if 0
-      //PyGILState_STATE gstate = PyGILState_Ensure();
       if(!pyPrinter) {
 	cerr << "no pySerial connection" << endl;
       } else {
-	CHARS (rline, "readline");
-	pLine = PyObject_CallMethod(pyPrinter, rline, NULL);
+	pLine = PyObject_CallMethod(pyPrinter, readline, NULL);
       }
+
       //Py_END_ALLOW_THREADS;
       //PyGILState_Release(gstate);
 #else
-      //CHARS (meth, "_listen_single");
-      CHARS (listen, "_listen_single");
       //cerr << "_listen_single" << endl;
-      pLine = PyObject_CallMethod(pyPrintCore, listen, NULL);
+      if (!pyPrintCore) {
+	cerr << "no pyPrintCore!" << endl;
+      } else {
+	pLine = PyObject_CallMethod(pyPrintCore, listen_single, NULL);
+      }
 #endif
       // PyEval_RestoreThread(_save);
       if(pLine) {
 	line = string(PyString_AsString(pLine));
 	//cerr << "line: " << line << endl;
+	Py_DECREF(pLine);
 	parse_response(line);
       }
       else {
 	PyErr_Print();
 	line = "";
       }
+#if 1
+      pyLineno = PyObject_GetAttrString(pyPrintCore, lineno);
+      //PyObject * pyLineno = PyDict_GetItemString(pyCDict,lineno);
+      if (pyLineno) {
+	current_printing_lineno = PyInt_AsLong(pyLineno);
+	Py_DECREF(pyLineno);
+      }
+      else cerr << "no lineno object!" << endl;
+      //cerr << "current_printing_lineno "<<current_printing_lineno<< endl;
+#else
       CHARS (get_current, "current_printing");
       pLine = PyObject_CallMethod(pyPrintCore, get_current, NULL);
       if(pLine) {
 	current_printing_lineno = PyInt_AsLong(pLine);
 	//cerr << "current printing line: " << current_printing_lineno << endl;
+	Py_DECREF(pLine);
       } else
 	PyErr_Print();
+#endif
+      //PyGILState_Release(gstate);
+      //PyEval_ReleaseLock();
     }
     //cerr <<"end _listen_single :" <<line << ":" << endl;
     //if (line == "")
-    {
-      if (0 && printing) {
+    // cerr << "last line: "<< last_lineno << endl;
+    // cerr << "last read lines: " << endl;
+    // for (uint i = 0; i<last_readlines.size() ; i++) {
+    //   cerr <<"  "<< i<<":\t "<< last_readlines[i] << endl;
+    // }
+
+    if(1){
+      for (uint i = 0; i<last_readlines.size();i++)
+	parse_response(last_readlines[i]);
+      last_readlines.clear();
+      if (printing) {
 	//Glib::Mutex::Lock lock (print_mutex);
-	if (current_printing_lineno >= 0)
+	if (current_printing_lineno%50 == 0)
 	  signal_now_printing.emit(current_printing_lineno);
       }
     }
-    Glib::usleep(2000);
+    //cerr << ".";
+    //Glib::usleep(2000);
+    //Glib::usleep(2000000);
   }
   cerr << "END LISTEN THREAD" << endl;
   return;
@@ -201,24 +292,19 @@ bool Printer::do_connect (bool connect)
     if (pyPrintCore) {
       //Glib::Mutex::Lock lock (print_mutex);
       PyGILState_STATE gstate = PyGILState_Ensure();
-
       //Py_BEGIN_ALLOW_THREADS;
-      PyObject *pValue;
       const char * port = m_model->settings.Hardware.PortName.c_str();
       cerr << "connecting to "<< port << " ... ";
       CHARS (meth, "connect");
       CHARS (format, "(si)");
       const int speed = m_model->settings.Hardware.SerialSpeed;
-      //PyGILState_STATE gstate;
-      // gstate = PyGILState_Ensure();
-
-      pValue = PyObject_CallMethod(pyPrintCore, meth, format,
-				   port, speed);
-      // PyGILState_Release(gstate);
+      PyObject *pValue = PyObject_CallMethod(pyPrintCore, meth, format,
+					     port, speed);
       if(!pValue) {
 	PyErr_Print();
 	return false;
       }
+      Py_DECREF(pValue);
       cerr << "ok" << endl;
       pyPrinter = PyObject_GetAttrString(pyPrintCore, "printer");
       if(!pyPrinter) {
@@ -259,8 +345,11 @@ bool Printer::do_connect (bool connect)
 	PyErr_Print();
 	result = false;
       }
+      Py_DECREF(pValue);
     }
-    pyPrinter = NULL;
+    cerr << "printer disconnected." << endl;
+
+    Py_XDECREF(pyPrinter);
     PyGILState_Release(gstate);
     return result;
   }
@@ -269,11 +358,15 @@ bool Printer::do_connect (bool connect)
 
 void Printer::log(string s, RR_logtype type)
 {
+  //Glib::Mutex::Lock lock (print_mutex);
+
+  //cerr << "LOG " << s ;
+  return;
   switch (type) {
-  case LOG_ERROR: error_buffer  +=s; break;
-  case LOG_ECHO:  echo_buffer   +=s; break;
+  case LOG_ERROR: m_view->err_log (s); break;//error_buffer  +=s; break;
+  case LOG_ECHO:  m_view->echo_log(s); break;//echo_buffer   +=s; break;
   default:
-  case LOG_COMM:  commlog_buffer+=s; break;
+  case LOG_COMM:  m_view->comm_log(s); break;//commlog_buffer+=s; break;
   }
 }
 
@@ -295,7 +388,7 @@ void Printer::Pause()
   if (!connected)
      return;
   if (pyPrintCore) {
-    Glib::Mutex::Lock lock (print_mutex);
+    //Glib::Mutex::Lock lock (print_mutex);
     PyGILState_STATE gstate = PyGILState_Ensure();
     CHARS (meth, "pause");
     PyObject *pValue = PyObject_CallMethod(pyPrintCore, meth, NULL);
@@ -304,6 +397,7 @@ void Printer::Pause()
       PyErr_Print();
       return;
     }
+    Py_DECREF(pValue);
   }
   set_printing (false);
 }
@@ -313,7 +407,7 @@ void Printer::Continue()
   if (!connected)
      return;
   if (pyPrintCore) {
-    Glib::Mutex::Lock lock (print_mutex);
+    //Glib::Mutex::Lock lock (print_mutex);
     PyGILState_STATE gstate = PyGILState_Ensure();
     //Py_BEGIN_ALLOW_THREADS;
     CHARS (meth, "resume");
@@ -323,6 +417,7 @@ void Printer::Continue()
       PyErr_Print();
       return;
     }
+    Py_DECREF(pValue);
     //Py_END_ALLOW_THREADS;
   }
   set_printing (true);
@@ -352,7 +447,7 @@ bool Printer::IsConnected()
 {
   bool ret = false;
   if (pyPrintCore) {
-    Glib::Mutex::Lock lock (print_mutex);
+    //Glib::Mutex::Lock lock (print_mutex);
     PyGILState_STATE gstate = PyGILState_Ensure();
     //PyOS_AfterFork();
     //Py_BEGIN_ALLOW_THREADS;
@@ -362,6 +457,7 @@ bool Printer::IsConnected()
     //PyObject *pValue = p_get_attr("online");
     if(!pValue) return false;
     long blong = PyInt_AsLong(pValue);
+    Py_DECREF(pValue);
     ret = (blong == 1);
     connected = ret;
     //Py_END_ALLOW_THREADS;
@@ -381,7 +477,7 @@ void Printer::Reset()
      return;
   cerr << "reset?"<< endl;
   if (pyPrintCore) {
-    Glib::Mutex::Lock lock (print_mutex);
+    //Glib::Mutex::Lock lock (print_mutex);
     //Py_BEGIN_ALLOW_THREADS;
     PyGILState_STATE gstate = PyGILState_Ensure();
     CHARS (meth, "reset");
@@ -390,6 +486,7 @@ void Printer::Reset()
     if(!pValue) {
       PyErr_Print();
     }
+    Py_DECREF(pValue);
     PyGILState_Release(gstate);
     //Py_END_ALLOW_THREADS;
   }
@@ -419,8 +516,9 @@ void Printer::Print()
       PyErr_Print();
       PyGILState_Release(gstate);
       return;
-    } else
-      PyGILState_Release(gstate);
+    }
+    Py_DECREF(pValue);
+    PyGILState_Release(gstate);
   }
   set_printing (true);
 
@@ -474,11 +572,11 @@ bool Printer::Send(string str)
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 
   if (pyPrintCore) {
-    Glib::Mutex::Lock lock (print_mutex);
+    //Glib::Mutex::Lock lock (print_mutex);
     //Py_BEGIN_ALLOW_THREADS;
     PyObject *pValue = NULL;
     PyGILState_STATE gstate = PyGILState_Ensure();
-    //PyOS_AfterFork();
+    PyOS_AfterFork();
     CHARS(meth,"send");
     CHARS(format,"s");
     pValue = PyObject_CallMethod(pyPrintCore, meth, format, str.c_str());
@@ -486,8 +584,10 @@ bool Printer::Send(string str)
     if(!pValue) {
       return false;
     }
+    Py_DECREF(pValue);
     //Py_END_ALLOW_THREADS;
   }
+  log("-> "+str+"\n", LOG_COMM);
   return true;
 }
 
@@ -500,7 +600,7 @@ bool Printer::SendNow(string str)
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);
   cerr << "sendnow "<<str  << endl;
   if (pyPrintCore) {
-    Glib::Mutex::Lock lock (print_mutex);
+    //    Glib::Mutex::Lock lock (print_mutex);
     //Py_BEGIN_ALLOW_THREADS;
     PyObject *pValue = NULL;
     PyGILState_STATE gstate = PyGILState_Ensure();
@@ -512,8 +612,10 @@ bool Printer::SendNow(string str)
     if(!pValue) {
       return false;
     }
+    Py_DECREF(pValue);
     //Py_END_ALLOW_THREADS;
   }
+  log("-> "+str+"\n", LOG_COMM);
   //cerr << "sendnow done " << endl;
   return true;
 }
@@ -526,7 +628,8 @@ void Printer::Stop()
 
 unsigned long Printer::set_resend(unsigned long print_lineno)
 {
-  cerr << "resend not implemented! " << print_lineno  << endl;
+  //cerr << "resend not implemented! " << print_lineno  << endl;
+  // done in printcore.py
   return print_lineno;
 }
 

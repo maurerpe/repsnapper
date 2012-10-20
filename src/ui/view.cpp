@@ -519,31 +519,33 @@ void View::custombutton_pressed(string name, Gtk::ToolButton *button)
 }
 
 
-void View::log_msg(Gtk::TextView *tview, string s)
+void View::log_msg(Gtk::TextView *tview, const string &s)
 {
-  //Glib::Mutex::Lock lock(mutex);
+  Glib::Mutex::Lock lock(mutex);
   if (!tview || s.length() == 0) return;
   if (!m_model || !m_model->settings.Printer.Logging) return;
 
+  cerr << "LOG " << s ; return;
+
   Glib::RefPtr<Gtk::TextBuffer> c_buffer = tview->get_buffer();
+  if (!c_buffer) return;
   Gtk::TextBuffer::iterator tend = c_buffer->end();
   c_buffer->insert (tend, s);
   tend = c_buffer->end();
   tview->scroll_to(tend);
-  //tview->queue_draw();
   // while(Gtk::Main::events_pending())
-  //     Gtk::Main::iteration();
+  //   Gtk::Main::iteration();
 }
 
-void View::err_log(string s)
+void View::err_log(const string &s)
 {
   log_msg(err_view,s);
 }
-void View::comm_log(string s)
+void View::comm_log(const string &s)
 {
   log_msg(log_view,s);
 }
-void View::echo_log(string s)
+void View::echo_log(const string &s)
 {
   log_msg(echo_view,s);
 }
@@ -1989,24 +1991,30 @@ void View::Draw (vector<Gtk::TreeModel::Path> &selected, bool objects_only)
 
 void View::showCurrentPrinting(unsigned long lineno)
 {
-  //Glib::Mutex::Lock lock(mutex);
+  Glib::Mutex::Lock lock(mutex);
+  int percent_tenth = (int)(lineno/m_progress->maximum()*1000.);
+  cerr << "printed " << percent_tenth/10. << "%            \r" ;
+
+  //cerr << "CURRENT LINE " << lineno << " of " << m_progress->maximum() << endl;
 #if 1
   if (lineno == 0) {
     m_progress->stop(_("Done"));
-    return;
-  }
-  bool cont = true;
-  cont = m_progress->update(lineno, true);
-  if (!cont) { // stop by progress bar
-    m_printer->Pause();
-    printing_changed();
+  } else {
+    bool cont = true;
+    cont = m_progress->update(lineno, true);
+    if (!cont) { // stop by progress bar
+      m_printer->Pause();
+      printing_changed();
+    }
   }
 #endif
-#if 0
+#if 1
   m_model->setCurrentPrintingLine(lineno);
+  if (m_renderer)  m_renderer->queue_draw();
 #endif
-  queue_draw();
-  // while(Gtk::Main::events_pending()) {
-  //   Gtk::Main::iteration();
-  // }
+#if 1
+  while(Gtk::Main::events_pending()) {
+    Gtk::Main::iteration();
+  }
+#endif
 }

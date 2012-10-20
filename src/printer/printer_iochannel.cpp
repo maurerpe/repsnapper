@@ -166,6 +166,7 @@ bool Printer::watchprint_timeout_cb()
 
 unsigned long Printer::set_resend(unsigned long print_lineno)
 {
+  gcode_iter->set_to_lineno(gcodeline);
   return rr_serial->set_resend(print_lineno);
 }
 

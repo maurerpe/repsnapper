@@ -28,6 +28,7 @@ class Printer
 
   PyObject *pyPrintCore;
   PyObject *pyPrinter;
+  PyObject *pyLineno;
   PyObject * p_get_attr(const char * name) const;
   PyThreadState * pyThreadState;
 

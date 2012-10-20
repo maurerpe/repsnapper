@@ -96,7 +96,7 @@ class View : public Gtk::Window
   Gtk::TextView * m_gcodetextview;
 
   Gtk::TextView *log_view, *err_view, *echo_view;
-  void log_msg(Gtk::TextView *view, string s);
+  void log_msg(Gtk::TextView *view, const string &s);
 
   Gtk::ToolButton *m_print_button;
   Gtk::ToggleToolButton *m_pause_button;
@@ -218,9 +218,9 @@ class View : public Gtk::Window
   void show_preferences();
   Glib::RefPtr<Gtk::Builder> getBuilder() const { return m_builder; };
 
-  void err_log(string s);
-  void comm_log(string s);
-  void echo_log(string s);
+  void err_log(const string &s);
+  void comm_log(const string &s);
+  void echo_log(const string &s);
 
   sigc::connection logprint_timeout;
   void set_logging(bool);

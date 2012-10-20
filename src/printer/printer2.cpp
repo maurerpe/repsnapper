@@ -293,6 +293,10 @@ bool Printer::RunExtruder (double extruder_speed, double extruder_length,
 {
   if (!connected)
     return false;
+  if (printing) {
+    alert(_("Can't extrude manually while printing"));
+    return false;
+  }
   assert(m_model != NULL); // Need a model first
 
   if (extruder_no >= 0)
@@ -366,12 +370,12 @@ void Printer::parse_response (string line)
       unsigned long lineno; iss >> lineno;
       unsigned long gcodeline  = set_resend(lineno);
       cerr << "RESEND line " << lineno << " is code line " << gcodeline << endl;
-      gcode_iter->set_to_lineno(gcodeline);
       return;
     }
     log(line, LOG_ERROR);
   }
   if (line_lower.find("ok") == 0) { // ok at beginning
+    log(line, LOG_COMM);
     // cerr << "-- OK --" <<endl;
   }
   if (line.find("T:") != string::npos) {
@@ -402,6 +406,8 @@ void Printer::parse_response (string line)
     //cerr << line << endl;
   }
   else {
+    if (line.length()>0)
+      log(line, LOG_COMM);
     //cerr  << line << endl;
   }
 }
