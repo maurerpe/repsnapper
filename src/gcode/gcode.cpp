@@ -781,15 +781,22 @@ GCodeIter *GCode::get_iter ()
   return iter;
 }
 
-Command GCodeIter::getCurrentCommand(Vector3d defaultwhere,
-				     const vector<char> &E_letters)
+Command GCodeIter::getCommand(unsigned long number,
+			      Vector3d defaultwhere,
+			      const vector<char> &E_letters)
 {
   Gtk::TextBuffer::iterator from ,to;
   // cerr <<"currline" << defaultwhere << endl;
   // cerr <<"currline" << (int) m_cur_line << endl;
-  from = m_buffer->get_iter_at_line (m_cur_line);
-  to   = m_buffer->get_iter_at_line (m_cur_line+1);
+  from = m_buffer->get_iter_at_line (number);
+  to   = m_buffer->get_iter_at_line (number+1);
   Command command(m_buffer->get_text (from, to), defaultwhere, E_letters);
   return command;
 }
 
+
+Command GCodeIter::getCurrentCommand(Vector3d defaultwhere,
+				     const vector<char> &E_letters)
+{
+  return getCommand(m_cur_line, defaultwhere, E_letters);
+}

@@ -163,6 +163,10 @@ public:
 	double abs_extr; // for debugging/painting
 	double travel_length;  // for debugging
 
+	double arc_angle(const Vector3d &lastPos) const;
+	double get_length(const Vector3d &where) const;
+	double get_time(const Vector3d &where) const;
+
 	bool not_layerchange; // don't record as layerchange for lifted moves
 
 	string explicit_arg;

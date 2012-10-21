@@ -461,6 +461,28 @@ void draw_arc(Vector3d &lastPos, Vector3d center, double angle, double dz, short
   }
 }
 
+double Command::arc_angle(const Vector3d &lastPos) const
+{
+  double angle = 0;
+  bool ccw = (Code == ARC_CCW);
+  Vector3d center = lastPos + arcIJK;
+  Vector3d P = -arcIJK, Q = where-center; // arc endpoints
+  if (P==Q) angle = 2*M_PI;
+  else {
+#if 0  // marlin calculation (motion_control.cpp)
+    angle = atan2(P.x()*Q.y()-P.y()*Q.x(), P.x()*Q.x()+P.y()*Q.y());
+    if (angle < 0) angle += 2*M_PI;
+    if (!ccw) angle-=2*M_PI; // angle sign determines rotation
+#else
+    angle = angleBetween(P,Q); // ccw angle
+    if (!ccw) angle=-angle;
+    if (angle < 0) angle += 2*M_PI;  // alway positive, ccw determines rotation
+#endif
+  }
+  //if (abs(angle) < 0.00001) angle = 0;
+  return angle;
+}
+
 void Command::draw(Vector3d &lastPos, const Vector3d &offset,
 		   double extrwidth,
 		   bool arrows,  bool debug_arcs) const
@@ -491,21 +513,8 @@ void Command::draw(Vector3d &lastPos, const Vector3d &offset,
       else
 	glColor4f(1.f,0.5f,0.0f,lum);
     }
-    long double angle;
-    if (P==Q) angle = 2*M_PI;
-    else {
-#if 0  // marlin calculation (motion_control.cpp)
-      angle = atan2(P.x()*Q.y()-P.y()*Q.x(), P.x()*Q.x()+P.y()*Q.y());
-      if (angle < 0) angle += 2*M_PI;
-      if (!ccw) angle-=2*M_PI; // angle sign determines rotation
-#else
-      angle = angleBetween(P,Q); // ccw angle
-      if (!ccw) angle=-angle;
-      if (angle < 0) angle += 2*M_PI;  // alway positive, ccw determines rotation
-#endif
-    }
-    //if (abs(angle) < 0.00001) angle = 0;
-    double dz = off_where.z()-(off_lastPos).z(); // z move with arc
+    double angle = arc_angle(lastPos);
+    double dz = off_where.z()-off_lastPos.z(); // z move with arc
     Vector3d arcstart = off_lastPos;
     draw_arc(off_lastPos, center, angle, dz, ccw);
     // extrusion boundary for arc:
@@ -603,6 +612,26 @@ void Command::addToPosition(Vector3d &from, bool relative)
   }
 }
 
+double Command::get_length(const Vector3d &lastPos) const
+{
+  if (Code == ARC_CW || Code == ARC_CCW) {
+    const double angle = arc_angle(lastPos);
+    Vector3d radiusv = arcIJK;
+    radiusv.z() = 0;
+    return radiusv.length() * angle;
+  }
+  else
+    return where.distance(lastPos);
+}
+
+// seconds
+double Command::get_time(const Vector3d &lastPos) const
+{
+  double len = get_length(lastPos);
+  if (len==0)
+    len = e;
+  return len / f / 60.;
+}
 
 string Command::info() const
 {
