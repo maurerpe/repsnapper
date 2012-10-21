@@ -13,11 +13,6 @@
     <property name="short_label">Calibrate</property>
     <property name="tooltip">An interactive calibration routine</property>
   </object>
-  <object class="GtkAction" id="Fullscreen">
-    <property name="label">Fullscreen</property>
-    <property name="short_label" translatable="yes">Fullscreen</property>
-    <property name="tooltip">Toggle Fullscreen</property>
-  </object>
   <object class="GtkAction" id="LoadSettings">
     <property name="label" translatable="yes">Load Settings</property>
     <property name="short_label" translatable="yes">Load Settings</property>
@@ -72,6 +67,11 @@
     <property name="upper">1</property>
     <property name="step_increment">0.10000000000000001</property>
     <property name="page_increment">0.25</property>
+  </object>
+  <object class="GtkAction" id="Fullscreen">
+    <property name="label">Fullscreen</property>
+    <property name="short_label" translatable="yes">Fullscreen</property>
+    <property name="tooltip">Toggle Fullscreen</property>
   </object>
   <object class="GtkAdjustment" id="DisplayEndPointSizeAdjustment">
     <property name="upper">20</property>
@@ -2622,105 +2622,130 @@ Otherwise the STL will contain separate Objects and it will be in ASCII mode (so
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkToolbar" id="toolbar1">
+                                      <object class="GtkHBox" id="hbox38">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
-                                        <property name="toolbar_style">icons</property>
-                                        <property name="show_arrow">False</property>
-                                        <property name="icon_size">5</property>
                                         <child>
-                                          <object class="GtkToolButton" id="p_print">
+                                          <object class="GtkToolbar" id="toolbar1">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="tooltip_text" translatable="yes">Print</property>
-                                            <property name="use_action_appearance">False</property>
-                                            <property name="label" translatable="yes">Print</property>
-                                            <property name="use_underline">True</property>
-                                            <property name="stock_id">gtk-execute</property>
+                                            <property name="toolbar_style">icons</property>
+                                            <property name="show_arrow">False</property>
+                                            <property name="icon_size">5</property>
+                                            <property name="icon_size_set">True</property>
+                                            <child>
+                                              <object class="GtkToolButton" id="p_print">
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">False</property>
+                                                <property name="tooltip_text" translatable="yes">Print</property>
+                                                <property name="use_action_appearance">False</property>
+                                                <property name="label" translatable="yes">Print</property>
+                                                <property name="use_underline">True</property>
+                                                <property name="stock_id">gtk-execute</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="homogeneous">True</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkToggleToolButton" id="p_pause">
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">False</property>
+                                                <property name="tooltip_text" translatable="yes">Pause</property>
+                                                <property name="use_action_appearance">False</property>
+                                                <property name="label" translatable="yes">Pause</property>
+                                                <property name="use_underline">True</property>
+                                                <property name="stock_id">gtk-media-pause</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="homogeneous">True</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkToolButton" id="p_kick">
+                                                <property name="can_focus">False</property>
+                                                <property name="no_show_all">True</property>
+                                                <property name="use_action_appearance">False</property>
+                                                <property name="label" translatable="yes">Kick</property>
+                                                <property name="use_underline">True</property>
+                                                <property name="stock_id">gtk-media-forward</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="homogeneous">True</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkToolButton" id="p_home">
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">False</property>
+                                                <property name="tooltip_text" translatable="yes">Go Home</property>
+                                                <property name="use_action_appearance">False</property>
+                                                <property name="label" translatable="yes">Home All</property>
+                                                <property name="use_underline">True</property>
+                                                <property name="stock_id">gtk-home</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="homogeneous">True</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkToolButton" id="p_reset">
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">False</property>
+                                                <property name="tooltip_text" translatable="yes">Reset Printer</property>
+                                                <property name="use_action_appearance">False</property>
+                                                <property name="label" translatable="yes">Reset</property>
+                                                <property name="use_underline">True</property>
+                                                <property name="stock_id">gtk-refresh</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="homogeneous">True</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkToggleToolButton" id="p_power">
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">False</property>
+                                                <property name="tooltip_text" translatable="yes">Printer Power</property>
+                                                <property name="use_action_appearance">False</property>
+                                                <property name="label" translatable="yes">Power On</property>
+                                                <property name="use_underline">True</property>
+                                                <property name="stock_id">gtk-connect</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="homogeneous">True</property>
+                                              </packing>
+                                            </child>
                                           </object>
                                           <packing>
-                                            <property name="expand">False</property>
-                                            <property name="homogeneous">True</property>
+                                            <property name="expand">True</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkToggleToolButton" id="p_pause">
+                                          <object class="GtkButton" id="p_simulate">
+                                            <property name="label" translatable="yes">Simulate</property>
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="tooltip_text" translatable="yes">Pause</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
                                             <property name="use_action_appearance">False</property>
-                                            <property name="label" translatable="yes">Pause</property>
-                                            <property name="use_underline">True</property>
-                                            <property name="stock_id">gtk-media-pause</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
-                                            <property name="homogeneous">True</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkToolButton" id="p_kick">
-                                            <property name="can_focus">False</property>
-                                            <property name="no_show_all">True</property>
-                                            <property name="tooltip_text" translatable="yes">Kick</property>
-                                            <property name="use_action_appearance">False</property>
-                                            <property name="label" translatable="yes">Kick</property>
-                                            <property name="use_underline">True</property>
-                                            <property name="stock_id">gtk-media-forward</property>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="homogeneous">True</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkToolButton" id="p_home">
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="tooltip_text" translatable="yes">Home All</property>
-                                            <property name="use_action_appearance">False</property>
-                                            <property name="label" translatable="yes">Home All</property>
-                                            <property name="use_underline">True</property>
-                                            <property name="stock_id">gtk-home</property>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="homogeneous">True</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkToolButton" id="p_reset">
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="tooltip_text" translatable="yes">Reset Printer</property>
-                                            <property name="use_action_appearance">False</property>
-                                            <property name="label" translatable="yes">Reset</property>
-                                            <property name="use_underline">True</property>
-                                            <property name="stock_id">gtk-refresh</property>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="homogeneous">True</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkToggleToolButton" id="p_power">
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="tooltip_text" translatable="yes">Power On</property>
-                                            <property name="use_action_appearance">False</property>
-                                            <property name="label" translatable="yes">Power On</property>
-                                            <property name="use_underline">True</property>
-                                            <property name="stock_id">gtk-connect</property>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="homogeneous">True</property>
+                                            <property name="fill">False</property>
+                                            <property name="position">1</property>
                                           </packing>
                                         </child>
                                       </object>
                                       <packing>
-                                        <property name="expand">False</property>
+                                        <property name="expand">True</property>
                                         <property name="fill">True</property>
                                         <property name="position">1</property>
                                       </packing>

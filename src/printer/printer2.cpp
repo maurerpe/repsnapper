@@ -238,6 +238,15 @@ void Printer::PrintButton()
 {
   if (!connected)
     return;
+  simulation = false;
+  Print();
+}
+
+
+void Printer::Simulate()
+{
+  simulation = true;
+  current_printing_lineno = 0;
   Print();
 }
 
@@ -333,11 +342,13 @@ void Printer::set_printing (bool pprinting)
   if (m_view) {
     if (printing){
       if (gcode_iter) {
-	m_view->get_view_progress()->start (_("Printing"),
-					    gcode_iter->m_line_count);
+	Glib::ustring label = _("Printing");
+	if (simulation) label = _("Simulation");
+	m_view->get_view_progress()->start (label.c_str(), gcode_iter->m_line_count);
       }
     } else {
-      signal_now_printing.emit(0);
+      //signal_now_printing.emit(0);
+      //m_view->showCurrentPrinting(0);
       m_view->get_view_progress()->stop (_("Done"));
     }
   }

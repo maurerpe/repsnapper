@@ -82,7 +82,7 @@ class Printer
   vector<string> find_ports() const;
 
 
-  sigc::signal< void, unsigned long > signal_now_printing;
+  //sigc::signal< void, unsigned long > signal_now_printing;
 
   bool inhibit_print;
   sigc::signal< void > signal_inhibit_changed;
@@ -118,6 +118,9 @@ class Printer
   void Continue();
   //void Kick();
   void Reset();
+
+  void Simulate();
+  bool simulation;
 
   bool SetTemp(TempType type, float value, int extruder_no=-1);
 

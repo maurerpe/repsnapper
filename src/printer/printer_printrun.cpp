@@ -83,7 +83,8 @@ Printer::Printer(View *view)
   lastdonelines(0),  lasttimeshown(0),
   debug_output(false),
   m_model(NULL),
-  inhibit_print (false)
+  inhibit_print (false),
+  simulation(false)
 {
   current_printing_lineno = 0;
   gcode_iter = NULL;
@@ -198,10 +199,29 @@ void Printer::listen_thread_run()
   CHARS (listen_single, "_listen_single");
   CHARS (lineno, "lineno");
 
+  // for simulation
+  //Vector3d where=Vector3d::ZERO;
+
   while(run_listen) {
 
     //cerr <<"call _listen_single" << endl;
-    if (pyPrintCore) {
+    if (simulation) {
+      string line = gcode_iter->next_line();
+      // Command c = gcode_iter->getCommand(current_printing_lineno-1, where);
+      // double time = c.get_time(where);
+      // where = c.where;
+      current_printing_lineno = gcode_iter->m_cur_line;
+
+      // Vector3d where=Vector3d::ZERO;
+      // if (current_printing_lineno > gcode_iter->m_line_count)
+      // 	set_printing(false);
+      // Command c = gcode_iter->getCommand(current_printing_lineno)
+      if (gcode_iter->finished()) {
+ 	set_printing(false);
+      }
+      Glib::usleep(1000);
+    }
+    else if (pyPrintCore) {
       //Glib::Mutex::Lock lock (print_mutex);
       //PyEval_AcquireLock();
       //PyGILState_STATE gstate = PyGILState_Ensure();
@@ -268,13 +288,14 @@ void Printer::listen_thread_run()
     // }
 
     if(1){
-      for (uint i = 0; i<last_readlines.size();i++)
-	parse_response(last_readlines[i]);
-      last_readlines.clear();
+      // for (uint i = 0; i<last_readlines.size();i++)
+      // 	parse_response(last_readlines[i]);
+      // last_readlines.clear();
       if (printing) {
 	//Glib::Mutex::Lock lock (print_mutex);
-	if (current_printing_lineno%50 == 0)
-	  signal_now_printing.emit(current_printing_lineno);
+	if (simulation || current_printing_lineno%50 == 0)
+	  m_view->showCurrentPrinting(current_printing_lineno);
+	//signal_now_printing.emit(current_printing_lineno);
       }
     }
     //cerr << ".";
@@ -496,7 +517,8 @@ void Printer::Reset()
 
 void Printer::Print()
 {
-  if (!connected)
+
+  if (!simulation && !connected)
      return;
 
   delete (gcode_iter);
@@ -506,7 +528,9 @@ void Printer::Print()
   Glib::ustring text = gcode_iter->all_text();
 
 
-  if (pyPrintCore) {
+  if (simulation) {
+  }
+  else if (pyPrintCore) {
     PyObject *pValue = NULL;
     PyGILState_STATE gstate = PyGILState_Ensure();
     CHARS (meth, "startprint_text");

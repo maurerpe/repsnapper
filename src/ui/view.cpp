@@ -931,6 +931,11 @@ void View::print_clicked()
   printing_changed();
 }
 
+void View::simulate_clicked()
+{
+  m_printer->Simulate();
+}
+
 // void View::stop_clicked()
 // {
 //   m_printer->StopButton();
@@ -1172,6 +1177,7 @@ View::View(BaseObjectType* cobject,
   // Print tab
   m_builder->get_widget ("p_print", m_print_button);
   connect_button ("p_print",         sigc::mem_fun(*this, &View::print_clicked) );
+  connect_button ("p_simulate",      sigc::mem_fun(*this, &View::simulate_clicked) );
   m_builder->get_widget ("p_pause", m_pause_button);
   connect_tooltoggled("p_pause",     sigc::mem_fun(*this, &View::pause_toggled));
   // m_builder->get_widget ("p_stop", m_stop_button);
@@ -1474,8 +1480,8 @@ void View::setModel(Model *model)
   m_printer = new Printer(this);
   m_printer->signal_temp_changed.connect
     (sigc::mem_fun(*this, &View::temp_changed));
-  m_printer->signal_now_printing.connect
-    (sigc::mem_fun(*this, &View::showCurrentPrinting));
+  // m_printer->signal_now_printing.connect
+  //   (sigc::mem_fun(*this, &View::showCurrentPrinting));
   // m_printer->signal_logmessage.connect
   //   (sigc::mem_fun(*this, &View::showPrinterLog));
 
