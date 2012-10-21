@@ -30,14 +30,13 @@ enum RR_logtype  { LOG_COMM, LOG_ERROR, LOG_ECHO };
 enum TempType { TEMP_NOZZLE, TEMP_BED, TEMP_LAST };
 
 #define PRINTRUN  1
-#define PYSERIAL  0
 // use Glib::IOChannel instead of libreprap
 #define IOCHANNEL 0
 
-// use IOCHANNEL on WIN32
+// use PRINTRUN on WIN32
 #ifdef WIN32
-#undef IOCHANNEL
-#define IOCHANNEL 1
+#undef PRINTRUN
+#define PRINTRUN 1
 #endif
 
 #if PRINTRUN
@@ -111,7 +110,7 @@ class Printer
 	vector<string> find_ports() const;
 
 
-  sigc::signal< void, unsigned long > signal_now_printing;
+	//sigc::signal< void, unsigned long > signal_now_printing;
 
 	bool inhibit_print;
 	sigc::signal< void > signal_inhibit_changed;

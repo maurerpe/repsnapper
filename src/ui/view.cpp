@@ -2003,24 +2003,24 @@ void View::showCurrentPrinting(unsigned long lineno)
 
   //cerr << "CURRENT LINE " << lineno << " of " << m_progress->maximum() << endl;
 #if 1
-  if (lineno == 0) {
-    m_progress->stop(_("Done"));
-  } else {
-    bool cont = true;
-    cont = m_progress->update(lineno, true);
+  bool cont = true;
+  if (lineno%50==0) {
+    cont = m_progress->update(lineno, false);
     if (!cont) { // stop by progress bar
       m_printer->Pause();
       printing_changed();
     }
   }
 #endif
-#if 1
+#if 0
+  // this crashes
   m_model->setCurrentPrintingLine(lineno);
-  if (m_renderer)  m_renderer->queue_draw();
+  //if (m_renderer)  m_renderer->queue_draw();
+  queue_draw();
 #endif
 #if 1
   while(Gtk::Main::events_pending()) {
-    Gtk::Main::iteration();
+    Gtk::Main::iteration(false);
   }
 #endif
 }

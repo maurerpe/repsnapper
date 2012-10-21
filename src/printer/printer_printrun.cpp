@@ -20,7 +20,7 @@
 
 #include "printer_printrun.h"
 
-#define FROMFILE 1
+#define FROMFILE 0
 #if FROMFILE
 #else
 #include "printcore_py.h"
@@ -106,7 +106,7 @@ Printer::Printer(View *view)
   PyRun_SimpleString("from threading import *\n");
 
 
-  Py_InitModule("callbacks", py_methods);
+  //Py_InitModule("callbacks", py_methods);
 
 #if FROMFILE
   cerr << "running file printcore.py ..." << endl;

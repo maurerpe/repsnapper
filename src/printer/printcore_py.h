@@ -42,6 +42,10 @@ from threading import Thread\n\
 from serial import * #Serial, SerialException\n\
 from select import error as SelectError\n\
 import time, getopt, sys\n\
+#import callbacks\n\
+#callbacks.set_currentlineno(223)\n\
+#callbacks.readline(\"line i have read\")\n\
+\n\
 \n\
 class printcore():\n\
     def __init__(self,port=None,baud=None):\n\
@@ -69,7 +73,7 @@ class printcore():\n\
         self.startcb=None#impl ()\n\
         self.endcb=None#impl ()\n\
         self.onlinecb=None#impl ()\n\
-        self.loud=True#emit sent and received lines to terminal\n\
+        self.loud=False#True#emit sent and received lines to terminal\n\
         self.greetings=['start','Grbl ']\n\
         if port is not None and baud is not None:\n\
             #print port, baud\n\
@@ -99,8 +103,7 @@ class printcore():\n\
             self.printer=Serial(self.port,self.baud,timeout=2)\n\
             self.clear=True\n\
             self.online = self.is_online()\n\
-            #thread = Thread(target=self._listen).start()\n\
-            #print \"thread?\",thread\n\
+            #Thread(target=self._listen).start()\n\
 \n\
     def reset(self):\n\
         \"\"\"Reset the printer\n\
@@ -121,18 +124,21 @@ class printcore():\n\
         except SelectError, e:\n\
             if 'Bad file descriptor' in e.args[1]:\n\
                 print \"Can't read from printer (disconnected?).\"\n\
-                return None\n\
+                #return None\n\
             else:\n\
                 print \"error\"\n\
         except SerialException, e:\n\
             print \"Can't read from printer (disconnected?).\"\n\
-            return None\n\
+            #return None\n\
         except OSError, e:\n\
             print \"Can't read from printer (disconnected?).\"\n\
-            return None\n\
+            #return None\n\
+\n\
 \n\
         if(len(line)>1):\n\
             self.log+=[line]\n\
+            #print \"callbacks.readline\", line\n\
+            #callbacks.readline(line)\n\
             if self.recvcb is not None:\n\
                 try:\n\
                     self.recvcb(line)\n\
@@ -181,14 +187,16 @@ class printcore():\n\
 \n\
 \n\
     def _listen(self):\n\
+        print \"_LISTEN\"\n\
         self.clear=True\n\
         self.send_now(\"M105\")\n\
         while(True):\n\
-            time.sleep(1.0)\n\
+            print \"_LISTEN RUNNING\"\n\
+            time.sleep(0.01)\n\
             if(not self.printer or not self.printer.isOpen):\n\
                 break\n\
             if self._listen_single() == None: break\n\
-        #print \"end _listen\"\n\
+        print \"END _LISTEN\"\n\
         self.clear=True\n\
         #callback for disconnect\n\
 \n\
@@ -220,6 +228,7 @@ class printcore():\n\
     def startprint_text(self,text):\n\
         data = text.split(\"\\n\")\n\
         print \"startprint with\",len(data),\"lines\"\n\
+        #print dir(callbacks.set_currentlineno)\n\
         return self.startprint(data)\n\
 \n\
     def pause(self):\n\
@@ -273,6 +282,9 @@ class printcore():\n\
         while(self.printing and self.printer and self.online):\n\
             #print \"print thread\"\n\
             self._sendnext()\n\
+            #print \"calling set_currentlineno\",self.lineno\n\
+            #callbacks.set_currentlineno();\n\
+            #callbacks.set_currentlineno(self.lineno);\n\
         self.log=[]\n\
         self.sent=[]\n\
         if self.endcb is not None:\n\
@@ -283,6 +295,7 @@ class printcore():\n\
         #callback for printing done\n\
 \n\
     def _sendnext(self):\n\
+        #print \"_sendnext\";\n\
         if(not self.printer):\n\
             return\n\
         while not self.clear:\n\
