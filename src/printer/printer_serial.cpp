@@ -163,7 +163,7 @@ bool PrinterSerial::RawConnect( string device, int baudrate ) {
   if ( device_handle == INVALID_HANDLE_VALUE ) {
     char err_str[ 256 ];
     snprintf( err_str, 256, _("Error opening port %s"), device.c_str() );
-    err_str[ 256 ] = '\0';
+    err_str[ 255 ] = '\0';
     
     ostringstream os;
     os << err_str << " (" << GetLastError() << ")"<< endl;
