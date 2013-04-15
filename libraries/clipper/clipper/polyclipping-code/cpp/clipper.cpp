@@ -46,6 +46,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <ostream>
+#include <iostream>
 
 namespace ClipperLib {
 
@@ -2689,6 +2690,7 @@ void SwapIntersectNodes(IntersectNode &int1, IntersectNode &int2)
 
 bool Clipper::FixupIntersectionOrder()
 {
+  int count = 0;
   if ( !m_IntersectNodes->next ) return true;
 
   CopyAELToSEL();
@@ -2706,6 +2708,10 @@ bool Clipper::FixupIntersectionOrder()
       //contain adjacent edges), so swap it with a subsequent intersection ...
       while (int2)
       {
+	if ( count++ > 100000 ) {
+	  std::cerr << "Fixup limit exceded\n";
+	  return false;
+	}
         if (int2->edge1->nextInSEL == int2->edge2 ||
           int2->edge1->prevInSEL == int2->edge2) break;
         else int2 = int2->next;
@@ -2722,7 +2728,7 @@ bool Clipper::FixupIntersectionOrder()
     int1 = int1->next;
     int2 = int1->next;
   }
-
+  
   m_SortedEdges = 0;
 
   //finally, check the last intersection too ...
