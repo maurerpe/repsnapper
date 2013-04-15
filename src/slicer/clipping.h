@@ -18,10 +18,15 @@
 */
 
 #pragma once
+#include "config.h"
 #include "types.h"
 
 // ClipperLib: see http://angusj.com/delphi/clipper.php
-#include <clipper/clipper/polyclipping-code/cpp/clipper.hpp>
+#if HAVE_CLIPPERLIB==1
+  #include <polyclipping/clipper.hpp>
+#else
+  #include <clipper/clipper/polyclipping-code/cpp/clipper.hpp>
+#endif
 
 #include "poly.h"
 
@@ -116,18 +121,18 @@ public:
   static vector<Poly>   getPolys(const ExPoly &expoly);
   static vector<Poly>   getPolys(const vector<ExPoly> &expolys);
   static vector<Poly>   getPolys(const CL::Polygons &cpoly, double z, double extrusionfactor);
-  static vector<ExPoly> getExPolys(const CL::ExPolygons &excpolys, double z,
+  static vector<ExPoly> getExPolys(const CL::PolyTree &ctree, double z,
 				   double extrusionfactor);
 
   static vector<ExPoly> getExPolys(const vector<Poly> &polys,
 				   double z, double extrusionfactor);
   static vector<ExPoly> getExPolys(const vector<Poly> &polys);
-  static CL::ExPolygons getExClipperPolygons(const vector<Poly> &polys);
+  static CL::PolyTree   getClipperTree(const vector<Poly> &polys);
 
   static CL::Polygon    getClipperPolygon (const Poly &poly);
   static CL::Polygons   getClipperPolygons(const vector<Poly> &polys);
   static CL::Polygons   getClipperPolygons(const ExPoly &expoly);
-  static CL::ExPolygons getClipperPolygons(const vector<ExPoly> &expolys);
+  //static CL::PolyTree   getClipperTree(const vector<ExPoly> &expolys);
 
   static double Area(const Poly &poly);
   static double Area(const vector<Poly> &polys);
@@ -135,5 +140,17 @@ public:
   static double Area(const vector<ExPoly> &expolys);
 
   static void ReversePoints(vector<Poly> &polys);
+
+ protected:
+  // old API compatibility
+  // polytree to expolygons
+  struct ExPolygon {
+    CL::Polygon outer;
+    CL::Polygons holes;
+  };
+  typedef std::vector< ExPolygon > ExPolygons;
+  static void AddOuterPolyNodeToExPolygons(const CL::PolyNode *polynode,
+					   ExPolygons& expolygons);
+  static void PolyTreeToExPolygons(const CL::PolyTree * polytree, ExPolygons& expolygons);
 
 };
