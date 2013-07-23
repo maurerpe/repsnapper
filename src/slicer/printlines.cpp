@@ -34,7 +34,13 @@ double PLine<M>::length() const
   if (!arc)
     return from.distance(to);
   else {
-    double radius = from.distance(arccenter);
+    double radius;
+    if (M != 2) {
+      Vector2d from2d(from.x(), from.y());
+      radius = from2d.distance(arccenter);
+    } else {
+      radius = from.distance(arccenter);
+    }
     return radius * angle;
   }
 }
