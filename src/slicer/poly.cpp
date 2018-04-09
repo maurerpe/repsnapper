@@ -178,6 +178,26 @@ void Poly::mirrorX(const Vector3d &center)
 }
 
 
+uint Poly::getFarthestIndex(uint &thisindex) const
+{
+  return getFarthestIndex(vertices[thisindex]);
+}
+
+uint Poly::getFarthestIndex(const Vector2d &from) const
+{
+  uint findex = 0;
+  double maxdist = 0.;
+  for (uint i = 0; i < size(); i++) {
+    double d = from.squared_distance(vertices[i]);
+    if (d > maxdist) {
+      maxdist = d;
+      findex = i;
+    }
+  }
+  return findex;
+}
+
+
 // nearest connection point indices of this and other poly
 // if poly is not closed, only test first and last point
 void Poly::nearestIndices(const Poly &p2, int &thisindex, int &otherindex) const
@@ -205,6 +225,10 @@ uint Poly::nearestDistanceSqTo(const Vector2d &p, double &mindist) const
   // Start with first vertex as closest
   uint nindex = 0;
   mindist = (vertices[0]-p).squared_length();
+  if (std::isnan(mindist)) { // for infinity point p return point 0 and distance 0
+    mindist = 0.;
+    return 0;
+  }
   // check the rest of the vertices for a closer one.
   for (uint i = 1; i < vertices.size(); i++) {
     if (!closed && i != 0 && i != vertices.size()-1) continue;
@@ -261,7 +285,7 @@ double Poly::shortestConnectionSq(const Poly &p2, Vector2d &start, Vector2d &end
 
 double Poly::angleAtVertex(uint i) const
 {
-  return angleBetween(getVertexCircular(i)-getVertexCircular(i-1),
+  return planeAngleBetween(getVertexCircular(i)-getVertexCircular(i-1),
 		      getVertexCircular(i+1)-getVertexCircular(i));
 }
 
@@ -381,7 +405,7 @@ void Poly::addVertexUnique(double x, double y, bool front)
 
 Vector2d const &Poly::getVertexCircular(int index) const
 {
-  int size = vertices.size();
+  uint size = vertices.size();
   index = (index + size) % size;
   //cerr << vertices->size() <<" >  "<< points[pointindex] << endl;
   return vertices[index];
@@ -653,13 +677,13 @@ void Poly::draw_as_surface() const
 void Poly::draw(int gl_type, double z, bool randomized) const
 {
   Vector2d v;
-  uint count = vertices.size();
+  int count = vertices.size();
   if (!closed && gl_type == GL_LINE_LOOP) {
     gl_type = GL_LINES;
     count--;
   }
   glBegin(gl_type);
-  for (uint i=0; i < count; i++){
+  for (int i=0; i < count; i++){
     v = getVertexCircular(i);
     if (randomized) v = random_displaced(v);
     glVertex3f(v.x(),v.y(),z);

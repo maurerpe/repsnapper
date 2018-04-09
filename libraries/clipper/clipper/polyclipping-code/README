@@ -1,6 +1,123 @@
-============================================================
+=====================================================================
 Clipper Change Log
-============================================================
+=====================================================================
+v6.4.2 (27 February 2017) Rev 512
+* Several minor bugfixes: #152 #160 #161 #162 
+
+v6.4 (2 July 2015) Rev 495
+* Numerous generally minor bugfixes 
+
+v6.2.1 (31 October 2014) Rev 482
+* Bugfix in ClipperOffset.Execute where the Polytree.IsHole property 
+  was returning incorrect values with negative offsets
+* Very minor improvement to join rounding in ClipperOffset
+* Fixed CPP OpenGL demo.
+
+v6.2.0 (17 October 2014) Rev 477
+* Numerous minor bugfixes, too many to list. 
+  (See revisions 454-475 in Sourceforge Repository)
+* The ZFillFunction (custom callback function) has had its parameters 
+  changed. 
+* Curves demo removed (temporarily).
+* Deprecated functions have been removed. 
+
+v6.1.5 (26 February 2014) Rev 460
+* Improved the joining of output polygons sharing a common edge 
+  when those common edges are horizontal.
+* Fixed a bug in ClipperOffset.AddPath() which would produce
+  incorrect solutions when open paths were added before closed paths.
+* Minor code tidy and performance improvement
+
+v6.1.4 (6 February 2014)
+* Fixed bugs in MinkowskiSum
+* Fixed minor bug when using Clipper.ForceSimplify.
+* Modified use_xyz callback so that all 4 vertices around an
+  intersection point are now passed to the callback function.
+
+v6.1.3a (22 January 2014) Rev 453
+* Fixed buggy PointInPolygon function (C++ and C# only). 
+  Note this bug only affected the newly exported function, the 
+  internal PointInPolygon function used by Clipper was OK.
+ 
+v6.1.3 (19 January 2014) Rev 452
+* Fixed potential endless loop condition when adding open 
+  paths to Clipper.
+* Fixed missing implementation of SimplifyPolygon function 
+  in C++ code.
+* Fixed incorrect upper range constant for polygon coordinates 
+  in Delphi code.
+* Added PointInPolygon function. 
+* Overloaded MinkowskiSum function to accommodate multi-contour 
+  paths.  
+
+v6.1.2 (15 December 2013) Rev 444
+* Fixed broken C++ header file.
+* Minor improvement to joining polygons.
+
+v6.1.1 (13 December 2013) Rev 441
+* Fixed a couple of bugs affecting open paths that could 
+  raise unhandled exceptions.
+  
+v6.1.0 (12 December 2013)
+* Deleted: Previously deprecated code has been removed. 
+* Modified: The OffsetPaths function is now deprecated as it has 
+  been replaced by the ClipperOffset class which is much more 
+  flexible. 
+* Bugfixes: Several minor bugs have been fixed including 
+  occasionally an incorrect nesting within the PolyTree structure.
+
+v6.0.0 (30 October 2013)
+* Added: Open path (polyline) clipping. A new 'Curves' demo 
+  application showcases this (see the 'Curves' directory). 
+* Update: Major improvement in the merging of 
+  shared/collinear edges in clip solutions (see Execute). 
+* Added: The IntPoint structure now has an optional 'Z' member. 
+  (See the precompiler directive use_xyz.) 
+* Added: Users can now force Clipper to use 32bit integers 
+  (via the precompiler directive use_int32) instead of using 
+  64bit integers.
+* Modified: To accommodate open paths, the Polygon and Polygons 
+  structures have been renamed Path and Paths respectively. The 
+  AddPolygon and AddPolygons methods of the ClipperBase class 
+  have been renamed AddPath and AddPaths respectively. Several 
+  other functions have been similarly renamed. 
+* Modified: The PolyNode Class has a new IsOpen property. 
+* Modified: The Clipper class has a new ZFillFunction property. 
+* Added: MinkowskiSum and MinkowskiDiff functions added. 
+* Added: Several other new functions have been added including 
+  PolyTreeToPaths, OpenPathsFromPolyTree and ClosedPathsFromPolyTree. 
+* Added: The Clipper constructor now accepts an optional InitOptions 
+  parameter to simplify setting properties. 
+* Bugfixes: Numerous minor bugs have been fixed. 
+* Deprecated: Version 6 is a major upgrade from previous versions 
+  and quite a number of changes have been made to exposed structures 
+  and functions. To minimize inconvenience to existing library users, 
+  some code has been retained and some added to maintain backward 
+  compatibility. However, because this code will be removed in a 
+  future update, it has been marked as deprecated and a precompiler 
+  directive use_deprecated has been defined.
+
+v5.1.6 (23 May 2013)
+* BugFix: CleanPolygon function was buggy.
+* Changed: The behaviour of the 'miter' JoinType has been 
+  changed so that when squaring occurs, it's no longer 
+  extended up to the miter limit but is squared off at 
+  exactly 'delta' units. (This improves the look of mitering 
+  with larger limits at acute angles.) 
+* Added: New OffsetPolyLines function
+* Update: Minor code refactoring and optimisations
+
+v5.1.5 (5 May 2013)
+* Added: ForceSimple property to Clipper class
+* Update: Improved documentation  
+
+v5.1.4 (24 March 2013)
+* Update: CleanPolygon function enhanced.
+* Update: Documentation improved.  
+
+v5.1.3 (14 March 2013)
+* Bugfix: Minor bugfixes.
+* Update: Documentation significantly improved.  
 
 v5.1.2 (26 February 2013)
 * Bugfix: PolyNode class was missing a constructor. 

@@ -121,9 +121,22 @@ Executable (repsnapper) will be left in the top folder. Install with "sudo make 
 
 ==== Fedora ====
 
+
+====== Fedora 17 and above ======
+Repsnapper is in official Fedora 17 and above repositories, so you can just simply run:
+
+      yum install repsnapper
+
+Sometimes you can get a fresher version (but not very tested) by enabling testing updates:
+
+      yum install repsnapper --enablerepo updates-testing
+
+After the installation you should see Repsnapper in Applications (Graphics), or you can run the `repsnapper` command.
+
+====== Older Fedora versions ======
+
 (most probably extremely outdated)
 
-===== Installing from yum =====
 Repsnapper was packaged by jebba for Fedora 14 at this repository: http://repos.fedorapeople.org/repos/jebba/reprap/
 
 	   su
@@ -494,7 +507,7 @@ Connect to printer::
 Power on::
 
 Print::
-    Starts sending the GCode from the "Result" tab under the "GCode" tab to the ptiner.
+    Starts sending the GCode from the "Result" tab under the "GCode" tab to the printer.
 
 Pause::
     Pauses communication with the printer.
@@ -632,7 +645,7 @@ Once an STL is loaded, you can move it to further onto the build platform, rotat
     * To move around individual objects or a group of objects use Shift and the left mouse button.
     * Or tab to the translate box and enter absolute values into the X and Y fields.
     * If the object is not on the Platform, you can also try rotating it about the Z axis to automatically make it touch the Z=0 plane.
-    * Everything below the Z=0 plane will not be sliced, so you will not get negative Z values in youe GCode.
+    * Everything below the Z=0 plane will not be sliced, so you will not get negative Z values in your GCode.
 
     * Duplicate adds another copy of the STL beside the first.
 

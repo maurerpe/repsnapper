@@ -60,14 +60,16 @@ public:
 
   bool pointInPolygons(const Vector2d &p) const;
 
+  Vector2d getRandomPolygonPoint() const;
+  Vector2d getFarthestPolygonPoint(const Vector2d &from) const;
     /* void setBBox(Vector2d min, Vector2d max); */
   /* void setBBox(vector<Vector2d> minmax); */
   /* void setBBox(Vector3d min, Vector3d max); */
 
-  // ClipperLib::Polygons getClipperPolygons(const vector<Poly> polygons,
+  // ClipperLib::Paths getClipperPolygons(const vector<Poly> polygons,
   // 					  bool reverse=true) const;
   vector<Poly> getMergedPolygons(const vector<Poly> &polys);
-  //ClipperLib::Polygons getMergedPolygons(const ClipperLib::Polygons cpolys) const;
+  //ClipperLib::Paths getMergedPolygons(const ClipperLib::Paths cpolys) const;
   void mergeFullPolygons(bool bridge);
   void mergeSupportPolygons();
   // vector<Poly> getFillPolygons(const vector<Poly> polys, long dist) const;
@@ -106,9 +108,9 @@ public:
   vector< vector<Poly> >  GetShellPolygons() const {return shellPolygons; }
   vector<Poly>  GetShellPolygonsCirc(int number) const;
   vector<Poly>  GetSkirtPolygons() const {return skirtPolygons; };
-  const vector<Poly> * GetInnerShell() const;
-  const vector<Poly> * GetOuterShell() const;
-  Poly GetHullPolygon() const {return hullPolygon;};
+  const vector<Poly> &GetInnerShell() const;
+  const vector<Poly> &GetOuterShell() const;
+  const Poly &GetHullPolygon() const {return hullPolygon;};
 
   vector<Poly> getOverhangs() const;
 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2013 Richard Hughes <richard@hughsie.com> -->
+<application>
+  <id type="desktop">repsnapper.desktop</id>
+  <licence>CC0</licence>
+  <name>Repsnapper</name>
+  <description>
+    <_p>
+      RepSnapper is an alternative host software for controlling the RepRap
+      open source 3D printer.
+    </_p>
+    <_p>
+      OpenGL User Interface (GTK), Slicer and Toolpath Generator written in C++.
+      See also http://reprap.org/wiki/RepSnapper_Manual:Introduction
+    </_p>
+  </description>
+  <screenshots>
+    <screenshot type="default">http://reprap.org/mediawiki/images/6/6b/Repsnapper.png</screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/timschmidt/repsnapper</url>
+</application>

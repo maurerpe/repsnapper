@@ -88,7 +88,7 @@ void Infill::addPolys(double z, const vector<Poly> &polys, InfillType type,
 #ifdef _OPENMP
   omp_set_lock(&save_lock);
 #endif
-  ClipperLib::Polygons patterncpolys =
+  ClipperLib::Paths patterncpolys =
     makeInfillPattern(type, polys, infillDistance, offsetDistance, rotation);
 #ifdef _OPENMP
   omp_unset_lock(&save_lock);
@@ -119,7 +119,7 @@ void Infill::addPolys(double z, const vector<ExPoly> &expolys, InfillType type,
 //   this->infillDistance = infillDistance;
 
 //   omp_set_lock(&save_lock);
-//   ClipperLib::Polygons patterncpolys =
+//   ClipperLib::Paths patterncpolys =
 //     makeInfillPattern(type, polys, infillDistance, offsetDistance, rotation);
 //   addPolys(z, polys, patterncpolys, offsetDistance);
 //   omp_unset_lock(&save_lock);
@@ -135,7 +135,7 @@ void Infill::addPolys(double z, const vector<Poly> &polys,
 
 // clip infill pattern polys against polys
 void Infill::addPolys(double z, const vector<Poly> &polys,
-		      const ClipperLib::Polygons &patterncpolys,
+		      const ClipperLib::Paths &patterncpolys,
 		      double offsetDistance)
 {
   Clipping clipp;
@@ -151,13 +151,13 @@ void Infill::addPolys(double z, const vector<Poly> &polys,
 }
 
 // generate infill pattern as a vector of polygons
-ClipperLib::Polygons Infill::makeInfillPattern(InfillType type,
+ClipperLib::Paths Infill::makeInfillPattern(InfillType type,
 					       const vector<Poly> &tofillpolys,
 					       double infillDistance,
 					       double offsetDistance,
 					       double rotation)
 {
-  ClipperLib::Polygons cpolys;
+  ClipperLib::Paths cpolys;
   m_tofillpolys = tofillpolys;
   m_type = type;
 
@@ -476,7 +476,7 @@ vector<Poly> Infill::sortedpolysfromlines(const vector<infillline> &lines, doubl
   vector<Poly> clippolys = Clipping::getOffset(m_tofillpolys,0.1);
 
   vector<bool> done(count);
-  for (uint i = 0; i < count; i++ ) done[i]==false;
+  for (uint i = 0; i < count; i++ ) done[i] = false;
   Poly p(z, extrusionfactor);
   p.setClosed(false);
   p.addVertex(lines[0].from);
@@ -583,7 +583,7 @@ void Infill::addInfillPolys(const vector<Poly> &polys)
   	for (uint i = 0; i < polys[j].size() ; i++ )
   	  {
 	    Vector2d l = (polys[j][i+1] - polys[j][i]);
-	    double langle = angleBetween(UNITX, l) + M_PI/2;
+	    double langle = planeAngleBetween(UNITX, l) + M_PI/2;
 	    if (sameAngle(langle,      m_angle, 0.2) ||
 		sameAngle(langle+M_PI, m_angle, 0.2))
   	      {

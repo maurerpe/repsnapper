@@ -1,7 +1,7 @@
 /*
     This file is a part of the RepSnapper project.
     Copyright (C) 2010 Kulitorum
-    Copyright (C) 2012 martin.dieringer@gmx.de
+    Copyright (C) 2013 martin.dieringer@gmx.de
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -89,13 +89,11 @@ bool fit_arc(const int m_dat, const arc_data_struct data,
 {
   lm_status_struct status;
   lm_control_struct control = lm_control_double;
-  control.printflags = 0; // 3 = monitor status (+1) and parameters (+2)
-  control.maxcall = 200;
   control.ftol = sq_error; // max square error sum
 
   // printf( "Fitting:\n" );
   lmmin( n_par, par, m_dat, (const void*) &data,
-	 evaluate_arcfit, &control, &status, lm_printout_std );
+	 evaluate_arcfit, &control, &status);
 
   result_center.x() = par[0];
   result_center.y() = par[1];
@@ -222,57 +220,26 @@ void rotArcballTrans(Matrix4fT &matfT,  const Vector3d &axis, double angle)
   }
 }
 
-// // from V1 to V2
-// template< size_t M, typename T >
-// long double angleBetween(const vmml::vector< M, T > V1, const vmml::vector< M, T > V2 )
-// {
-//   long double dotproduct =  V1.dot(V2);
-//   long double length = V1.length() * V2.length();
-//   long double quot = dotproduct / length;
-//   if (quot > 1  && quot < 1.0001) quot = 1; // strange case where acos => NaN
-//   if (quot < -1 && quot > -1.0001) quot = -1;
-//   long double result = acosl( quot ); // 0 .. pi
-//   if (isleftof(T(), V2, V1))
-//       result = -result;
-//   return result;
-// }
-
-// from V1 to V2
-long double angleBetween(const Vector3d &V1, const Vector3d &V2)
-{
-  long double dotproduct =  V1.dot(V2);
-  long double length = V1.length() * V2.length();
-  if (length==0) return 0;
-  long double quot = dotproduct / length;
-  if (quot > 1  && quot < 1.0001) quot = 1; // strange case where acos => NaN
-  if (quot < -1 && quot > -1.0001) quot = -1;
-  long double result = acosl( quot ); // 0 .. pi
-  if (isleftof(Vector3d(0,0,0), V2, V1))
-      result = -result;
-  return result;
-}
-
-long double angleBetween(const Vector2d &V1, const Vector2d &V2)
-{
-  long double dotproduct =  V1.dot(V2);
-  long double length = V1.length() * V2.length();
-  if (length==0) return 0;
-  long double quot = dotproduct / length;
-  if (quot > 1  && quot < 1.0001) quot = 1;
-  if (quot < -1 && quot > -1.0001) quot = -1;
-  long double result = acosl( quot ); // 0 .. pi
-  if (isleftof(Vector2d(0,0), V2, V1))
-      result = -result;
-  return result;
-}
 
 // return A halfway rotated around center in direction of B
 Vector2d angle_bipartition(const Vector2d &center, const Vector2d &A, const Vector2d &B)
 {
-  double angle = angleBetween(center-A, B-center) / 2;
+  double angle = planeAngleBetween(center-A, B-center) / 2;
   return rotated(A, center, angle);
 }
 
+long double planeAngleBetween(const Vector2d &V1, const Vector2d &V2)
+{
+    long double dotproduct =  V1.dot(V2);
+    long double length = V1.length() * V2.length();
+    long double quot = dotproduct / length;
+    if (quot > 1  && quot < 1.0001) quot = 1; // strange case where acos => NaN
+    if (quot < -1 && quot > -1.0001) quot = -1;
+    long double result = acosl( quot ); // 0 .. pi
+    if (isleftof(Vector2d(0,0), V2, V1))
+        result = -result;
+    return result;
+}
 
 
 // is B left of A wrt center?
@@ -280,10 +247,6 @@ bool isleftof(const Vector2d &center, const Vector2d &A, const Vector2d &B)
 {
   double position = (B.x()-A.x())*(center.y()-A.y()) - (B.y()-A.y())*(center.x()-A.x());
   return (position >= 0);
-}
-bool isleftof(const  Vector3d &center, const Vector3d &A, const Vector3d &B)
-{
-  return ((B-A).cross(center-A).z() > 0);
 }
 // // http://www.cs.uwaterloo.ca/~tmchan/ch3d/ch3dquad.cc
 // double turn(Point p, Point q, Point r) {  // <0 iff cw
@@ -497,9 +460,9 @@ bool IntersectXY(const Vector2d &p1, const Vector2d &p2,
 // (inSegment, intersect2D_Segments and dist3D_Segment_to_Segment)
 // are licensed as:
 //
-// Copyright 2001, softSurfer (www.softsurfer.com)
-// This code may be freely used and modified for any purpose
-// providing that this copyright notice is included with it.
+// Copyright 2001 softSurfer, 2012-13 Dan Sunday
+// This code may be freely used, distributed and modified for any
+// purpose providing that this copyright notice is included with it.
 // SoftSurfer makes no warranty for this code, and cannot be held
 // liable for any real or imagined damage resulting from its use.
 // Users of this code must verify correctness for their application.
@@ -1004,17 +967,19 @@ vector<Triangle> getTriangles(p2t::CDT &cdt, double z)
 int triangulate(const vector<Poly> &polys, vector< vector<Triangle> > &triangles,
 		double z)
 {
-  vector<ExPoly> expolys = Clipping::getExPolys(polys, 0, 0);
+  vector<ExPoly> expolys = Clipping::getExPolys(polys, z, 0);
   cerr << expolys.size() << endl;
   for (uint i = 0; i<expolys.size(); i++) {
     vector<p2t::Point*> outerpoints = getP2Tpoints(expolys[i].outer);
-    p2t::CDT cdt(outerpoints);
-    for (uint h = 0; h < expolys[i].holes.size(); h++) {
-      vector<p2t::Point*> holespoints = getP2Tpoints(expolys[i].holes[h]);
-      cdt.AddHole(holespoints);
+    if(outerpoints.size() > 0) {
+      p2t::CDT cdt(outerpoints);
+      for (uint h = 0; h < expolys[i].holes.size(); h++) {
+        vector<p2t::Point*> holespoints = getP2Tpoints(expolys[i].holes[h]);
+        cdt.AddHole(holespoints);
+      }
+      cdt.Triangulate();
+      triangles.push_back(getTriangles(cdt, z));
     }
-    cdt.Triangulate();
-    triangles.push_back(getTriangles(cdt, z));
   }
   return triangles.size();
 }
@@ -1366,7 +1331,7 @@ void glDrawCairoSurface(const Cairo::RefPtr<Cairo::ImageSurface> surface,
 			const Vector2d &min, const Vector2d &max,
 			const double z)
 {
-  if (surface==0) return;
+  if (!surface) return;
   int w = surface->get_width();
   int h = surface->get_height();
   unsigned char * data = surface->get_data();
@@ -1402,14 +1367,18 @@ int getCairoSurfaceDatapoint(const Cairo::RefPtr<Cairo::ImageSurface> surface,
 			     const Vector2d &min, const Vector2d &max,
 			     const Vector2d &p)
 {
-  if (surface==0) return 0;
+  if (!surface) return 0;
   const int w = surface->get_stride();
   const int h = surface->get_height();
   const unsigned char * data = surface->get_data();
   const Vector2d diag = max - min;
   const Vector2d relp = p - min;
-  const int ipx = (int)(relp.x() / diag.x() * (double)w);
-  const int ipy = (int)(relp.y() / diag.y() * (double)h);
+  int ipx = (int)(relp.x() / diag.x() * (double)w);
+  int ipy = (int)(relp.y() / diag.y() * (double)h);
+  if (ipx < 0) ipx = 0;
+  if (ipy < 0) ipy = 0;
+  if (ipx >= w) ipx = w-1;
+  if (ipy >= h) ipy = h-1;
   int value = data[ipy*w + ipx];
   return value;
 }

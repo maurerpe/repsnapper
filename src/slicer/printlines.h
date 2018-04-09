@@ -49,7 +49,7 @@ public:
 
   short arc; // -1: ccw arc, 1: cw arc, 0: not an arc
   double angle; // angle of line (in 2d lines), or arc angle
-  Vector2d arccenter; // always 2d, the arc is a 2d rotation
+  vmml::vector<M, double> arccenter;
 
 
   double absolute_extrusion; // additional absolute extrusion /mm (retract/repush f.e.)
@@ -58,20 +58,22 @@ public:
 
   // virtual vector< PLine > division(double length) const;
 
-  vmml::vector<M, double> dir() const { return to - from; }
+  vmml::vector<M, double> dir() const {
+      return vmml::vector<M, double>(to) - vmml::vector<M, double>(from);
+  }
   vmml::vector<M, double> splitpoint(double at_length) const;
 
-  double time() const;
-  double lengthSq() const;
-  double length() const;
+  virtual double time() const;
+  virtual double lengthSq() const;
+  virtual double length() const;
 
   bool is_command() const {return (area == COMMAND);}
 
   void move_to(const vmml::vector<M, double> &from_,
-	       const vmml::vector<M, double> &to_,
-	       const double angle = 0);
+	       const vmml::vector<M, double> &to_);
 
-  double calcangle() const;
+protected:
+  void calcangle();
   // virtual bool is_move() const;
   // virtual string info() const;
 };
@@ -97,14 +99,14 @@ class PLine3 : public PLine<3>
   Vector3d arcIJK() const;  // if is an arc
 
   int getCommands(Vector3d &lastpos, vector<Command> &commands,
-		  const Settings &settings) const;
+		  const double &minspeed, const double &movespeed,
+		  const double &minZspeed, const double &maxZspeed,
+		  const double &maxAOspeed, bool useTCommand) const;
 
   // // not used
   // string GCode(Vector3d &lastpos, double &lastE, double feedrate,
   // 	       double minspeed, double maxspeed, double movespeed,
   // 	       bool relativeE) const;
-
-  double calcangle() const {return angle;}
 
   void addAbsoluteExtrusionAmount(double amount, double max_absspeed, double time=0);
   double addMaxAbsoluteExtrusionAmount(double max_absspeed);
@@ -137,8 +139,7 @@ class PLine2 : public PLine<2>
   // arc
   PLine2(PLineArea area_, const uint extruder_no,
 	const Vector2d &from, const Vector2d &to, double speed,
-	double feedratio, short arc, const Vector2d &arccenter, double angle,
-	double lifted = 0.);
+	double feedratio, const Vector2d &arccenter, bool ccw, double lifted = 0.);
 
   PLine2(const PLine2 &rhs);
 
@@ -148,8 +149,7 @@ class PLine2 : public PLine<2>
   vector< PLine2 > division(const Vector2d &point) const;
   vector< PLine2 > division(const vector<Vector2d> &points) const;
 
-  //double calcangle() const;
-  double angle_to(const PLine2 rhs) const;
+  double angle_to(const PLine2 &rhs) const;
   bool is_noop() const;
   bool is_move() const {return (abs(feedratio) < 0.00001);}
   string info() const;
@@ -279,7 +279,7 @@ class Printlines
   {
     double totaldistance = 0;
     for (uint j = from; j <= to; j++)
-    totaldistance += lines[j].length();
+      totaldistance += lines[j].length();
     return totaldistance;
   }
 
@@ -306,9 +306,10 @@ class Printlines
   void getLines(const vector<PLine2> &lines,
 		vector<PLine3> &plines, double extrusion_per_mm) const;
 
-  double totalLength(const vector<PLine2> &lines) const;
-  double totalSeconds(const vector<PLine2> &lines) const;
-  double totalSecondsExtruding(const vector<PLine2> &lines) const;
+  static double totalLength(const vector<PLine2> &lines);
+  static double totalLength(const vector<PLine3> &lines);
+  static double totalSeconds(const vector<PLine2> &lines);
+  static double totalSecondsExtruding(const vector<PLine2> &lines);
 
   static double total_Extrusion(const vector< PLine3 > &lines);
   static double total_rel_Extrusion(const vector< PLine3 > &lines);

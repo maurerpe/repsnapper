@@ -21,6 +21,9 @@
 #include <gtkmm.h>
 #include "prefs_dlg.h"
 
+#define MULTI_SETTINGS 0 // test some GUI / hardware selector fun
+
+#if MULTI_SETTINGS
 namespace {
 
   // Find all the .conf hardware settings templates
@@ -38,7 +41,7 @@ namespace {
 	if (!entries)
 	  continue;
 	Glib::RefPtr<Gio::FileInfo> info;
-	while (info = entries->next_file()) {
+	while ( (info = entries->next_file()) ) {
 	  if (Platform::has_extension(info->get_name(), "conf"))
 	    ret.push_back(Glib::build_filename(settings_name,info->get_name()));
 	}
@@ -47,14 +50,14 @@ namespace {
     return ret;
   }
 }
+#endif
 
 void PrefsDlg::handle_response(int, Gtk::Dialog *dialog)
 {
   dialog->hide();
 }
 
-PrefsDlg::PrefsDlg(Model *model, Glib::RefPtr<Gtk::Builder> &builder)
-  : m_model (model)
+PrefsDlg::PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder)
 {
   builder->get_widget ("preferences_dlg", m_preferences_dlg);
   builder->get_widget ("settings_icons", m_settings_icons);
@@ -72,7 +75,7 @@ PrefsDlg::~PrefsDlg()
 bool
 PrefsDlg::load_settings()
 {
-#if 0 // test some GUI / hardware selector fun
+#if MULTI_SETTINGS
   if (!m_settings.empty())
     return false;
 
@@ -84,7 +87,8 @@ PrefsDlg::load_settings()
     fprintf (stderr, "load from %s\n", (*i).c_str());
     try {
       set->load_settings(Gio::File::create_for_path(*i));
-      fprintf(stderr, "settings '%s' icon '%s'\n", set->Name.c_str(), set->Image.c_str());
+      cerr << "settings '" << set->get_string("Global","SettingsName")
+	   << "' icon '"   << set->get_string("Global","SettingsImage") << "'\n";
       m_settings.push_back(set);
     } catch (...) {
       g_warning ("Error parsing '%s'", i->c_str());
@@ -106,7 +110,7 @@ PrefsDlg::load_settings()
 
     Gtk::Button *button = new Gtk::ToggleButton();
     Gtk::VBox *box = new Gtk::VBox();
-    Gtk::Label *label = new Gtk::Label((*set)->Name);
+    Gtk::Label *label = new Gtk::Label((*set)->get_string("Global","SettingsName"));
     box->pack_end(*label, true, true);
     Gtk::Image *image = new Gtk::Image(pixbuf);
     box->pack_end(*image, true, true);

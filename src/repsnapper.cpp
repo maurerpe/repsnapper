@@ -176,7 +176,7 @@ int main(int argc, char **argv)
   try {
     std::string user_config_dir = Glib::build_filename (Glib::get_user_config_dir(), "repsnapper");
     Gio::File::create_for_path(user_config_dir)->make_directory_with_parents();
-  } catch(Gio::Error e) {
+  } catch(Gio::Error &e) {
     switch(e.code()) {
     case Gio::Error::EXISTS:
       // Directory has already been created.  Normal.
@@ -198,24 +198,23 @@ int main(int argc, char **argv)
 
   std::string user_config_file = Glib::build_filename (user_config_bits);
   Glib::RefPtr<Gio::File> conf = Gio::File::create_for_path(user_config_file);
+  Glib::RefPtr<Gio::File> global_conf = find_global_config("repsnapper.conf");
+  if(!global_conf) {
+    Gtk::MessageDialog dialog (_("Couldn't find global configuration!"),
+			       false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
+    dialog.set_secondary_text (_("It is likely that repsnapper is not correctly installed."));
+    dialog.run();
+    return 1;
+  }
 
   try {
-    Glib::RefPtr<Gio::File> global = find_global_config("repsnapper.conf");
-    if(!global) {
-      // Don't leave an empty config file behind
-      conf->remove();
-      Gtk::MessageDialog dialog (_("Couldn't find global configuration!"),
-				 false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
-      dialog.set_secondary_text (_("It is likely that repsnapper is not correctly installed."));
-      dialog.run();
-      return 1;
-    }
-
-    global->copy(conf);
-  } catch(Gio::Error e) {
+    // try to copy to user config, if it doesn't exist ...
+    if (!conf->query_exists())
+        global_conf->copy(conf);
+  } catch(Gio::Error &e) {
     switch(e.code()) {
     case Gio::Error::EXISTS:
-      // The user already has a config.  This is the normal case.
+      // Forget about it, the user already has a config.  This is the normal case.
       break;
 
     case Gio::Error::PERMISSION_DENIED:
@@ -225,14 +224,6 @@ int main(int argc, char **argv)
                                 Gtk::MESSAGE_WARNING, Gtk::BUTTONS_CLOSE);
       dialog.set_secondary_text(e.what() + _("\nFalling back to global config. Settings will not be saved."));
       dialog.run();
-      conf = find_global_config("repsnapper.conf");
-      if(!conf) {
-        Gtk::MessageDialog dialog (_("Couldn't find global configuration!"), false,
-                                  Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
-        dialog.set_secondary_text (_("It is likely that repsnapper is not correctly installed."));
-        dialog.run();
-        return 1;
-      }
       break;
     }
 
@@ -252,6 +243,9 @@ int main(int argc, char **argv)
   if (opts.settings_path.size() > 0)
     conf = Gio::File::create_for_path(opts.settings_path);
 
+  // first load global config to make sure all settings exist
+  if (global_conf->query_exists())
+    model->LoadConfig(global_conf);
   if (conf->query_exists())
     model->LoadConfig(conf);
 
@@ -262,7 +256,7 @@ int main(int argc, char **argv)
   }
 
   if (opts.printerdevice_path.size() > 0) {
-    model->settings.Hardware.PortName = opts.printerdevice_path;
+    model->settings.set_string("Hardware","PortName",opts.printerdevice_path);
   }
 
   if (!opts.use_gui) {

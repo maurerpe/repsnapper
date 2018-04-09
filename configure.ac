@@ -1,20 +1,24 @@
 AC_PREREQ(2.63)
-AC_INIT([repsnapper],[2.2.0],[https://github.com/timschmidt/repsnapper], [repsnapper], [https://github.com/timschmidt/repsnapper])
+AC_INIT([repsnapper],[2.5],[https://github.com/timschmidt/repsnapper], [repsnapper], [https://github.com/timschmidt/repsnapper])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/repsnapper.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 dnl AC_CONFIG_AUX_DIR([config])
 
+AC_CHECK_HEADERS([fcntl.h float.h limits.h memory.h stdlib.h string.h sys/ioctl.h sys/time.h termios.h unistd.h asm/termbits.h])
+
 AM_INIT_AUTOMAKE
 
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
 # Needed for per-target cflags, like in gnomeshell-taskpanel
 AM_PROG_CC_C_O
+
 
 # Initialize libtool
 LT_PREREQ([2.2.6])
@@ -25,6 +29,14 @@ AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",[The prefix for our gettext translation domains.])
 case "$host_os" in
 freebsd*)
+# Using clang:
+  CC=clang40
+  CPP=clang-cpp40
+  CXX=clang++40
+# or gcc5:
+#  CC=gcc5
+#  CPP=cpp5
+#  CXX=g++5
   dnl FreeBSD specific hack to search for libintl.h in /usr/local/include
   CPPFLAGS="$CPPFLAGS -I/usr/local/include"
   ;;
@@ -35,6 +47,7 @@ AM_GLIB_GNU_GETTEXT
 PKG_PROG_PKG_CONFIG([0.22])
 
 AC_LANG_CPLUSPLUS
+AC_TYPE_SSIZE_T
 
 dnl check for installed clipperlib newer than 5.1.0 (has PolyNode)
 AC_DEFINE([HAVE_CLIPPERLIB],[0],[Have external clipper])
@@ -82,7 +95,7 @@ freebsd*)
 # -lGLU -lGL -lglut"
   EXTRA_LDFLAGS="-L/usr/local/lib"
   CFLAGS="$CFLAGS -I/usr/local/include"
-  CXXFLAGS="$CXXFLAGS -I/usr/local/include"
+  CXXFLAGS="$CXXFLAGS --std=c++11 -I/usr/local/include"
   CPPFLAGS="$CPPFLAGS -I/usr/local/include"
 #  AC_CHECK_HEADER(GL/glut.h, , AC_MSG_ERROR([cannot find headers for freeglut]))
   ;;
@@ -99,7 +112,7 @@ Darwin*)
   GL_LIBS="-L/usr/lib"
 # -lGLU -lGL -lglut"
   EXTRA_LDFLAGS=
-  EXTRA_CFLAGS=
+  EXTRA_CFLAGS=--std=c++11
 #  AC_CHECK_HEADER(GL/glut.h, , AC_MSG_ERROR([cannot find headers for freeglut]))
   ;;
 esac

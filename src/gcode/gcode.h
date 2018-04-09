@@ -28,9 +28,6 @@
 
 #include "command.h"
 
-class GCodeImpl;
-class RepRapSerial;
-
 class GCodeIter
 {
   Glib::RefPtr<Gtk::TextBuffer> m_buffer;
@@ -64,7 +61,8 @@ public:
 	      int layer=-1, bool liveprinting=false,
 	      int linewidth=3);
   void drawCommands(const Settings &settings, uint start, uint end,
-		    bool liveprinting, int linewidth, bool arrows, bool boundary=false);
+		    bool liveprinting, int linewidth, bool arrows, bool boundary=false,
+                    bool onlyZChange = false);
   void MakeText(string &GcodeTxt, const Settings &settings,
 		ViewProgress * progress);
 
