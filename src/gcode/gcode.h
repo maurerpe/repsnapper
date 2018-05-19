@@ -54,6 +54,9 @@ class GCode
 public:
   GCode();
 
+  void Parse(Model *model, const vector<char> E_letters,
+	     ViewProgress *progress, istream &is);
+  
   void Read  (Model *model, const vector<char> E_letters,
 	      ViewProgress *progress, string filename);
   //void Write (Model *model, string filename);

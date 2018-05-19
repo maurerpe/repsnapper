@@ -132,6 +132,7 @@ Glib::RefPtr<Gio::File> find_global_config(const std::string filename) {
   for (std::vector<std::string>::const_iterator i = dirs.begin();
        i != dirs.end(); ++i) {
     std::string f_name = Glib::build_filename (*i, filename);
+    cout << "Trying " << f_name << endl;
     f = Gio::File::create_for_path(f_name);
     if(f->query_exists()) {
       return f;
@@ -194,11 +195,11 @@ int main(int argc, char **argv)
   std::vector<std::string> user_config_bits(3);
   user_config_bits[0] = Glib::get_user_config_dir();
   user_config_bits[1] = "repsnapper";
-  user_config_bits[2] = "repsnapper.conf";
+  user_config_bits[2] = "repsnapper3.conf";
 
   std::string user_config_file = Glib::build_filename (user_config_bits);
   Glib::RefPtr<Gio::File> conf = Gio::File::create_for_path(user_config_file);
-  Glib::RefPtr<Gio::File> global_conf = find_global_config("repsnapper.conf");
+  Glib::RefPtr<Gio::File> global_conf = find_global_config("repsnapper3.conf");
   if(!global_conf) {
     Gtk::MessageDialog dialog (_("Couldn't find global configuration!"),
 			       false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
@@ -305,7 +306,7 @@ int main(int argc, char **argv)
 
   Glib::RefPtr<Gio::File> iconfile = find_global_config("repsnapper.svg");
   mainwin->set_icon_file(iconfile);
-  mainwin->set_title("Repsnapper");
+  mainwin->set_title("Repsnapper3");
 
   if (opts.stl_input_path.size() > 0) {
     model->Read(Gio::File::create_for_path(opts.stl_input_path));

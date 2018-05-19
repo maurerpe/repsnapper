@@ -34,10 +34,6 @@
 #include "connectview.h"
 #include "widgets.h"
 
-#include "gitversion.h"
-
-
-
 bool View::on_delete_event(GdkEventAny* event)
 {
   Gtk::Main::quit();
@@ -947,8 +943,6 @@ void View::update_settings_gui()
   Gtk::AboutDialog *about;
   m_builder->get_widget ("about_dialog", about);
   about->set_version(VERSION);
-  if (GIT_COMMIT != "Unknown")
-    about->set_comments("git version:\n"+GIT_COMMIT + "\nDate:\n" + GIT_COMMIT_DATE);
 
   Gtk::Toolbar *toolbar;
   m_builder->get_widget ("i_custom_toolbar", toolbar);

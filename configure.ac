@@ -1,24 +1,17 @@
 AC_PREREQ(2.63)
-AC_INIT([repsnapper],[2.5],[https://github.com/timschmidt/repsnapper], [repsnapper], [https://github.com/timschmidt/repsnapper])
+AC_INIT([repsnapper],[3.0_alpha1],[https://github.com/maurerpe/repsnapper], [repsnapper], [https://github.com/maurerpe/repsnapper])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/repsnapper.cpp])
 AC_CONFIG_MACRO_DIR([m4])
-dnl AC_CONFIG_AUX_DIR([config])
 
 AC_CHECK_HEADERS([fcntl.h float.h limits.h memory.h stdlib.h string.h sys/ioctl.h sys/time.h termios.h unistd.h asm/termbits.h])
 
 AM_INIT_AUTOMAKE
 
-m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
-
-
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
-# Needed for per-target cflags, like in gnomeshell-taskpanel
-AM_PROG_CC_C_O
-
 
 # Initialize libtool
 LT_PREREQ([2.2.6])
@@ -27,20 +20,6 @@ LT_INIT([disable-static])
 GETTEXT_PACKAGE=repsnapper
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",[The prefix for our gettext translation domains.])
-case "$host_os" in
-freebsd*)
-# Using clang:
-  CC=clang40
-  CPP=clang-cpp40
-  CXX=clang++40
-# or gcc5:
-#  CC=gcc5
-#  CPP=cpp5
-#  CXX=g++5
-  dnl FreeBSD specific hack to search for libintl.h in /usr/local/include
-  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-  ;;
-esac
 IT_PROG_INTLTOOL(0.26)
 AM_GLIB_GNU_GETTEXT
 
@@ -64,59 +43,26 @@ dnl Set a define if we need to include gdkkeysyms-compat.h
 PKG_CHECK_MODULES(GTK_NEW_KEYSYMS, [gtk+-2.0 >= 2.21.8],
   [AC_DEFINE([HAVE_GTK_NEW_KEYSYMS], [1], [Need to include gdkkeysyms-compat.h]) ],
   [HAVE_GTK_NEW_KEYSYMS=no])
-dnl m4_include([ax_boost_base.m4])
-dnl AX_BOOST_BASE([1.45],
-dnl 	[PKG_CHECK_MODULES([OPENVRML], [openvrml],
-dnl 			      [AC_DEFINE([HAVE_OPENVRML], [1], [Use OpenVRML])],
-dnl 			      [AC_DEFINE([NO_VRML], [1], [Without OpenVRML])])],
-dnl )
 
 PKG_CHECK_MODULES(XMLPP, libxml++-2.6 >= 2.10.0)
-# AC_SUBST(XMLPP_CFLAGS)
-# AC_SUBST(XMLPP_LIBS)
-
-# PKG_CHECK_MODULES(GTS, gts >= 0.7.6)
 
 AC_OPENMP()
 
 PKG_CHECK_MODULES(LIBZIP, libzip >= 0.10)
 
-case "$host_os" in
-mingw*)
-  GL_LIBS="-lopengl32"
-# -lglu32 -lglut32"
-  EXTRA_LDFLAGS="-Wl,-subsystem,windows -shared-libgcc"
-  EXTRA_CFLAGS="-fexceptions -mthreads"
-# AC_CHECK_HEADER(GL/glut.h, , AC_MSG_ERROR([cannot find headers for freeglut]))
-  WIN32_BUILD=yes
-  ;;
-freebsd*)
-  GL_LIBS="-L/usr/local/lib"
-# -lGLU -lGL -lglut"
-  EXTRA_LDFLAGS="-L/usr/local/lib"
-  CFLAGS="$CFLAGS -I/usr/local/include"
-  CXXFLAGS="$CXXFLAGS --std=c++11 -I/usr/local/include"
-  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-#  AC_CHECK_HEADER(GL/glut.h, , AC_MSG_ERROR([cannot find headers for freeglut]))
-  ;;
-Darwin*)
-  GL_LIBS="-L/usr/local/lib"
-# -lGLU -lOpenGL -lGLUT -lglut"
-  EXTRA_LDFLAGS="-L/usr/local/lib -L/opt/homebrew/lib"
-  CFLAGS="$CFLAGS -I/usr/local/include -I/opt/homebrew/include"
-  CXXFLAGS="$CXXFLAGS -I/usr/local/include -I/opt/homebrew/include"
-  CPPFLAGS="$CPPFLAGS -I/usr/local/include -I/opt/homebrew/include"
-#  AC_CHECK_HEADER(GLUT/glut.h, , AC_MSG_ERROR([cannot find headers for freeglut]))
-  ;;
-*)
-  GL_LIBS="-L/usr/lib"
-# -lGLU -lGL -lglut"
-  EXTRA_LDFLAGS=
-  EXTRA_CFLAGS=--std=c++11
-#  AC_CHECK_HEADER(GL/glut.h, , AC_MSG_ERROR([cannot find headers for freeglut]))
-  ;;
-esac
+AC_SEARCH_LIBS([PS_ParseJsonFile], [printer_settings], [], [
+  AC_MSG_ERROR([unable to find the printer_settings library])
+])
 
+#mingw
+#  GL_LIBS="-lopengl32" # mingw
+# -lglu32 -lglut32"
+#  EXTRA_LDFLAGS="-Wl,-subsystem,windows -shared-libgcc"
+#  EXTRA_CFLAGS="-fexceptions -mthreads"
+# AC_CHECK_HEADER(GL/glut.h, , AC_MSG_ERROR([cannot find headers for freeglut]))
+#  WIN32_BUILD=yes
+ 
+EXTRA_CFLAGS=--std=c++11
 
 AM_CONDITIONAL(WIN32_BUILD, test "x$WIN32_BUILD" = "xyes")
 
@@ -131,6 +77,5 @@ AC_SUBST(prefix_win)
 AC_CONFIG_FILES([
   Makefile
   po/Makefile.in
-  win32/repsnapper.nsi
-  tools/gitversion.sh])
+  win32/repsnapper.nsi])
 AC_OUTPUT

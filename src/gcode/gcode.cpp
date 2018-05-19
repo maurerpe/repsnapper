@@ -160,17 +160,13 @@ void GCode::updateWhereAtCursor(const vector<char> &E_letters)
   currentCursorFrom = where;
 }
 
-
-void GCode::Read(Model *model, const vector<char> E_letters,
-		 ViewProgress *progress, string filename)
-{
+void GCode::Parse(Model *model, const vector<char> E_letters,
+		  ViewProgress *progress, istream &is) {
 	clear();
 
-	ifstream file;
-	file.open(filename.c_str());		//open a file
-	file.seekg (0, ios::end);
-	double filesize = double(file.tellg());
-	file.seekg (0);
+	is.seekg (0, ios::end);
+	double filesize = double(is.tellg());
+	is.seekg (0);
 
 	progress->start(_("Loading GCode"), filesize);
 	int progress_steps=(int)(filesize/1000);
@@ -178,7 +174,7 @@ void GCode::Read(Model *model, const vector<char> E_letters,
 
 	buffer_zpos_lines.clear();
 
-	if(!file.good())
+	if(!is.good())
 	{
 //		MessageBrowser->add(str(boost::format("Error opening file %s") % Filename).c_str());
 		return;
@@ -206,12 +202,12 @@ void GCode::Read(Model *model, const vector<char> E_letters,
 
 	int current_extruder = 0;
 
-	while(getline(file,s))
+	while(getline(is,s))
 	{
 	  alltext << s << endl;
 
 		LineNr++;
-		unsigned long fpos = file.tellg();
+		unsigned long fpos = is.tellg();
 		if (fpos%progress_steps==0) if (!progress->update(fpos)) break;
 
 		Command command;
@@ -317,9 +313,6 @@ void GCode::Read(Model *model, const vector<char> E_letters,
 		loaded_commands.push_back(command);
 	}
 
-	file.close();
-	reset_locales();
-
 	commands = loaded_commands;
 
 	buffer->set_text(alltext.str());
@@ -333,7 +326,18 @@ void GCode::Read(Model *model, const vector<char> E_letters,
 	int min = ((int)time%3600)/60;
 	int sec = ((int)time-3600*h-60*min);
 	cerr << "GCode Time Estimation "<< h <<"h "<<min <<"m " <<sec <<"s" <<endl;
-	//??? to statusbar or where else?
+	//??? to statusbar or where else?  
+}
+
+
+void GCode::Read(Model *model, const vector<char> E_letters,
+		 ViewProgress *progress, string filename)
+{
+	ifstream file;
+	file.open(filename.c_str());		//open a file
+	Parse(model, E_letters, progress, file);
+	file.close();
+	reset_locales();
 }
 
 int GCode::getLayerNo(const double z) const
