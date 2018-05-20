@@ -321,6 +321,8 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
 
 	model->m_signal_gcode_changed.emit();
 
+	progress->stop (_("Done"));
+	
 	double time = GetTimeEstimation();
 	int h = (int)time/3600;
 	int min = ((int)time%3600)/60;

@@ -25,29 +25,60 @@
 
 #include <sstream>
 
-extern "C" {
 #include <printer_settings.h>
-}
 
 #include "model.h"
+#include "shape.h"
 
 class Psv {
 protected:
   ps_value_t *v;
+  void Set(const char *ext, const char *setting, ps_value_t *val);
 public:
   Psv(ps_value_t *val);
   ~Psv();
-
+  
   ps_value_t *operator()(void) {return v;};
+  const ps_value_t *Get(const char *ext, const char *set);
+  void Set(const char *ext, const char *setting, int val);
+  void Set(const char *ext, const char *setting, double val);
+  void Set(const char *ext, const char *setting, const char *val);
 };
-
+  
 Psv::Psv(ps_value_t *val) : v(val) {
   if (val == NULL)
     throw invalid_argument(string("ps_value was null"));
 }
-
-Psv::~Psv() {
+  
+  Psv::~Psv() {
   PS_FreeValue(v);
+}
+
+const ps_value_t *Psv::Get(const char *ext, const char *setting) {
+  const ps_value_t *gg = PS_GetMember(PS_GetMember(v, ext, NULL), setting, NULL);
+  if (gg == NULL)
+    throw invalid_argument(string("Unknown setting ") + string(ext) + "->" + string(setting));
+  
+  return gg;
+}
+
+void Psv::Set(const char *ext, const char *setting, ps_value_t *val) {
+  if (PS_AddSetting(v, ext, setting, val) < 0) {
+    PS_FreeValue(val);
+    throw invalid_argument(string("Could not set ") + string(ext) + "->" + string(setting));
+  }
+}
+
+void Psv::Set(const char *ext, const char *setting, int val) {
+  Set(ext, setting, PS_NewInteger(val));
+}
+
+void Psv::Set(const char *ext, const char *setting, double val) {
+  Set(ext, setting, PS_NewFloat(val));
+}
+
+void Psv::Set(const char *ext, const char *setting, const char *val) {
+  Set(ext, setting, PS_NewString(val));
 }
 
 class Pso {
@@ -100,7 +131,8 @@ void Model::ConvertToGCode() {
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/definitions"));
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/extruders"));  
   Psv ps(PS_New("/home/maurerpe/.config/repsnapper/cr10mini.def.json", search()));
-
+  Psv dflt(PS_GetDefaults(ps()));
+  
   Psf config_file("/home/maurerpe/.config/repsnapper/cura_settings.json");
   Psv config(PS_ParseJsonFile(config_file()));
   config_file.close();
@@ -109,17 +141,23 @@ void Model::ConvertToGCode() {
   const ps_value_t *xx = PS_GetItem(PS_GetItem(nn, 0), 1);
   const ps_value_t *qual = PS_GetMember(xx, "normal", NULL);
   
-  double dia = 1.75;
+  double dia = PS_AsFloat(dflt.Get("#global", "material_diameter"));
+  double bedw = PS_AsFloat(dflt.Get("#global", "machine_width"));
+  double bedd = PS_AsFloat(dflt.Get("#global", "machine_depth"));
+  
   double noz = 0.4;
   double h = PS_AsFloat(PS_GetMember(qual, "layer-height", NULL));
   double wh = PS_AsFloat(PS_GetMember(qual, "width/height", NULL));
   double speed = PS_AsFloat(PS_GetMember(qual, "speed", NULL));
   double ratio = PS_AsFloat(PS_GetMember(qual, "wall-speed-ratio", NULL));
-  double infill = 50.0;
-  int shells = 3;
-  int skins = 3;
   
-  const ps_value_t *mat = PS_GetMember(PS_GetMember(config(), "materials", NULL), "pla", NULL);
+  double infill = settings.get_double("Slicing","InfillPercent");
+  int shells = settings.get_integer("Slicing","ShellCount");
+  int skins = settings.get_integer("Slicing","Skins");
+  double marginx = settings.get_double("Hardware", "PrintMargin.X");
+  double marginy = settings.get_double("Hardware", "PrintMargin.Y");
+  
+  const ps_value_t *mat = config.Get("materials", "pla");
   double efeed = PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(mat, "nozzle-feedrate", NULL), 0), 1));
   if (PS_GetMember(mat, "width/height", NULL))
     wh = PS_AsFloat(PS_GetMember(mat, "width/height", NULL));
@@ -129,30 +167,33 @@ void Model::ConvertToGCode() {
     speed = espeed;
   
   Psv set(PS_BlankSettings(ps()));
-  PS_AddSetting(set(), "#global", "material_diameter", PS_NewFloat(dia));
-  PS_AddSetting(set(), "#global", "machine_nozzle_size", PS_NewFloat(noz));
+  set.Set("#global", "material_diameter", dia);
+  set.Set("#global", "machine_nozzle_size", noz);
   
-  PS_AddSetting(set(), "0", "material_diameter", PS_NewFloat(dia));
-  PS_AddSetting(set(), "0", "machine_nozzle_size", PS_NewFloat(noz));
+  set.Set("0", "material_diameter", dia);
+  set.Set("0", "machine_nozzle_size", noz);
   
-  PS_AddSetting(set(), "#global", "layer_height", PS_NewFloat(h));
-  PS_AddSetting(set(), "#global", "line_width", PS_NewFloat(h * wh));
-  PS_AddSetting(set(), "#global", "speed_print", PS_NewFloat(speed));
-  PS_AddSetting(set(), "#global", "speed_wall", PS_NewFloat(speed * ratio));
-  PS_AddSetting(set(), "#global", "wall_line_count", PS_NewInteger(shells));
-  PS_AddSetting(set(), "#global", "top_layers", PS_NewInteger(skins));
-  PS_AddSetting(set(), "#global", "bottom_layers", PS_NewInteger(skins));
-  PS_AddSetting(set(), "#global", "infill_sparse_density", PS_NewFloat(infill));
+  set.Set("#global", "layer_height", h);
+  set.Set("#global", "line_width", h * wh);
+  set.Set("#global", "speed_print", speed);
+  set.Set("#global", "speed_wall", speed * ratio);
+  set.Set("#global", "wall_line_count", shells);
+  set.Set("#global", "top_layers", skins);
+  set.Set("#global", "bottom_layers", skins);
+  set.Set("#global", "infill_sparse_density", infill);
   
   PS_MergeSettings(set(), PS_GetMember(qual, "settings", NULL));
   PS_MergeSettings(set(), PS_GetMember(mat,  "settings", NULL));
   
   Pso gcode_stream(PS_NewStrOStream());
-  string stl = GetCombinedShape().getSTLsolid();  
-  PS_SliceStr(gcode_stream(), ps(), set(), stl.c_str());
+  Shape comb = GetCombinedShape();
+  comb.move(Vector3d(-bedw / 2.0 + marginx, -bedd / 2.0 + marginy, 0));
+  string stl = comb.getSTLsolid();  
+  PS_SliceStr(gcode_stream(), ps(), set(), stl.c_str(), stl.length());
   
   istringstream iss(string(PS_OStreamContents(gcode_stream())));
   gcode.Parse(this, settings.get_extruder_letters(), m_progress, iss);
+  cout << "Slicing complete" << endl;
 }
 
 void Model::SliceToSVG(Glib::RefPtr<Gio::File>, bool) {
