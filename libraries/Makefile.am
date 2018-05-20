@@ -1,5 +1,9 @@
-include libraries/lmfit/Makefile.am
-include libraries/vmmlib/Makefile.am
-include libraries/clipper/Makefile.am
-include libraries/poly2tri/Makefile.am
-include libraries/amf/Makefile.am
+AUTOMAKE_OPTIONS = foreign subdir-objects
+ACLOCAL_AMFLAGS = -I m4
+
+EXTRA_DIST = 
+noinst_LTLIBRARIES =
+
+include vmmlib/Makefile.am
+include clipper/Makefile.am
+include amf/Makefile.am

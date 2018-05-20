@@ -25,7 +25,6 @@
 
 
 class GUI;
-class Poly;
 class View;
 class GCode;
 class GCodeState;
@@ -41,15 +40,12 @@ class Settings;
 class PrefsDlg;
 class Triangle;
 class RepRapSerial;
-class Layer;
 class PrintInhibitor;
 class ProcessController;
 class ObjectsTree;
 class TreeObject;
 class Shape;
-class FlatShape;
 class Transform3D;
-class Infill;
 class ViewProgress;
 class ConnectView;
 class Transform3D;

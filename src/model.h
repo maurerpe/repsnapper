@@ -30,10 +30,7 @@
 
 #include "objtree.h"
 #include "gcode/gcode.h"
-/* #include "gcodestate.h" */
 #include "settings.h"
-/* #include "progress.h" */
-/* #include "slicer/poly.h" */
 
 #ifdef _MSC_VER // Visual C++ compiler
 #  pragma warning( disable : 4244 4267)
@@ -70,7 +67,6 @@ public:
 		     bool autoplace = true);
 	int SplitShape(TreeObject *parent, Shape *shape, string filename);
 	int MergeShapes(TreeObject *parent, const vector<Shape*> shapes);
-	int DivideShape(TreeObject *parent, Shape *shape, string filename);
 	Shape GetCombinedShape() const;
 
 	sigc::signal< void, Gtk::TreePath & > m_signal_stl_added;
@@ -93,15 +89,8 @@ public:
 	void InvertNormals(Shape *shape, TreeObject *object);
 	void Mirror(Shape *shape, TreeObject *object);
 
-	vector<Layer*> layers;
-
-	Layer * m_previewLayer;
-	double get_preview_Z();
-	//Layer * m_previewGCodeLayer;
-	GCode m_previewGCode;
-	double m_previewGCode_z;
-
 	vector<Shape*> preview_shapes;
+	double get_preview_Z() {return 0.0;};
 
 	// Slicing
 	void SliceToSVG(Glib::RefPtr<Gio::File> file, bool single_layer=false);
@@ -116,8 +105,6 @@ public:
 	void MakeRaft(GCodeState &state, double &z);
 	void WriteGCode(Glib::RefPtr<Gio::File> file);
 	void ClearGCode();
-	void ClearLayers();
-	void ClearPreview();
 	Glib::RefPtr<Gtk::TextBuffer> GetGCodeBuffer();
 	void GlDrawGCode(int layer=-1); // should be in the view
 	void GlDrawGCode(double Z);
@@ -151,12 +138,8 @@ public:
 	Glib::RefPtr<Gtk::TextBuffer> errlog, echolog;
 
 	int draw(vector<Gtk::TreeModel::Path> &selected);
-	int drawLayers(double height, const Vector3d &offset, bool calconly = false);
 	void setMeasuresPoint(const Vector3d &point);
 	Vector2d measuresPoint;
-
-	Layer * calcSingleLayer(double z, uint LayerNr, double thickness,
-				bool calcinfill, bool for_gcode=false) const ;
 
 	sigc::signal< void, Gtk::MessageType, const char *, const char * > signal_alert;
 	void alert (const char *message);
@@ -169,31 +152,11 @@ public:
 	void SetIsPrinting(bool printing) { is_printing = printing; };
 
 	string getSVG(int single_layer_no = -1) const;
-	void ReadSVG(Glib::RefPtr<Gio::File> file);
 
         bool isCalculating() const { return is_calculating; };
  private:
 	bool is_calculating;
 	bool is_printing;
-	//GCodeIter *m_iter;
-	Layer * lastlayer;
-
-        // Slicing/GCode conversion functions
-	void Slice();
-
-	void CleanupLayers();
-	void CalcInfill();
-	void MakeShells();
-	void MakeUncoveredPolygons(bool make_decor, bool make_bridges=true);
-	vector<Poly> GetUncoveredPolygons(const Layer *subjlayer,
-					  const Layer *cliplayer);
-	void MakeFullSkins();
-	void MultiplyUncoveredPolygons();
-	void MakeSupportPolygons(Layer * subjlayer, const Layer * cliplayer,
-				 double widen=0);
-	void MakeSupportPolygons(double widen=0);
-	void MakeSkirt();
-
 };
 
 #endif // MODEL_H

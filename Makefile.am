@@ -27,9 +27,6 @@ appdata_in_files = repsnapper.appdata.xml.in
 EXTRA_DIST += $(appdata_in_files)
 CLEANFILES += $(appdata_DATA)
 
-noinst_LTLIBRARIES =
-
-include libraries/Makefile.am
 include src/Makefile.am
 # po doesn't use automake, so it can't be included.
-SUBDIRS = po
+SUBDIRS = po libraries

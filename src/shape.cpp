@@ -22,7 +22,6 @@
 #include "files.h"
 #include "ui/progress.h"
 #include "settings.h"
-#include "clipping.h"
 #include "render.h"
 
 #ifdef _OPENMP
@@ -422,51 +421,6 @@ void Shape::OptimizeRotation()
   PlaceOnPlatform();
 }
 
-int Shape::divideAtZ(double z, Shape *upper, Shape *lower, const Matrix4d &T) const
-{
-  vector<Poly> polys;
-  vector<Poly> supportpolys;
-  double max_grad;
-  bool ok = getPolygonsAtZ(T, z, polys, max_grad, supportpolys, -1);
-  if (!ok) return 0;
-  vector< vector<Triangle> > surfs;
-  triangulate(polys, surfs);
-
-  vector<Triangle> surf;
-  for (uint i=0; i<surfs.size(); i++)
-    surf.insert(surf.end(), surfs[i].begin(), surfs[i].end());
-
-  lower->triangles.insert(lower->triangles.end(),surf.begin(),surf.end());
-  for (guint i=0; i<surf.size(); i++) surf[i].invertNormal();
-  upper->triangles.insert(upper->triangles.end(),surf.begin(),surf.end());
-  vector<Triangle> toboth;
-  for (guint i=0; i< triangles.size(); i++) {
-    Triangle tt = triangles[i].transformed(T*transform3D.transform);
-    if (tt.A.z() < z && tt.B.z() < z && tt.C.z() < z )
-      lower->triangles.push_back(tt);
-    else if (tt.A.z() > z && tt.B.z() > z && tt.C.z() > z )
-      upper->triangles.push_back(tt);
-    else
-      toboth.push_back(tt);
-  }
-  vector<Triangle> uppersplit,lowersplit;
-  for (guint i=0; i< toboth.size(); i++) {
-    toboth[i].SplitAtPlane(z, uppersplit, lowersplit);
-  }
-  upper->triangles.insert(upper->triangles.end(),
-			 uppersplit.begin(),uppersplit.end());
-  lower->triangles.insert(lower->triangles.end(),
-			 lowersplit.begin(),lowersplit.end());
-  upper->CalcBBox();
-  lower->CalcBBox();
-  lower->Rotate(Vector3d(0,1,0),M_PI);
-  upper->move(Vector3d(10+Max.x()-Min.x(),0,0));
-  lower->move(Vector3d(2*(10+Max.x()-Min.x()),0,0));
-  upper->PlaceOnPlatform();
-  lower->PlaceOnPlatform();
-  return 2;
-}
-
 void Shape::PlaceOnPlatform()
 {
   transform3D.move(Vector3d(0,0,-Min.z()));
@@ -477,17 +431,6 @@ void Shape::Rotate(const Vector3d & axis, const double & angle)
 {
   transform3D.rotate(Center, axis, angle);
   return;
-//   CenterAroundXY();
-//   // do a real rotation because matrix transform gives errors when slicing
-//   int count = (int)triangles.size();
-// #ifdef _OPENMP
-// #pragma omp parallel for schedule(dynamic)
-// #endif
-//   for (int i=0; i < count ; i++)
-//     {
-//       triangles[i].rotate(axis, angle);
-//     }
-//   PlaceOnPlatform();
 }
 
 // this is primitive, it just rotates triangle vertices
@@ -511,46 +454,6 @@ void Shape::Twist(double angle)
   }
   CalcBBox();
 }
-
-// void Shape::CenterAroundXY()
-// {
-//   CalcBBox();
-//   return;
-
-//   /* // this moves all triangles
-//   Vector3d displacement = transform3D.getTranslation() - Center;
-//   int count = (int)triangles.size();
-// #ifdef _OPENMP
-// #pragma omp parallel for schedule(dynamic)
-// #endif
-//   for(int i=0; i<count ; i++)
-//     {
-//       triangles[i].Translate(displacement);
-//     }
-//   transform3D.move(-displacement);
-//   */
-
-//   //cerr << "DISPL " << displacement << endl;
-//   //CalcBBox();
-//   // Min    -= displacement;
-//   // Max    -= displacement;
-//   // Center -= displacement;
-// }
-
-/*
-Poly Shape::getOutline(const Matrix4d &T, double maxlen) const
-{
-  Matrix4d transform = T * transform3D.transform ;
-  vector<Vector2d> points(triangles.size()*3);
-  for (uint i = 0; i<triangles.size(); i++) {
-    for (uint j = 0; j<3; j++) {
-      points[i*3 + j] = Vector2d(triangles[i][j].x(),triangles[i][j].y());
-    }
-  }
-  Poly hull = concaveHull2D(points, maxlen);
-  return hull;
-}
-*/
 
 bool getLineSequences(const vector<Segment> lines, vector< vector<uint> > &connectedlines)
 {
@@ -601,93 +504,6 @@ bool getLineSequences(const vector<Segment> lines, vector< vector<uint> > &conne
   //cerr << "found "<< connectedlines.size() << " sequences" << endl;
   return true;
 }
-
-bool Shape::getPolygonsAtZ(const Matrix4d &T, double z,
-			   vector<Poly> &polys,
-			   double &max_gradient,
-			   vector<Poly> &supportpolys,
-			   double max_supportangle,
-			   double thickness) const
-{
-  vector<Vector2d> vertices;
-  vector<Triangle> support_triangles;
-  vector<Segment> lines = getCutlines(T, z, vertices, max_gradient,
-				      support_triangles, max_supportangle, thickness);
-  //cerr << vertices.size() << " " << lines.size() << endl;
-  if (!CleanupSharedSegments(lines)) return false;
-  //cerr << vertices.size() << " " << lines.size() << endl;
-  if (!CleanupConnectSegments(vertices,lines,true)) return false;
-  //cerr << vertices.size() << " " << lines.size() << endl;
-  vector< vector<uint> > connectedlines; // sequence of connected lines indices
-  if (!getLineSequences(lines, connectedlines)) return false;
-  for (uint i=0; i<connectedlines.size();i++){
-    Poly poly(z);
-    for (uint j = 0; j < connectedlines[i].size();j++){
-      poly.addVertex(vertices[lines[connectedlines[i][j]].start]);
-    }
-    if (lines[connectedlines[i].back()].end !=
-	lines[connectedlines[i].front()].start )
-      poly.addVertex(vertices[lines[connectedlines[i].back()].end]);
-    //cerr << "poly size " << poly.size() << endl;
-    poly.calcHole();
-    polys.push_back(poly);
-  }
-
-  for (uint i = 0; i < support_triangles.size(); i++) {
-    Poly p(z);
-    // keep only part of triangle above z
-    Vector2d lineStart;
-    Vector2d lineEnd;
-    // support_triangles are already transformed
-    int num_cutpoints = support_triangles[i].CutWithPlane(z, Matrix4d::IDENTITY,
-							  lineStart, lineEnd);
-    if (num_cutpoints == 0) {
-      for (uint j = 0; j < 3; j++) {
-	p.addVertex(Vector2d(support_triangles[i][j].x(),
-			     support_triangles[i][j].y()));
-      }
-    }
-    else if (num_cutpoints > 1) {
-      // add points of triangle above z
-      for (uint j = 0; j < 3; j++) {
-	if (support_triangles[i][j].z() > z) {
-	  p.addVertex(Vector2d(support_triangles[i][j].x(),
-			       support_triangles[i][j].y()));
-	}
-      }
-      bool reverse = false;
-      // test for order if we get 4 points (2 until now)
-      if (p.size() > 1) {
-	Vector2d i0, i1;
-	const int is = intersect2D_Segments(p[1], lineStart, lineEnd, p[0],
-					    i0, i1);
-	if (is > 0 && is < 3) {
-	  reverse = true;
-	}
-      }
-      // add cutline points
-      if (reverse) {
-	p.addVertex(lineEnd);
-	p.addVertex(lineStart);
-      } else {
-	p.addVertex(lineStart);
-	p.addVertex(lineEnd);
-      }
-    }
-    if (p.isHole()) p.reverse();
-    supportpolys.push_back(p);
-  }
-
-  // remove polygon areas from triangles
-  // Clipping clipp;
-  // clipp.clear();
-  // clipp.addPolys(supportpolys, subject);
-  // clipp.addPolys(polys, clip);
-  // supportpolys = clipp.subtract(CL::pftPositive,CL::pftPositive);
-
-  return true;
-}
-
 
 int find_vertex(const vector<Vector2d> &vertices,
 		const Vector2d &v, double delta = 0.0001)

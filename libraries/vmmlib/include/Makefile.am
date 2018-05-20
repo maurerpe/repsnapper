@@ -1,2 +1,2 @@
-include libraries/vmmlib/include/vmmlib/Makefile.am
+include vmmlib/include/vmmlib/Makefile.am
 

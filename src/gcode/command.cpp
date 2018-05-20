@@ -31,8 +31,6 @@
 #include "geometry.h"
 #include "ctype.h"
 
-#include "slicer/poly.h"
-
 using namespace std;
 
 // String feeder class
@@ -546,21 +544,21 @@ void Command::draw(Vector3d &lastPos, const Vector3d &offset,
     if (extrwidth > 0) {
       glLineWidth(1);
       glColor4f(ccol[0],ccol[1],ccol[2],ccol[3]/2);
-      vector<Poly> thickpoly;
-      if (abs_extr != 0) {
-	double fr_extr = extrwidth / (1+abs_extr);
-	double to_extr = extrwidth * (1+abs_extr);
-	thickpoly = dir_thick_line(Vector2d(off_lastPos.x(),off_lastPos.y()),
-				   Vector2d(off_where.x(),off_where.y()),
-				   fr_extr, to_extr);
-      } else
-	thickpoly = thick_line(Vector2d(off_lastPos.x(),off_lastPos.y()),
-			       Vector2d(off_where.x(),off_where.y()),
-			       extrwidth);
-      for (uint i=0; i<thickpoly.size();i++) {
-	thickpoly[i].cleanup(0.01);
-	thickpoly[i].draw(GL_LINE_LOOP, off_where.z(), false);
-      }
+      // vector<Poly> thickpoly;
+      // if (abs_extr != 0) {
+      // 	double fr_extr = extrwidth / (1+abs_extr);
+      // 	double to_extr = extrwidth * (1+abs_extr);
+      // 	thickpoly = dir_thick_line(Vector2d(off_lastPos.x(),off_lastPos.y()),
+      // 				   Vector2d(off_where.x(),off_where.y()),
+      // 				   fr_extr, to_extr);
+      // } else
+      // 	thickpoly = thick_line(Vector2d(off_lastPos.x(),off_lastPos.y()),
+      // 			       Vector2d(off_where.x(),off_where.y()),
+      // 			       extrwidth);
+      // for (uint i=0; i<thickpoly.size();i++) {
+      // 	thickpoly[i].cleanup(0.01);
+      // 	thickpoly[i].draw(GL_LINE_LOOP, off_where.z(), false);
+      // }
     }
   }
   lastPos = where;

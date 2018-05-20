@@ -6,5 +6,5 @@ libclipper_la_CPPFLAGS = \
         $(EXTRA_CFLAGS)
 
 libclipper_la_SOURCES = \
-	libraries/clipper/clipper/polyclipping-code/cpp/clipper.cpp \
-	libraries/clipper/clipper/polyclipping-code/cpp/clipper.hpp
+	clipper/clipper/polyclipping-code/cpp/clipper.cpp \
+	clipper/clipper/polyclipping-code/cpp/clipper.hpp

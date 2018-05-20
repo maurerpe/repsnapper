@@ -24,7 +24,6 @@
 
 #include <stdafx.h>
 
-#include "infill.h"
 /*
  * How settings are intended to work:
  *
@@ -677,10 +676,6 @@ void Settings::connect_to_ui (Builder &builder)
 	  } else if (glade_name == "Slicing.Material") {
 	    vector<string> mat(materials, materials+sizeof(materials)/sizeof(string));
 	    set_up_combobox(combo, mat);
-	  } else if (glade_name.find("Filltype")!=std::string::npos) { // Infill types
-	    uint nfills = sizeof(InfillNames)/sizeof(string);
-	    vector<string> infills(InfillNames,InfillNames+nfills);
-	    set_up_combobox(combo,infills);
 	  }
 	  combo->signal_changed().connect
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));

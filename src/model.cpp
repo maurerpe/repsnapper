@@ -28,16 +28,11 @@
 #include "model.h"
 #include "objtree.h"
 #include "settings.h"
-#include "layer.h"
-#include "infill.h"
 #include "ui/progress.h"
 #include "shape.h"
-#include "flatshape.h"
 #include "render.h"
 
 Model::Model() :
-  m_previewLayer(NULL),
-  //m_previewGCodeLayer(NULL),
   currentprintingline(0),
   settings(),
   Min(), Max(),
@@ -54,9 +49,7 @@ Model::Model() :
 
 Model::~Model()
 {
-  ClearLayers();
   ClearGCode();
-  delete m_previewLayer;
   preview_shapes.clear();
 }
 
@@ -93,28 +86,7 @@ void Model::SetViewProgress (ViewProgress *progress)
 
 void Model::ClearGCode()
 {
-  m_previewGCode.clear();
-  m_previewGCode_z = -100000;
   gcode.clear();
-}
-
-void Model::ClearLayers()
-{
-  for(vector<Layer *>::iterator i=layers.begin(); i != layers.end(); i++) {
-    if ((*i)) (*i)->Clear();
-    delete *i;
-  }
-  layers.clear();
-  Infill::clearPatterns();
-  ClearPreview();
-}
-
-void Model::ClearPreview()
-{
-  if (m_previewLayer) delete m_previewLayer;
-  m_previewLayer = NULL;
-  m_previewGCode.clear();
-  m_previewGCode_z = -100000;
 }
 
 Glib::RefPtr<Gtk::TextBuffer> Model::GetGCodeBuffer()
@@ -163,19 +135,6 @@ void Model::WriteGCode(Glib::RefPtr<Gio::File> file)
   Glib::file_set_contents (file->get_path(), contents);
   settings.GCodePath = file->get_parent()->get_path();
 }
-
-void Model::ReadSVG(Glib::RefPtr<Gio::File> file)
-{
-  if (is_calculating) return;
-  if (is_printing) return;
-  bool autoplace = settings.get_boolean("Misc","ShapeAutoplace");
-  string path = file->get_path();
-  FlatShape * svgshape = new FlatShape(path);
-  cerr << svgshape->info() << endl;
-  AddShape(NULL, svgshape, path, autoplace);
-  ClearLayers();
-}
-
 
 vector<Shape*> Model::ReadShapes(Glib::RefPtr<Gio::File> file,
 				 uint max_triangles)
@@ -286,18 +245,6 @@ void Model::Read(Glib::RefPtr<Gio::File> file)
 	settings.GCodePath = directory_path;
 	return;
       }
-    else if (extn == ".svg")
-      {
-	ReadSVG (file);
-	settings.STLPath = directory_path;
-	return;
-      }
-    else if (extn == ".rfo")
-      {
-	//      ReadRFO (file);
-	settings.STLPath = directory_path;
-	return;
-      }
   }
   ReadStl (file);
   settings.STLPath = directory_path;
@@ -344,11 +291,6 @@ void Model::ModelChanged()
   //printer.update_temp_poll_interval(); // necessary?
   if (!is_printing) {
     CalcBoundingBoxAndCenter();
-    Infill::clearPatterns();
-    if ( layers.size()>0 || m_previewGCode.size()>0 || m_previewLayer ) {
-      ClearGCode();
-      ClearLayers();
-    }
     setCurrentPrintingLine(0);
     m_model_changed.emit();
   }
@@ -518,10 +460,6 @@ int Model::AddShape(TreeObject *parent, Shape *shape, string filename, bool auto
   bool found_location=false;
 
 
-  FlatShape* flatshape = dynamic_cast<FlatShape*>(shape);
-  if (flatshape != NULL)
-    shape = flatshape;
-
   if (!parent) {
     if (objtree.Objects.size() <= 0)
       objtree.newObject();
@@ -574,20 +512,6 @@ int Model::MergeShapes(TreeObject *parent, const vector<Shape*> shapes)
   }
   AddShape(parent, shape, "merged", true);
   return 1;
-}
-
-int Model::DivideShape(TreeObject *parent, Shape *shape, string filename)
-{
-  Shape *upper = new Shape();
-  Shape *lower = new Shape();
-  Matrix4d T = Matrix4d::IDENTITY;;//FIXME! objtree.GetSTLTransformationMatrix(parent);
-  int num = shape->divideAtZ(0, upper, lower, T);
-  if (num<2) return num;
-  else if (num==2) {
-    AddShape(parent, upper, filename+_("_upper") ,false);
-    AddShape(parent, lower, filename+_("_lower") ,false);
-  }
-  return num;
 }
 
 void Model::newObject()
@@ -706,7 +630,6 @@ void Model::DeleteObjTree(vector<Gtk::TreeModel::Path> &iter)
 {
   objtree.DeleteSelected (iter);
   ClearGCode();
-  ClearLayers();
   ModelChanged();
 }
 
@@ -953,215 +876,7 @@ int Model::draw (vector<Gtk::TreeModel::Path> &iter)
       pos = Vector3d(Min.x(),Min.y(),(Max.z()+minz)/2.);
       Render::draw_string(pos,val.str());
     }
-  int drawnlayer = -1;
-  if(settings.get_boolean("Display","DisplayLayer")) {
-    drawnlayer = drawLayers(settings.get_double("Display","LayerValue"),
-			    offset, false);
-  }
-  if(settings.get_boolean("Display","DisplayGCode") && gcode.size() == 0) {
-    // preview gcode if not calculated yet
-    if ( m_previewGCode.size() != 0 ||
-	 ( layers.size() == 0 && gcode.commands.size() == 0 ) ) {
-      Vector3d start(0,0,0);
-      const double thickness = 0.2; /* FIXME: Make dynamic based on settings */
-      const double gcodedrawstart = settings.get_double("Display","GCodeDrawStart");
-      const double z = gcodedrawstart + thickness/2;
-      const int LayerCount = (int)ceil(Max.z()/thickness)-1;
-      const uint LayerNo = (uint)ceil(gcodedrawstart*(LayerCount-1));
-      if (z != m_previewGCode_z) {
-	//uint prevext = settings.selectedExtruder;
-	Layer * previewGCodeLayer = calcSingleLayer(z, LayerNo, thickness, true, true);
-	if (previewGCodeLayer) {
-	  m_previewGCode.clear();
-	  vector<Command> commands;
-	  GCodeState state(m_previewGCode);
-	  previewGCodeLayer->MakeGCode(start, state, 0, settings);
-	  // state.AppendCommands(commands, settings.Slicing.RelativeEcode);
-	  m_previewGCode_z = z;
-	}
-	//settings.SelectExtruder(prevext);
-      }
-      glDisable(GL_DEPTH_TEST);
-      m_previewGCode.drawCommands(settings, 1, m_previewGCode.commands.size(), true, 2,
-				  settings.get_boolean("Display","DisplayGCodeArrows"),
-				  settings.get_boolean("Display","DisplayGCodeBorders"));
-    }
-  }
-  return drawnlayer;
-}
-
-// if single layer returns layerno of drawn layer
-// else returns -1
-int Model::drawLayers(double height, const Vector3d &offset, bool calconly)
-{
-  if (is_calculating) return -1; // infill calculation (saved patterns) would be disturbed
-
-  glDisable(GL_DEPTH_TEST);
-  int drawn = -1;
-  int LayerNr;
-
- ;
-
-  bool have_layers = (layers.size() > 0); // have sliced already
-
-  bool fillAreas = settings.get_boolean("Display","DisplayFilledAreas");
-
-  double minZ = 0;//max(0.0, Min.z());
-  double z;
-  double zStep = 0.2; /* FIXME: Make dynamic based on settings */
-  double zSize = (Max.z() - minZ - zStep*0.5);
-  int LayerCount = (int)ceil((zSize - zStep*0.5)/zStep)-1;
-  double sel_Z = height; //*zSize;
-  uint sel_Layer;
-  if (have_layers)
-    sel_Layer = (uint)floor(height*(layers.size())/zSize);
-  else
-    sel_Layer = (uint)ceil(LayerCount*sel_Z/zSize);
-  LayerCount = sel_Layer+1;
-  if(have_layers && settings.get_boolean("Display","DisplayAllLayers"))
-    {
-      LayerNr = 0;
-      z=minZ;
-      // don't fill areas if multiple layers
-      settings.set_boolean("Display","DisplayFilledAreas",false);
-    }
-  else
-    {
-      LayerNr = sel_Layer;
-      z= minZ + sel_Z;
-    }
-  if (have_layers) {
-    LayerNr = CLAMP(LayerNr, 0, (int)layers.size() - 1);
-    LayerCount = CLAMP(LayerCount, 0, (int)layers.size());
-  }
-  z = CLAMP(z, 0, Max.z());
-  z += 0.5*zStep; // always cut in middle of layer
-
-  //cerr << zStep << ";"<<Max.z()<<";"<<Min.z()<<";"<<zSize<<";"<<LayerNr<<";"<<LayerCount<<";"<<endl;
-
-  Layer* layer=NULL;
-  if (have_layers)
-    glTranslatef(-offset.x(), -offset.y(), -offset.z());
-
-  const float lthickness = 0.2; /* FIXME: Make dynamic based on settings */
-  bool displayinfill = settings.get_boolean("Display","DisplayinFill");
-  bool drawrulers = settings.get_boolean("Display","DrawRulers");
-  while(LayerNr < LayerCount)
-    {
-      if (have_layers)
-	{
-	  layer = layers[LayerNr];
-	  z = layer->getZ();
-	  drawn = layer->LayerNo;
-	}
-      else
-	{
-	  if (!m_previewLayer || m_previewLayer->getZ() != z) {
-	    m_previewLayer = calcSingleLayer(z, LayerNr, lthickness,
-					     displayinfill, false);
-	    layer = m_previewLayer;
-	    Layer * previous = NULL;
-	    if (LayerNr>0 && z >= lthickness)
-	      previous = calcSingleLayer(z-lthickness, LayerNr-1, lthickness,
-					 false, false);
-	    layer->setPrevious(previous);
-	  }
-	  layer = m_previewLayer;
-	}
-      if (!calconly) {
-	layer->Draw(settings);
-
-	if (drawrulers)
-	  layer->DrawRulers(measuresPoint);
-      }
-
-      // if (!have_layers)
-      // {
-      //       // need to delete the temporary  layer
-      //       delete layer;
-      // }
-      LayerNr++;
-      z+=zStep;
-    }// while
-
-  settings.set_boolean("Display","DisplayFilledAreas", fillAreas); // set to value before
-  return drawn;
-}
-
-
-Layer * Model::calcSingleLayer(double z, uint LayerNr, double thickness,
-			       bool calcinfill, bool for_gcode) const
-{
-  if (is_calculating) return NULL; // infill calculation (saved patterns) would be disturbed
-  if (!for_gcode) {
-    if (m_previewLayer && m_previewLayer->getZ() == z
-	&& m_previewLayer->thickness == thickness) return m_previewLayer;
-  }
-  vector<Shape*> shapes;
-  vector<Matrix4d> transforms;
-
-  if (settings.get_boolean("Slicing","SelectedOnly"))
-    objtree.get_selected_shapes(m_current_selectionpath, shapes, transforms);
-  else
-    objtree.get_all_shapes(shapes, transforms);
-
-  double max_grad = 0;
-  double supportangle = settings.get_double("Slicing","SupportAngle")*M_PI/180.;
-  if (!settings.get_boolean("Slicing","Support")) supportangle = -1;
-
-  Layer * layer = new Layer(NULL, LayerNr, thickness,
-			    settings.get_integer("Slicing","Skins"));
-  layer->setZ(z);
-  for(size_t f = 0; f < shapes.size(); f++) {
-    layer->addShape(transforms[f], *shapes[f], z, max_grad, supportangle);
-  }
-
-  // vector<Poly> polys = layer->GetPolygons();
-  // for (guint i=0; i<polys.size();i++){
-  //   vector<Triangle> tri;
-  //   polys[i].getTriangulation(tri);
-  //   for (guint j=0; j<tri.size();j++){
-  //     tri[j].draw(GL_LINE_LOOP);
-  //   }
-  // }
-
-  layer->MakeShells(settings);
-
-  if (settings.get_boolean("Slicing","Skirt")) {
-    if (layer->getZ() - layer->thickness <= settings.get_double("Slicing","SkirtHeight"))
-      layer->MakeSkirt(settings.get_double("Slicing","SkirtDistance"),
-		       settings.get_boolean("Slicing","SingleSkirt") &&
-		       !settings.get_boolean("Slicing","Support"));
-  }
-
-  if (calcinfill)
-    layer->CalcInfill(settings);
-
-#define DEBUGPOLYS 0
-#if DEBUGPOLYS
-  // write out polygons for gnuplot
-  vector<Poly> polys = layer->GetPolygons();
-  vector< vector<Poly> > offs = layer->GetShellPolygons();
-  cout << "# polygons "<< endl;
-  for (guint i=0; i<polys.size();i++){
-    cout << polys[i].gnuplot_path() << endl;
-  }
-  for (guint s=0; s<offs.size();s++){
-    cout << "# offset polygons " << s << endl;
-    for (guint i=0; i<offs[s].size();i++){
-      cout << offs[s][i].gnuplot_path() << endl;
-    }
-  }
-#endif
-
-  return layer;
-}
-
-
-double Model::get_preview_Z()
-{
-  if (m_previewLayer) return m_previewLayer->getZ();
-  return 0;
+  return -1;
 }
 
 void Model::setMeasuresPoint(const Vector3d &point)

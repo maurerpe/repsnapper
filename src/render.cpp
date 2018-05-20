@@ -24,7 +24,7 @@
 #include "settings.h"
 #include "ui/view.h"
 #include "model.h"
-#include "slicer/geometry.h"
+#include "geometry.h"
 
 #define N_LIGHTS (sizeof (m_lights) / sizeof(m_lights[0]))
 

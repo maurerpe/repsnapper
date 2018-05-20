@@ -30,13 +30,7 @@
 #include <algorithm>
 #include "stdafx.h"
 #include "transform3d.h"
-//#include "settings.h"
 #include "triangle.h"
-#include "slicer/geometry.h"
-#include "poly.h"
-
-//#define ABS(a)	   (((a) < 0) ? -(a) : (a))
-
 
 struct Segment {
   Segment(guint s, guint e) { start = s; end = e; }
@@ -76,14 +70,6 @@ public:
 		   bool highlight=false, uint max_triangles=0);
 	virtual void draw_geometry (uint max_triangles=0);
 	void drawBBox() const;
-	virtual bool getPolygonsAtZ(const Matrix4d &T, double z,
-				    vector<Poly> &polys,
-				    double &max_gradient,
-				    vector<Poly> &supportpolys,
-				    double max_supportangle,
-				    double thickness = -1) const;
-	// Extract a 2D polygonset from a 3D model:
-	// void CalcLayer(const Matrix4d &T, CuttingPlane *plane) const;
 
     virtual vector<Vector3d> getMostUsedNormals() const;
 	// Auto-Rotate object to have the largest area surface down for printing:
@@ -118,7 +104,6 @@ public:
 
     Vector3d scaledCenter() const;
 
-    /* Poly getOutline(const Matrix4d &T, double maxlen) const;*/
     vector<Triangle> trianglesSteeperThan(double angle) const;
 
     string getSTLsolid() const;
@@ -129,7 +114,6 @@ public:
     virtual void mirror();
     void makeHollow(double wallthickness);
     virtual void splitshapes(vector<Shape*> &shapes, ViewProgress *progress=NULL);
-    int divideAtZ(double z, Shape *upper, Shape *lower, const Matrix4d &T) const;
 
 
     int saveBinarySTL(Glib::ustring filename) const;

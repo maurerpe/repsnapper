@@ -26,7 +26,6 @@
 #include "view.h"
 #include "model.h"
 #include "objtree.h"
-#include "flatshape.h"
 #include "render.h"
 #include "settings.h"
 #include "prefs_dlg.h"
@@ -963,7 +962,6 @@ void View::update_settings_gui()
 
 void View::handle_ui_settings_changed()
 {
-  m_model->ClearPreview();
   queue_draw();
 }
 
@@ -1237,7 +1235,6 @@ void View::extruder_selected()
     // copy selected extruder from Extruders to current Extruder
     m_model->settings.SelectExtruder(path[0][0], &m_builder);
   }
-  m_model->ClearPreview();
   queue_draw();
 }
 void View::copy_extruder()
@@ -1530,7 +1527,6 @@ void View::tree_selection_changed()
 {
   if (m_model) {
     m_model->m_current_selectionpath = m_treeview->get_selection()->get_selected_rows();
-    m_model->ClearPreview();
     vector<Shape*> shapes;
     vector<TreeObject*> objects;
     get_selected_objects (objects, shapes);
@@ -1566,11 +1562,7 @@ void View::duplicate_selected_objects()
   if (shapes.size()>0)
     for (uint i=0; i<shapes.size() ; i++) {
       Shape * newshape;
-      FlatShape* flatshape = dynamic_cast<FlatShape*>(shapes[i]);
-      if (flatshape != NULL)
-	newshape = new FlatShape(*flatshape);
-      else
-	newshape = new Shape(*shapes[i]);
+      newshape = new Shape(*shapes[i]);
       // duplicate
       TreeObject* object = m_model->objtree.getParent(shapes[i]);
       if (object !=NULL)
@@ -1610,19 +1602,6 @@ void View::merge_selected_objects()
 
 void View::divide_selected_objects()
 {
-  vector<Shape*> shapes;
-  vector<TreeObject*> objects;
-  get_selected_objects (objects, shapes);
-  if (shapes.size()>0) {
-    for (uint i=0; i<shapes.size() ; i++) {
-      TreeObject* object = m_model->objtree.getParent(shapes[i]);
-      if (object !=NULL)
-	if (m_model->DivideShape (object, shapes[i], shapes[i]->filename) > 1) {
-	// delete shape?
-      }
-    }
-    queue_draw();
-  }
 }
 
 // // Given a widget by label, adds a statusbar message on rollover

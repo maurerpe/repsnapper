@@ -1,3 +1,3 @@
-EXTRA_DIST += libraries/vmmlib/README.md
+EXTRA_DIST += vmmlib/README.md
 
-include libraries/vmmlib/include/Makefile.am
+include vmmlib/include/Makefile.am
