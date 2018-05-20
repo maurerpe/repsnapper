@@ -963,7 +963,7 @@ int Model::draw (vector<Gtk::TreeModel::Path> &iter)
     if ( m_previewGCode.size() != 0 ||
 	 ( layers.size() == 0 && gcode.commands.size() == 0 ) ) {
       Vector3d start(0,0,0);
-      const double thickness = settings.get_double("Slicing","LayerThickness");
+      const double thickness = 0.2; /* FIXME: Make dynamic based on settings */
       const double gcodedrawstart = settings.get_double("Display","GCodeDrawStart");
       const double z = gcodedrawstart + thickness/2;
       const int LayerCount = (int)ceil(Max.z()/thickness)-1;
@@ -1008,7 +1008,7 @@ int Model::drawLayers(double height, const Vector3d &offset, bool calconly)
 
   double minZ = 0;//max(0.0, Min.z());
   double z;
-  double zStep = settings.get_double("Slicing","LayerThickness");
+  double zStep = 0.2; /* FIXME: Make dynamic based on settings */
   double zSize = (Max.z() - minZ - zStep*0.5);
   int LayerCount = (int)ceil((zSize - zStep*0.5)/zStep)-1;
   double sel_Z = height; //*zSize;
@@ -1043,7 +1043,7 @@ int Model::drawLayers(double height, const Vector3d &offset, bool calconly)
   if (have_layers)
     glTranslatef(-offset.x(), -offset.y(), -offset.z());
 
-  const float lthickness = settings.get_double("Slicing","LayerThickness");
+  const float lthickness = 0.2; /* FIXME: Make dynamic based on settings */
   bool displayinfill = settings.get_boolean("Display","DisplayinFill");
   bool drawrulers = settings.get_boolean("Display","DrawRulers");
   while(LayerNr < LayerCount)

@@ -46,7 +46,7 @@
 #endif
 
 const string serialspeeds[] = { "9600", "19200", "38400", "57600", "115200", "230400", "250000" };
-
+string materials[] = {"pla", "abs", "petg", "tpu", "nylon"};
 
 // convert GUI name to group/key
 bool splitpoint(const string &glade_name, string &group, string &key) {
@@ -674,6 +674,9 @@ void Settings::connect_to_ui (Builder &builder)
 	    vector<string> speeds(serialspeeds,
 				  serialspeeds+sizeof(serialspeeds)/sizeof(string));
 	    set_up_combobox(combo, speeds);
+	  } else if (glade_name == "Slicing.Material") {
+	    vector<string> mat(materials, materials+sizeof(materials)/sizeof(string));
+	    set_up_combobox(combo, mat);
 	  } else if (glade_name.find("Filltype")!=std::string::npos) { // Infill types
 	    uint nfills = sizeof(InfillNames)/sizeof(string);
 	    vector<string> infills(InfillNames,InfillNames+nfills);

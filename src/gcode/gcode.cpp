@@ -487,8 +487,7 @@ void GCode::drawCommands(const Settings &settings, uint start, uint end,
 
 	double extrusionwidth = 0;
 	if (boundary)
-	  extrusionwidth =
-	    settings.GetExtrudedMaterialWidth(settings.get_double("Slicing","LayerThickness"));
+	  extrusionwidth = 0.36; /* FIXME: Make dynamic based on settings */
 
 	start = CLAMP (start, 0, n_cmds-1);
 	end = CLAMP (end, 0, n_cmds-1);

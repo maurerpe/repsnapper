@@ -30,6 +30,8 @@
 #include "model.h"
 #include "shape.h"
 
+extern string materials[];
+
 class Psv {
 protected:
   ps_value_t *v;
@@ -156,8 +158,9 @@ void Model::ConvertToGCode() {
   int skins = settings.get_integer("Slicing","Skins");
   double marginx = settings.get_double("Hardware", "PrintMargin.X");
   double marginy = settings.get_double("Hardware", "PrintMargin.Y");
+  string matname = materials[settings.get_integer("Slicing", "Material")];
   
-  const ps_value_t *mat = config.Get("materials", "pla");
+  const ps_value_t *mat = config.Get("materials", matname.c_str());
   double efeed = PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(mat, "nozzle-feedrate", NULL), 0), 1));
   if (PS_GetMember(mat, "width/height", NULL))
     wh = PS_AsFloat(PS_GetMember(mat, "width/height", NULL));

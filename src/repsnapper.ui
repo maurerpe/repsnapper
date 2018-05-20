@@ -7835,7 +7835,7 @@ Otherwise the STL will contain separate Objects and it will be in ASCII mode (so
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
                                                 <property name="xalign">0.40000000596046448</property>
-                                                <property name="label" translatable="yes">Layer Height:</property>
+                                                <property name="label" translatable="yes">Material:</property>
                                               </object>
                                               <packing>
                                                 <property name="left_attach">1</property>
@@ -7843,17 +7843,10 @@ Otherwise the STL will contain separate Objects and it will be in ASCII mode (so
                                               </packing>
                                             </child>
                                             <child>
-                                              <object class="GtkSpinButton" id="Slicing.LayerThickness">
-                                                <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                                <property name="invisible_char">•</property>
-                                                <property name="invisible_char_set">True</property>
-                                                <property name="primary_icon_activatable">False</property>
-                                                <property name="secondary_icon_activatable">False</property>
-                                                <property name="primary_icon_sensitive">True</property>
-                                                <property name="secondary_icon_sensitive">True</property>
-                                                <property name="digits">2</property>
-                                              </object>
+					      <object class="GtkComboBox" id="Slicing.Material">
+						<property name="visible">True</property>
+						<property name="can_focus">False</property>
+					      </object>
                                               <packing>
                                                 <property name="left_attach">2</property>
                                                 <property name="right_attach">3</property>
