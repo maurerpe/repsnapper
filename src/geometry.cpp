@@ -41,17 +41,26 @@ bool isleftof(const Vector2d &center, const Vector2d &A, const Vector2d &B)
   return (position >= 0);
 }
 
-long double planeAngleBetween(const Vector2d &V1, const Vector2d &V2)
-{
-    long double dotproduct =  V1.dot(V2);
-    long double length = V1.length() * V2.length();
-    long double quot = dotproduct / length;
-    if (quot > 1  && quot < 1.0001) quot = 1; // strange case where acos => NaN
-    if (quot < -1 && quot > -1.0001) quot = -1;
-    long double result = acosl( quot ); // 0 .. pi
-    if (isleftof(Vector2d(0,0), V2, V1))
-        result = -result;
-    return result;
+// long double planeAngleBetween(const Vector2d &V1, const Vector2d &V2)
+// {
+//     long double dotproduct =  V1.dot(V2);
+//     long double length = V1.length() * V2.length();
+//     long double quot = dotproduct / length;
+//     if (quot > 1  && quot < 1.0001) quot = 1; // strange case where acos => NaN
+//     if (quot < -1 && quot > -1.0001) quot = -1;
+//     long double result = acosl( quot ); // 0 .. pi
+//     if (isleftof(Vector2d(0,0), V2, V1))
+//         result = -result;
+//     return result;
+// }
+
+double planeAngleBetween(const Vector2d &V1, const Vector2d &V2) {
+  Vector2d a = normalized(V1);
+  Vector2d b = normalized(V2);
+  double bx = a[0] * b[0] + a[1] * b[1];
+  double by = a[0] * b[1] - a[1] * b[0];
+
+  return atan2(by, bx);
 }
 
 void moveArcballTrans(Matrix4fT &matfT, const Vector3d &delta) {

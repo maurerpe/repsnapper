@@ -91,7 +91,7 @@ void Model::ClearGCode()
 
 Glib::RefPtr<Gtk::TextBuffer> Model::GetGCodeBuffer()
 {
-  return gcode.buffer;
+  return gcode.get_buffer();
 }
 
 void Model::GlDrawGCode(int layerno)
@@ -260,28 +260,7 @@ void Model::ReadGCode(Glib::RefPtr<Gio::File> file)
   gcode.Read (this, settings.get_extruder_letters(), m_progress, file->get_path());
   m_progress->stop (_("Done"));
   is_calculating=false;
-  Max = gcode.Max;
-  Min = gcode.Min;
-  Center = (Max + Min) / 2.0;
-  m_signal_zoom.emit();
 }
-
-
-void Model::translateGCode(Vector3d trans)
-{
-  if (is_calculating) return;
-  if (is_printing) return;
-  is_calculating=true;
-  gcode.translate(trans);
-
-  string GcodeTxt;
-  gcode.MakeText (GcodeTxt, settings, m_progress);
-  Max = gcode.Max;
-  Min = gcode.Min;
-  Center = (Max + Min) / 2.0;
-  is_calculating=false;
-}
-
 
 
 void Model::ModelChanged()
@@ -688,7 +667,7 @@ void Model::CalcBoundingBoxAndCenter(bool selected_only)
   }
 
   Center = (Max + Min) / 2.0;
-  m_signal_zoom.emit();
+  //m_signal_zoom.emit();
 }
 
 Vector3d Model::GetViewCenter()

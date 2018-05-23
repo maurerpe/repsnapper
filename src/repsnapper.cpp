@@ -27,7 +27,7 @@
 
 #include "ui/view.h"
 #include "ui/progress.h"
-#include "gcode/gcode.h"
+#include "gcode.h"
 #include "model.h"
 
 using namespace std;

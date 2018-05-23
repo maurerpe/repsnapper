@@ -92,11 +92,9 @@ void View::connect_tooltoggled(const char *name, const sigc::slot<void, Gtk::Tog
   }
 }
 
-
+/* FIXME: Dead code */
 void View::move_gcode_to_platform ()
 {
-  m_model->translateGCode(- m_model->gcode.Min
-			  + m_model->settings.getPrintMargin());
 }
 
 void View::convert_to_gcode ()
@@ -820,10 +818,9 @@ void View::stl_added (Gtk::TreePath &path)
   m_treeview->get_selection()->select (path);
 }
 
-void View::set_SliderBBox(const Vector3d& bbmin, const Vector3d& bbmax)
+void View::set_SliderBBox(double max_z)
 {
-  double smin = 0, //max(0.0, bbmin.z()),
-    smax = max(smin+0.001, bbmax.z());
+  double smin = 0, smax = max(smin+0.001, max_z);
   Gtk::HScale * scale;
   m_builder->get_widget ("Display.LayerValue", scale);
   if (scale)
@@ -839,7 +836,7 @@ void View::set_SliderBBox(const Vector3d& bbmin, const Vector3d& bbmax)
 void View::model_changed ()
 {
   m_translation_row->selection_changed();
-  set_SliderBBox(m_model->Min, m_model->Max);
+  set_SliderBBox(m_model->Max.z());
   show_notebooktab("model_tab", "controlnotebook");
   queue_draw();
 }
@@ -871,7 +868,7 @@ void View::show_notebooktab (string name, string notebookname) const
 
 void View::gcode_changed ()
 {
-  set_SliderBBox(m_model->gcode.Min, m_model->gcode.Max);
+  set_SliderBBox(m_model->gcode.max_z());
   // show gcode result
   show_notebooktab("gcode_result_win", "gcode_text_notebook");
   show_notebooktab("gcode_tab", "controlnotebook");
@@ -985,8 +982,6 @@ bool View::move_selection(float x, float y, float z)
     for (uint o=0; o<objects.size(); o++) {
       objects[o]->transform3D.move(Vector3d(x,y,z));
     }
-  } else {
-    m_model->translateGCode(Vector3d(10*x,10*y,z));
   }
   return true;
 }
@@ -1365,7 +1360,7 @@ void View::setNonPrintingMode(bool noprinting, string filename) {
 void View::PrintToFile() {
   if (printtofile_name != "") {
     if (m_model) {
-      if (m_model->gcode.commands.size() == 0) {
+      if (m_model->gcode.empty()) {
 	alert(Gtk::MESSAGE_WARNING,"No GCode","Generate GCode first");
 	return;
       }
@@ -1510,8 +1505,9 @@ void View::setModel(Model *model)
 void View::on_gcodebuffer_cursor_set(const Gtk::TextIter &iter,
 				     const Glib::RefPtr <Gtk::TextMark> &refMark)
 {
-  if (m_model)
-    m_model->gcode.updateWhereAtCursor(m_model->settings.get_extruder_letters());
+  /* FIXME: Add add functionality back in */
+  //  if (m_model)
+  //  m_model->gcode.updateWhereAtCursor(m_model->settings.get_extruder_letters());
   if (m_renderer)
     m_renderer->queue_draw();
 }
@@ -1922,16 +1918,17 @@ void View::Draw (vector<Gtk::TreeModel::Path> &selected, bool objects_only)
 	glPolygonOffset (-0.5f, -0.5f);
 	glDisable (GL_POLYGON_OFFSET_FILL);
 
+	// FIXME: Add functionality back in
 	// Draw GCode, which already incorporates any print offset
         if (!objects_only && !m_model->isCalculating()) {
-	  if (m_gcodetextview->has_focus()) {
-	    double z = m_model->gcode.currentCursorWhere.z();
-	    m_model->GlDrawGCode(z);
-	  }
-	  else {
-	    m_model->gcode.currentCursorWhere = Vector3d::ZERO;
-	    m_model->GlDrawGCode();
-	  }
+	  //if (m_gcodetextview->has_focus()) {
+	  //  double z = m_model->gcode.currentCursorWhere.z();
+	  //  m_model->GlDrawGCode(z);
+	  //}
+	  //else {
+	    //m_model->gcode.currentCursorWhere = Vector3d::ZERO;
+	  m_model->GlDrawGCode(m_model->settings.get_double("Display", "GCodeDrawStart"));
+	    //}
 	}
 
 	// Draw all objects

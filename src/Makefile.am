@@ -37,6 +37,7 @@ SHARED_SRC= \
 	src/model.cpp \
 	src/model_slice.cpp \
 	src/shape.cpp \
+	src/gcode.cpp \
 	src/triangle.cpp \
 	src/gllight.cpp \
 	src/arcball.cpp \
@@ -53,6 +54,7 @@ SHARED_INC= \
 	src/model.h \
 	src/objtree.h \
 	src/shape.h \
+	src/gcode.h \
 	src/triangle.h \
 	src/files.h \
 	src/stdafx.h \
@@ -62,7 +64,7 @@ SHARED_INC= \
 	src/types.h
 
 include src/ui/Makefile.am
-include src/gcode/Makefile.am
+#include src/gcode/Makefile.am
 include src/printer/Makefile.am
 
 # TEST_SOURCES=unittest.cpp

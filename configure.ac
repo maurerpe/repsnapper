@@ -50,6 +50,10 @@ AC_OPENMP()
 
 PKG_CHECK_MODULES(LIBZIP, libzip >= 0.10)
 
+AC_SEARCH_LIBS([tan], [m], [], [
+  AC_MSG_ERROR([unable to find library containing tan])
+])
+
 AC_SEARCH_LIBS([PS_ParseJsonFile], [printer_settings], [], [
   AC_MSG_ERROR([unable to find the printer_settings library])
 ])

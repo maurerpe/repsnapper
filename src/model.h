@@ -29,7 +29,7 @@
 
 
 #include "objtree.h"
-#include "gcode/gcode.h"
+#include "gcode.h"
 #include "settings.h"
 
 #ifdef _MSC_VER // Visual C++ compiler
@@ -98,8 +98,6 @@ public:
 	// GCode Functions
 	void init();
 	void ReadGCode(Glib::RefPtr<Gio::File> file);
-	void translateGCode(Vector3d trans);
-
 	void ConvertToGCode();
 
 	void MakeRaft(GCodeState &state, double &z);
