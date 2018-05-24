@@ -92,8 +92,7 @@ class GCode {
 	    int linewidth=3);
   
   void drawCommands(const Settings &settings, uint start, uint end,
-		    bool liveprinting, int linewidth, bool arrows, bool boundary=false,
-                    bool onlyZChange = false);
+		    bool liveprinting, int linewidth);
   
   double GetTotalExtruded(void) const;
   double GetTimeEstimation(void) const;

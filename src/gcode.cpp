@@ -294,12 +294,11 @@ void GCode::draw(const Settings &settings,
   
   drawCommands(settings,
 	       getLayerStart(layer), getLayerEnd(layer) + 1,
-	       liveprinting, linewidth, false);
+	       liveprinting, linewidth);
 }
 
 void GCode::drawCommands(const Settings &settings, uint start, uint end,
-			 bool liveprinting, int linewidth, bool arrows, bool boundary,
-			 bool onlyZChange) {
+			 bool liveprinting, int linewidth) {
   size_t count;
   GCodeCmd *cmd;
 
@@ -337,9 +336,9 @@ void GCode::drawCommands(const Settings &settings, uint start, uint end,
   /* FIXME: More colors for multiple extruders */
   /* FIXME: Interpolate arcs */
   glLineWidth(linewidth);
-  if (liveprinting)
+  if (liveprinting) {
     glColor4fv(settings.get_colour("Display","GCodePrintingColour"));
-  else {
+  } else {
     string extrudername =
       settings.numberedExtruder("Extruder", 0);
     glColor4fv(settings.get_colour(extrudername,"DisplayColour"));
@@ -407,7 +406,7 @@ size_t GCode::getLayerStart(const uint layerno) const {
 }
 
 size_t GCode::getLayerEnd(const uint layerno) const {
-  return getLayerStart(layerno + 1) - 1;
+  return getLayerStart(layerno + 1);
 }
 
 double GCode::timeLeft(const size_t commandno) const {

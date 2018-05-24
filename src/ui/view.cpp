@@ -514,9 +514,6 @@ void View::log_msg(Gtk::TextView *tview, string s)
   c_buffer->insert (tend, s);
   tend = c_buffer->end();
   tview->scroll_to(tend);
-  //tview->queue_draw();
-  // while(Gtk::Main::events_pending())
-  //     Gtk::Main::iteration();
 }
 
 void View::err_log(string s)
@@ -534,39 +531,10 @@ void View::echo_log(string s)
 
 void View::set_logging(bool logging)
 {
-  // cerr << "set log " << logging<< endl;
-  // if (logging) {
-  //   logprint_timeout = Glib::signal_timeout().connect
-  //     (sigc::mem_fun(*this, &View::logprint_timeout_cb), 500);
-  // } else {
-  //   if (logprint_timeout.connected()) {
-  //     logprint_timeout_cb();
-  //     logprint_timeout.disconnect();
-  //   }
-  // }
 }
 
 bool View::logprint_timeout_cb()
 {
-  // GDK_THREADS_ENTER ();
-  // cerr << "log ";
-  // // while(Gtk::Main::events_pending())
-  // //   Gtk::Main::iteration();
-  // if (m_printer->error_buffer.length() > 0) {
-  //   err_log (m_printer->error_buffer);
-  //   m_printer->error_buffer = "";
-  // }
-  // if (m_printer->echo_buffer.length() > 0) {
-  //   echo_log(m_printer->echo_buffer);
-  //   m_printer->echo_buffer  = "";
-  // }
-  // if (m_printer->commlog_buffer.length() > 0) {
-  //   comm_log(m_printer->commlog_buffer);
-  //   m_printer->commlog_buffer = "";
-  // }
-  // // while(Gtk::Main::events_pending())
-  // //   Gtk::Main::iteration();
-  // GDK_THREADS_LEAVE ();
   return true;
 }
 

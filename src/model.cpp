@@ -105,16 +105,9 @@ void Model::GlDrawGCode(int layerno)
     if (currentlayer>=0) {
       int start = gcode.getLayerStart(currentlayer);
       int end   = gcode.getLayerEnd(currentlayer);
-      //gcode.draw (settings, currentlayer, true, 1);
-      bool displaygcodeborders = settings.get_boolean("Display","DisplayGCodeBorders");
-      gcode.drawCommands(settings, start, currentprintingline, true, 4, false,
-			 displaygcodeborders);
-      gcode.drawCommands(settings, currentprintingline,  end,  true, 1, false,
-			 displaygcodeborders);
+      gcode.drawCommands(settings, start, currentprintingline, true, 4);
+      gcode.drawCommands(settings, currentprintingline,  end,  true, 1);
     }
-    // gcode.drawCommands(settings, currentprintingline-currentbufferedlines,
-    // 		       currentprintingline, false, 3, true,
-    // 		       settings.Display.DisplayGCodeBorders);
   }
 }
 
