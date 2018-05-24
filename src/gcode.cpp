@@ -320,9 +320,9 @@ void GCode::drawCommands(const Settings &settings, uint start, uint end,
   }
   
   /* FIXME: Interpolate arcs */
-  glBegin(GL_LINES);
   glLineWidth(1);
   glColor4fv(settings.get_colour("Display","GCodeMoveColour"));
+  glBegin(GL_LINES);
   for (count = start; count < end; count++) {
     cmd = &cmds[count];
     if (cmd->spec_e)
@@ -336,7 +336,6 @@ void GCode::drawCommands(const Settings &settings, uint start, uint end,
 
   /* FIXME: More colors for multiple extruders */
   /* FIXME: Interpolate arcs */
-  glBegin(GL_LINES);
   glLineWidth(linewidth);
   if (liveprinting)
     glColor4fv(settings.get_colour("Display","GCodePrintingColour"));
@@ -345,6 +344,7 @@ void GCode::drawCommands(const Settings &settings, uint start, uint end,
       settings.numberedExtruder("Extruder", 0);
     glColor4fv(settings.get_colour(extrudername,"DisplayColour"));
   }
+  glBegin(GL_LINES);
   for (count = start; count < end; count++) {
     cmd = &cmds[count];
     if (!cmd->spec_e)
