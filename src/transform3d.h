@@ -26,6 +26,7 @@ class Transform3D
 {
 	Matrix4d m_transform;
 	Vector3d xyz_scale;
+	double scale_all;
 	void update_transform();
 public:
   Transform3D();

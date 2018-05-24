@@ -305,30 +305,22 @@ void Shape::FitToVolume(const Vector3d &vol)
 
 void Shape::Scale(double in_scale_factor, bool calcbbox)
 {
-  transform3D.move(-Center);
   transform3D.scale(in_scale_factor);
-  transform3D.move(Center);
   if (calcbbox)
     CalcBBox();
 }
 
 void Shape::ScaleX(double x)
 {
-  transform3D.move(-Center);
   transform3D.scale_x(x);
-  transform3D.move(Center);
 }
 void Shape::ScaleY(double x)
 {
-  transform3D.move(-Center);
   transform3D.scale_y(x);
-  transform3D.move(Center);
 }
 void Shape::ScaleZ(double x)
 {
-  transform3D.move(-Center);
   transform3D.scale_z(x);
-  transform3D.move(Center);
 }
 
 void Shape::CalcBBox()

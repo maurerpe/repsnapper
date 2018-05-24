@@ -28,24 +28,19 @@ Transform3D::Transform3D()
 }
 
 void Transform3D::update_transform() {
-  transform = Matrix4d::IDENTITY;
-  // scale the unrotated object
+  transform = m_transform;
+  
   for (uint i = 0; i < 3; i++)
-    transform(i,i) *= xyz_scale(i);
-  transform *= m_transform;
+    transform(i,i) *= xyz_scale(i) * scale_all;
 
-  // for (uint i = 0; i < 3; i++)
-  //   transform(3,i) = 0;
-  // translate
-  for (uint i = 0; i < 3; i++)
-    transform(3,i) = m_transform(3,i);
+  //cout << "Transform is: " << endl << transform << endl;
 }
-
 
 void Transform3D::identity()
 {
   m_transform = Matrix4d::IDENTITY;
   xyz_scale = Vector3d(1,1,1);
+  scale_all = 1;
   update_transform();
 }
 
@@ -75,8 +70,7 @@ void Transform3D::move(const Vector3d &delta)
 
 void Transform3D::scale(double x)
 {
-  if (x==0) return;
-  m_transform[3][3] = 1/x;
+  scale_all = x;
   update_transform();
 }
 
