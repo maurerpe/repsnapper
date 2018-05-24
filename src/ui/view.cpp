@@ -109,6 +109,7 @@ void View::convert_to_gcode ()
     }
   m_model->ConvertToGCode();
 
+  gcode_status();
 }
 
 void View::preview_file (Glib::RefPtr< Gio::File > file)
@@ -189,6 +190,8 @@ void View::do_load ()
     else
       m_model->Read(files[i]);
   }
+  if (type == RSFilechooser::GCODE)
+    gcode_status();
   show_notebooktab("model_tab", "controlnotebook");
 }
 
@@ -259,6 +262,18 @@ void View::save_stl ()
   // FileChooser::ioDialog (m_model, this, FileChooser::SAVE, FileChooser::STL);
 }
 
+void View::gcode_status() {
+  if (!m_model->gcode.empty()) {
+    stringstream ostr;
+    double time = m_model->gcode.GetTimeEstimation();
+    int hr = floor(time / 3600);
+    int min = fmod(floor(time / 60), 60);
+    double sec = fmod(time, 60);
+    ostr << "GCode: " << hr << "h " << min << "m " << sec << "s & " << (m_model->gcode.GetTotalExtruded() / 1000) << "m";
+    statusBarMessage(ostr.str());
+  }
+}
+
 void View::load_gcode ()
 {
   PrintInhibitor inhibitPrint(m_printer);
@@ -292,7 +307,6 @@ void View::send_gcode ()
 {
   m_printer->Send (m_gcode_entry->get_text());
   m_gcode_entry->select_region(0,-1);
-  //m_gcode_entry->set_text("");
 }
 
 View *View::create(Model *model)
@@ -357,18 +371,15 @@ void View::printing_changed()
 {
   bool printing = m_printer->IsPrinting();
 
-  if ( printing )
-    m_progress->start (_("Printing"), m_printer->GetTotalPrintingLines() );
+  if (printing)
+    m_progress->start(_("Printing"), 100.0);
   else
-    m_progress->stop (_("Done"));
+    m_progress->stop(_("Done"));
 
-  //rGlib::Mutex::Lock lock(mutex);
   m_model->SetIsPrinting(printing);
-  //m_print_button->set_active(printing);
-  if ( printing )
+
+  if (printing)
     m_pause_button->set_active( false );
-  // while(Gtk::Main::events_pending())
-  //   Gtk::Main::iteration();
 }
 
 void View::enable_logging_toggled (Gtk::ToggleButton *button)
@@ -897,14 +908,7 @@ void View::power_toggled(Gtk::ToggleToolButton *button)
 void View::print_clicked()
 {
   m_printer->StartPrinting();
-  //printing_changed();
 }
-
-// void View::stop_clicked()
-// {
-//   m_printer->StopButton();
-//   printing_changed();
-// }
 
 void View::pause_toggled(Gtk::ToggleToolButton *button)
 {
@@ -1528,7 +1532,7 @@ void View::tree_selection_changed()
     get_selected_objects (objects, shapes);
     if (shapes.size() > 0) {
       ostringstream ostr;
-      ostr << shapes.back()->filename << ": " << shapes.back()->size() << " triangles" ;
+      ostr << shapes.back()->filename << ": " << shapes.back()->size() << " triangles ";
       statusBarMessage(ostr.str());
     }
     m_model->m_inhibit_modelchange = true;
@@ -1946,20 +1950,17 @@ void View::Draw (vector<Gtk::TreeModel::Path> &selected, bool objects_only)
 
 void View::showCurrentPrinting(unsigned long lineno)
 {
-  //Glib::Mutex::Lock lock(mutex);
   if (lineno == 0) {
     m_progress->stop(_("Done"));
     return;
   }
   bool cont = true;
-  cont = m_progress->update(lineno, true);
+  cont = m_progress->update(m_model->gcode.percentDone(lineno),
+			    true,
+			    m_model->gcode.timeLeft(lineno));
   if (!cont) { // stop by progress bar
     m_printer->Pause();
-  //  printing_changed();
   }
   m_model->setCurrentPrintingLine(lineno);
   queue_draw();
-  // while(Gtk::Main::events_pending()) {
-  //   Gtk::Main::iteration();
-  // }
 }

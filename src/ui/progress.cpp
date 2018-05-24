@@ -99,7 +99,7 @@ string timeleft_str(long seconds) {
 }
 
 
-bool ViewProgress::update (const double value, bool take_priority)
+bool ViewProgress::update (const double value, bool take_priority, double time_left)
 {
   // Don't allow progress to go backward
   if (value < m_bar_cur)
@@ -120,12 +120,14 @@ bool ViewProgress::update (const double value, bool take_priority)
   }
 
   if (value > 0) {
-    Glib::TimeVal now;
-    now.assign_current_time();
-    const double used = (now - start_time).as_double(); // seconds
-    const double total = used * m_bar_max  / value;
-    const long left = (long)(total-used);
-    m_label->set_label(label+" ("+timeleft_str(left)+")");
+    if (time_left < 0) {
+      Glib::TimeVal now;
+      now.assign_current_time();
+      const double used = (now - start_time).as_double(); // seconds
+      const double total = used * m_bar_max  / value;
+      time_left = (long)(total-used);
+    }
+    m_label->set_label(label+" ("+timeleft_str(time_left)+")");
   }
 
   if (take_priority)

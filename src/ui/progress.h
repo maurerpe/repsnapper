@@ -24,9 +24,7 @@
 
 class Progress {
 
-  //  ViewProgress * v_progress;
  public:
-  //  Progress(ViewProgress * v_progress){this->v_progress = v_progress;};
   // Progress reporting
   sigc::signal< void, const char *, double > m_signal_progress_start;
   sigc::signal< void, double >               m_signal_progress_update;
@@ -67,8 +65,7 @@ class ViewProgress {
   void start (const char *label, double max);
   bool restart (const char *label, double max);
   void stop (const char *label = "");
-  bool update (const double value, bool take_priority=true);
-  //ViewProgress(Progress *model, Gtk::Box *box, Gtk::ProgressBar *bar, Gtk::Label *label);
+  bool update (const double value, bool take_priority=true, double time_left = -1);
   ViewProgress(){};
   ViewProgress(Gtk::Box *box, Gtk::ProgressBar *bar, Gtk::Label *label);
   void set_label (std::string label);

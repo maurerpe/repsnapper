@@ -44,6 +44,7 @@ class View : public Gtk::Window
   bool get_userconfirm(string maintext, string secondarytext="") const;
 
   void toggle_fullscreen();
+  void gcode_status();
   void load_gcode();
   void save_gcode();
   void move_gcode_to_platform ();
