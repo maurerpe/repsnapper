@@ -110,32 +110,17 @@ Render::~Render()
 
 void Render::set_model(Model *model)
 {
-  model->signal_zoom().connect (sigc::mem_fun(*this, &Render::zoom_to_model));
-  zoom_to_model();
+  if (!model)
+    return;
+  
+  m_zoom = model->settings.getPrintVolume().find_max();
+  setArcballTrans(m_transform,
+		  model->settings.getPrintMargin() );
+  queue_draw();
 }
 
 void Render::selection_changed()
 {
-  queue_draw();
-}
-
-void Render::zoom_to_model()
-{
-  Model *model = get_model();
-  if (!model)
-    return;
-
-  // reset the zoom to cover the entire model
-  m_zoom = (model->Max - model->Min).find_max();
-  // reset the pan to center
-  setArcballTrans(m_transform, Vector3d::ZERO);
-  // zoom to platform if model has zero size
-  if (m_zoom == 0) {
-    m_zoom = model->settings.getPrintVolume().find_max();
-    setArcballTrans(m_transform,
-   		    model->settings.getPrintMargin() );
-    //model->settings.getPrintVolume()/2.);
-  }
   queue_draw();
 }
 

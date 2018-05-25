@@ -57,7 +57,6 @@ class Render : public Gtk::GL::DrawingArea
   GtkWidget *get_widget();
   void set_model (Model *model);
   void set_zoom (float zoom) {m_zoom=zoom;};
-  void zoom_to_model();
   void set_transform(const Matrix4fT &transform) {m_transform=transform;};
 
   static void draw_string(const Vector3d &pos, const string s);

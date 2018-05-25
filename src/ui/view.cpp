@@ -134,11 +134,6 @@ void View::preview_file (Glib::RefPtr< Gio::File > file)
 	pMax[k] = max(stlMax[k], pMax[k]);
       }
     }
-    //cerr << pMin << pMax << endl;
-    m_renderer->set_zoom((pMax - pMin).find_max()*2);
-    // Matrix4fT tr;
-    // setArcballTrans(tr,(pMin+pMax)/2);
-    // m_renderer->set_transform(tr);
   }
   queue_draw();
   m_model->settings.set_boolean("Display","DisplayPolygons",display_poly);
@@ -1255,7 +1250,6 @@ void View::on_controlnotebook_switch(GtkNotebookPage* page, guint page_num)
   if (!page) return;
   if (m_filechooser) m_filechooser->set_filetype();
   if (m_model)       m_model->preview_shapes.clear();
-  if (m_renderer)    m_renderer->zoom_to_model();
 }
 
 View::~View()
@@ -1419,27 +1413,15 @@ void View::setModel(Model *model)
     (sigc::mem_fun(*this, &View::printing_changed));
   m_printer->signal_now_printing.connect
     (sigc::mem_fun(*this, &View::showCurrentPrinting));
-  // m_printer->signal_logmessage.connect
-  //   (sigc::mem_fun(*this, &View::showPrinterLog));
-
   // Connect / dis-connect button
   m_cnx_view = new ConnectView(m_printer, &m_model->settings);
   Gtk::Box *connect_box = NULL;
   m_builder->get_widget ("p_connect_button_box", connect_box);
   connect_box->add (*m_cnx_view);
 
-  // Gtk::Box *control_box;
-  // m_builder->get_widget ("printer_controls", control_box);
-  // if (control_box)
-  //   control_box->set_sensitive(false);
-
   Gtk::Box *temp_box;
   m_builder->get_widget ("i_temp_box", temp_box);
-  // Gtk::SpinButton *nozzle;
-  // m_builder->get_widget ("Printer.NozzleTemp", nozzle);
   m_temps[TEMP_NOZZLE] = new TempRow(m_model, m_printer, TEMP_NOZZLE);
-  // Gtk::SpinButton *bed;
-  // m_builder->get_widget ("Printer.BedTemp", bed);
   m_temps[TEMP_BED] = new TempRow(m_model, m_printer, TEMP_BED);
   temp_box->add (*m_temps[TEMP_NOZZLE]);
   temp_box->add (*m_temps[TEMP_BED]);

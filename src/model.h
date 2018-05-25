@@ -39,13 +39,11 @@
 
 class Model
 {
-	sigc::signal< void > m_signal_zoom;
 	ViewProgress *m_progress;
 
 public:
 	Gtk::Statusbar *statusbar;
 	// Something in the rfo changed
-	sigc::signal< void > signal_zoom() { return m_signal_zoom; }
 	sigc::signal< void > m_signal_gcode_changed;
 
 	Model();
