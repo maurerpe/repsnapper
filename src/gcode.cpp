@@ -134,6 +134,8 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   cmd.e_no = state.e_no;
   cmd.start = pos;
   cmd.stop = pos;
+  cmd.center = {0, 0, 0};
+  cmd.angle = 0;
   cmd.ccw = 0;
   cmd.e_start = state.ext;
   cmd.e_stop = state.ext;
@@ -158,45 +160,53 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
       state.pos = dest;
       state.ext = ext_end;
       length = len3(dest[0] - pos[0], dest[1] - pos[1], dest[2] - pos[2]);
-    } else if (codes['G'] == 2.0) {
-      // CW Arc
+    } else if (codes['G'] == 2.0 || codes['G'] == 3.0) {
+      // Arc: 2 = CW, 3 = CCW
       cmd.type = arc;
       cmd.stop = dest;
       cmd.e_stop = ext_end;
       state.pos = dest;
       state.ext = ext_end;
+      if (codes['G'] == 3.0)
+	cmd.ccw = 1;
+      
       if (isnormal(codes['R'])) {
-	/* FIXME: Allow calculation of center from radius */
+	radius = codes['R'];
+	Vector3d mid = (pos + dest) / 2.0;
+	double dx = mid.x() - pos.x();
+	double dy = mid.y() - pos.y();
+	double dist = len2(dx, dy);
+	if (dist >= radius) {
+	  center = mid;
+	  radius = dist;
+	} else {
+	  double len = sqrt(radius*radius - dist*dist);
+	  double px = dy / dist;
+	  double py = -dx / dist;
+	  if (cmd.ccw) {
+	    px = -px;
+	    py = -py;
+	  }
+	  center[0] = mid[0] + px * len;
+	  center[1] = mid[1] + py * len;
+	  center[2] = mid[2];
+	}
       } else {
 	radius = len2(dest[0] - center[0], dest[1] - center[1]);
       }
 
+      cmd.center = center;
       angle = planeAngleBetween({pos[0]-center[0], pos[1]-center[1]},
 				{dest[0]-center[0], dest[1]-center[1]});
+
+      if (cmd.ccw)
+	angle = -angle;
+      
       if (angle == 0) {
 	angle = 2 * M_PI;
-      }
-      
-      length = len2(radius * angle, dest[2] - pos[2]);
-    } else if (codes['G'] == 3.0) {
-      // CCW Arc
-      cmd.type = arc;
-      cmd.stop = dest;
-      cmd.e_stop = ext_end;
-      cmd.ccw = 1;
-      state.pos = dest;
-      state.ext = ext_end;
-      if (isnormal(codes['R'])) {
-	/* FIXME: Allow calculation of center from radius */
-      } else {
-	radius = len2(dest[0] - center[0], dest[1] - center[1]);
       }
 
-      angle = planeAngleBetween({dest[0]-center[0], dest[1]-center[1]},
-				{pos[0]-center[0], pos[1]-center[1]});
-      if (angle == 0) {
-	angle = 2 * M_PI;
-      }
+      cmd.angle = angle;
       
       length = len2(radius * angle, dest[2] - pos[2]);
     } else if (codes['G'] == 20.0) {
@@ -306,6 +316,40 @@ void GCode::draw(const Settings &settings,
 	       liveprinting, linewidth);
 }
 
+void GCode::drawSeg(const GCodeCmd *cmd) {
+  if (cmd->type == line) {
+    glVertex3dv((GLdouble*)&cmd->start);
+    glVertex3dv((GLdouble*)&cmd->stop);
+    return;
+  }
+
+  if (cmd->type != arc)
+    return;
+  
+  // Arc
+  Vector3d lastPos = cmd->start;
+  Vector3d center = cmd->center;
+  double angle = cmd->angle;
+  double dz = cmd->stop.z() - cmd->start.z();
+  int ccw = cmd->ccw;
+  
+  Vector3d arcpoint;
+  Vector3d radiusv = lastPos-center;
+  radiusv.z() = 0;
+  double astep = angle/radiusv.length()/30.;
+  if (angle/astep > 10000) astep = angle/10000;
+  if (angle<0) ccw=!ccw;
+  Vector3d axis(0.,0.,ccw?1.:-1.);
+  double startZ = lastPos.z();
+  for (long double a = 0; abs(a) < abs(angle); a+=astep){
+    arcpoint = center + radiusv.rotate(a, axis);
+    if (dz!=0 && angle!=0) arcpoint.z() = startZ + dz*a/angle;
+    glVertex3dv(lastPos);
+    glVertex3dv(arcpoint);
+    lastPos = arcpoint;
+  }
+}
+
 void GCode::drawCommands(const Settings &settings, uint start, uint end,
 			 bool liveprinting, int linewidth) {
   size_t count;
@@ -327,7 +371,6 @@ void GCode::drawCommands(const Settings &settings, uint start, uint end,
     glEnd();
   }
   
-  /* FIXME: Interpolate arcs */
   glLineWidth(1);
   glColor4fv(settings.get_colour("Display","GCodeMoveColour"));
   glBegin(GL_LINES);
@@ -335,15 +378,12 @@ void GCode::drawCommands(const Settings &settings, uint start, uint end,
     cmd = &cmds[count];
     if (cmd->spec_e)
       continue;
-    
-    glVertex3dv((GLdouble*)&cmd->start);
-    glVertex3dv((GLdouble*)&cmd->stop);
-    
+
+    drawSeg(cmd);
   }
   glEnd();
 
   /* FIXME: More colors for multiple extruders */
-  /* FIXME: Interpolate arcs */
   glLineWidth(linewidth);
   if (liveprinting) {
     glColor4fv(settings.get_colour("Display","GCodePrintingColour"));
@@ -357,9 +397,8 @@ void GCode::drawCommands(const Settings &settings, uint start, uint end,
     cmd = &cmds[count];
     if (!cmd->spec_e)
       continue;
-    
-    glVertex3dv((GLdouble*)&cmd->start);
-    glVertex3dv((GLdouble*)&cmd->stop);
+
+    drawSeg(cmd);
   }
   glEnd();
 }

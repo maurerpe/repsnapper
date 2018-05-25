@@ -48,6 +48,7 @@ class GCode {
     Vector3d start;
     Vector3d stop;
     Vector3d center;
+    double angle;
     int ccw;
     double e_start;
     double e_stop;
@@ -75,6 +76,7 @@ class GCode {
   vector<size_t> layers; // First command at each layer
   
   static void ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, double &max_feedrate, double &home_feedrate);
+  void drawSeg(const GCodeCmd *cmd);
   
   Glib::RefPtr<Gtk::TextBuffer> buffer;
  public:
