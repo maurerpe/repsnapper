@@ -1572,36 +1572,13 @@ void View::divide_selected_objects()
 {
 }
 
-// // Given a widget by label, adds a statusbar message on rollover
-// void View::add_statusbar_msg(const char *name, const char *msg)
-// {
-//   Gtk::Widget *widget = NULL;
-//   m_builder->get_widget (name, widget);
-//   add_statusbar_msg (widget, msg);
-// }
-
-// // Given a widget by pointer reference, adds a statusbar message on rollover
-// void View::add_statusbar_msg(Gtk::Widget *widget, const char *msg)
-// {
-//   widget->signal_enter_notify_event().connect
-//       (sigc::bind<Glib::ustring>(sigc::mem_fun(*this, &View::updateStatusBar), msg));
-//   widget->signal_leave_notify_event().connect
-//       (sigc::bind<Glib::ustring>(sigc::mem_fun(*this, &View::updateStatusBar), ""));
-// }
-
 /* Handler for widget rollover. Displays a message in the window status bar */
 bool View::statusBarMessage(Glib::ustring message)
 {
     Gtk::Statusbar *statusbar;
     m_builder->get_widget("statusbar", statusbar);
-    // if(event->type == GDK_ENTER_NOTIFY) {
     statusbar->push(message);
-    // } else { // event->type == GDK_LEAVE_NOTIFY
-    //     /* 2 pops because sometimes a previous leave event may have be missed
-    //      * leaving a message on the statusbar stack */
-    //     statusbar->pop();
-    //     statusbar->pop();
-    // }
+
     return false;
 }
 

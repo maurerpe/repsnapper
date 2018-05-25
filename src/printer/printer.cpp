@@ -350,33 +350,21 @@ bool Printer::QueryTemp( void ) {
     temp_timeout.disconnect();
 
   if ( IsConnected() && m_model && m_model->settings.get_boolean("Misc","TempReadingEnabled") ) {
-    SendAsync( "M105" );
+    Send( string( "M105" ) );
     waiting_temp = true;
   }
 
   return true;
 }
 
-const Glib::RefPtr<Glib::Regex> templineRE_T =
-	Glib::Regex::create("(?ims)T\\:(?<temp>[\\-\\.\\d]+?)\\s+?");
-const Glib::RefPtr<Glib::Regex> templineRE_B =
-	Glib::Regex::create("(?ims)B\\:(?<temp>[\\-\\.\\d]+?)\\s+?");
-
 void Printer::ParseResponse( string line ) {
-  if (line.find("T:") != string::npos) {
-    Glib::MatchInfo match_info;
-    vector<string> matches;
-    string name;
-    if (templineRE_T->match(line, match_info)) {
-      std::istringstream iss(match_info.fetch_named("temp").c_str());
-      double temp; iss >> temp;
-      temps[TEMP_NOZZLE] = temp;
-    }
-    if (templineRE_B->match(line, match_info)) {
-      std::istringstream iss(match_info.fetch_named("temp").c_str());
-      double temp; iss >> temp;
-      temps[TEMP_BED] = temp;
-    }
+  size_t loc;
+  if ((loc = line.find("T:")) != string::npos) {
+    temps[TEMP_NOZZLE] = strtod(line.c_str() + loc + 2, NULL);
+
+    if ((loc = line.find("B:")) != string::npos)
+      temps[TEMP_BED] = strtod(line.c_str() + loc + 2, NULL);
+
     waiting_temp = false;
     UpdateTemperatureMonitor();
     signal_temp_changed.emit();
