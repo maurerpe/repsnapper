@@ -43,6 +43,7 @@ class GCode {
     enum CmdType type;
     int e_no;
     int spec_e;
+    int spec_xy;
     int spec_z;
     Vector3d start;
     Vector3d stop;
@@ -58,6 +59,7 @@ class GCode {
   class printer_state {
   public:
     Vector3d pos;
+    double layer_z;
     double ext;
     double feedrate;
     double accel;

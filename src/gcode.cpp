@@ -78,12 +78,14 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   
   if (isnormal(codes['F']))
     state.feedrate = codes['F'] * state.scale;
-  
+
+  cmd.spec_xy = 0;
   if (isnormal(codes['X'])) {
     if (state.is_rel)
       dest[0] += codes['X'] * state.scale;
     else
       dest[0] = codes['X'] * state.scale;
+    cmd.spec_xy = 1;
   }
   
   if (isnormal(codes['Y'])) {
@@ -91,6 +93,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
       dest[1] += codes['Y'] * state.scale;
     else
       dest[1] = codes['Y'] * state.scale;
+    cmd.spec_xy = 1;
   }
 
   cmd.spec_z = 0;
@@ -100,7 +103,6 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     else
       dest[2] = codes['Z'] * state.scale;
     cmd.spec_z = 1;
-    state.layerno++;
   }
   
   if (isnormal(codes['I']))
@@ -255,8 +257,15 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
     alltext << s << endl;
     
     ParseCmd(s.c_str(), cmd, state, max_feedrate, home_feedrate);
-    if (cmd.spec_z) {
-      layers.push_back(cmds.size());
+    if (cmd.stop.z() != state.layer_z && cmd.spec_e && cmd.spec_xy) {
+      // New layer
+      state.layer_z = cmd.stop.z();
+      if (layers.empty()) {
+	layers.push_back(0);
+      } else {
+	layers.push_back(cmds.size());
+	cmd.layerno = ++state.layerno;
+      }
     }
     cmds.push_back(cmd);
   }
