@@ -123,8 +123,8 @@ class ThreadedPrinterSerial : protected PrinterSerial
   unsigned long GetTotalPrintingLines( void );
   // Return the ending line of the current print
 
-  using PrinterSerial::Send;
-  bool Send( string command );
+  bool SendAsync( const char *command );
+  bool SendAsync( string command );
   // Command may be multiple commands separated by newlines (\n).
   // Such commands are queued atomically.
   // Commands may be sent when printing is active.

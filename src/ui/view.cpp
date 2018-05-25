@@ -305,7 +305,7 @@ void View::slice_svg ()
 
 void View::send_gcode ()
 {
-  m_printer->Send (m_gcode_entry->get_text());
+  m_printer->SendAsync(m_gcode_entry->get_text());
   m_gcode_entry->select_region(0,-1);
 }
 
@@ -397,7 +397,7 @@ void View::fan_enabled_toggled (Gtk::ToggleButton *button)
 {
   if (toggle_block) return;
   if (!button->get_active()) {
-    if (!m_printer->Send ("M107")) {
+    if (!m_printer->SendAsync("M107")) {
       toggle_block = true;
       button->set_active(true);
       toggle_block = false;
@@ -405,7 +405,7 @@ void View::fan_enabled_toggled (Gtk::ToggleButton *button)
   } else {
     std::stringstream oss;
     oss << "M106 S" << (int)m_fan_voltage->get_value();
-    if (!m_printer->Send (oss.str())) {
+    if (!m_printer->SendAsync(oss.str())) {
       toggle_block = true;
       button->set_active(false);
       toggle_block = false;
@@ -497,7 +497,7 @@ void View::custombutton_pressed(string name, Gtk::ToolButton *button)
     editbutton->set_active(false);
     edit_custombutton(name, m_model->settings.get_user_gcode(name), button);
   } else {
-    m_printer->Send(m_model->settings.get_user_gcode(name));
+    m_printer->SendAsync(m_model->settings.get_user_gcode(name));
   }
 }
 
@@ -897,7 +897,7 @@ void View::reset_clicked()
 void View::home_all()
 {
   if (m_printer->IsPrinting()) return;
-  m_printer->Send ("G28");
+  m_printer->SendAsync ("G28");
   for (uint i = 0; i < 3; i++)
     m_axis_rows[i]->notify_homed();
 }

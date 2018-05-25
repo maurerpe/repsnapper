@@ -429,8 +429,12 @@ unsigned long ThreadedPrinterSerial::GetTotalPrintingLines( void ) {
   return lines;
 }
 
-bool ThreadedPrinterSerial::Send( string command ) {
-  return command_buffer.Write( command.c_str(), true );
+bool ThreadedPrinterSerial::SendAsync( const char *command ) {
+  return command_buffer.Write( command, true );
+}
+
+bool ThreadedPrinterSerial::SendAsync( string command ) {
+  return SendAsync( command.c_str() );
 }
 
 string ThreadedPrinterSerial::SendAndWaitResponse( string command ) {

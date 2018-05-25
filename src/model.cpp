@@ -174,18 +174,8 @@ void Model::SaveStl(Glib::RefPtr<Gio::File> file)
     shapes[0]->saveBinarySTL(file->get_path());
   }
   else {
-    if (settings.get_boolean("Misc","SaveSingleShapeSTL")) {
-      Shape single = GetCombinedShape();
-      single.saveBinarySTL(file->get_path());
-    } else {
-      set_locales("C");
-      stringstream sstr;
-      for(uint s=0; s < shapes.size(); s++) {
-	sstr << shapes[s]->getSTLsolid() << endl;
-      }
-      Glib::file_set_contents (file->get_path(), sstr.str());
-      reset_locales();
-    }
+    Shape single = GetCombinedShape();
+    single.saveBinarySTL(file->get_path());
   }
   settings.STLPath = file->get_parent()->get_path();
 }

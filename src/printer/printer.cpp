@@ -160,9 +160,9 @@ bool Printer::SwitchPower( bool on ) {
 
   string resp;
   if ( on )
-    return Send( "M80" );
+    return SendAsync( "M80" );
 
-  return Send( "M81" );
+  return SendAsync( "M81" );
 }
 
 bool Printer::Home( string axis ) {
@@ -172,9 +172,9 @@ bool Printer::Home( string axis ) {
   }
 
   if ( axis == "X" || axis == "Y" || axis == "Z" ) {
-    return Send("G28 "+axis+"0");
+    return SendAsync("G28 "+axis+"0");
   } else if ( axis == "ALL" ) {
-    return Send("G28");
+    return SendAsync("G28");
   }
 
   alert(_("Home called with unknown axis"));
@@ -207,7 +207,7 @@ bool Printer::Move(string axis, double distance, bool relative )
   os << "G1 " << axis << distance << " F" << speed;
   if ( relative ) os << "\nG90";
 
-  return Send( os.str() );
+  return SendAsync( os.str() );
 }
 
 bool Printer::Goto( string axis, double position ) {
@@ -220,7 +220,7 @@ bool Printer::SelectExtruder( int extruder_no ) {
 
   ostringstream os;
   os << "T" << extruder_no;
-  return Send( os.str() );
+  return SendAsync( os.str() );
 }
 
 bool Printer::SetTemp( TempType type, float value, int extruder_no ) {
@@ -248,7 +248,7 @@ bool Printer::SetTemp( TempType type, float value, int extruder_no ) {
     if ( !SelectExtruder( extruder_no ) )
       return false;
 
-  return Send( os.str() );
+  return SendAsync( os.str() );
 }
 
 bool Printer::RunExtruder( double extruder_speed, double extruder_length,
@@ -269,7 +269,7 @@ bool Printer::RunExtruder( double extruder_speed, double extruder_length,
   os << "M82\n";
   os << "G1 F1500";
 
-  return Send( os.str() );
+  return SendAsync( os.str() );
 }
 
 void Printer::alert( const char *message ) {
@@ -350,7 +350,7 @@ bool Printer::QueryTemp( void ) {
     temp_timeout.disconnect();
 
   if ( IsConnected() && m_model && m_model->settings.get_boolean("Misc","TempReadingEnabled") ) {
-    Send( string( "M105" ) );
+    SendAsync( "M105" );
     waiting_temp = true;
   }
 
