@@ -196,14 +196,14 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
       }
 
       cmd.center = center;
-      angle = planeAngleBetween({pos[0]-center[0], pos[1]-center[1]},
-				{dest[0]-center[0], dest[1]-center[1]});
+      angle = CcwAngleBetween({dest[0]-center[0], dest[1]-center[1]},
+			      {pos[0]-center[0], pos[1]-center[1]});
 
-      if (cmd.ccw)
+      if (!cmd.ccw)
 	angle = -angle;
       
-      if (angle == 0) {
-	angle = 2 * M_PI;
+      if (angle <= 0) {
+	angle += 2 * M_PI;
       }
 
       cmd.angle = angle;

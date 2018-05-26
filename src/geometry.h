@@ -29,7 +29,8 @@ void moveArcballTrans(Matrix4fT &matfT, const Vector3d &delta);
 void setArcballTrans(Matrix4fT &matfT, const Vector3d &trans);
 void rotArcballTrans(Matrix4fT &transform,  const Vector3d &axis, double angle);
 
-double planeAngleBetween(const Vector2d &V1, const Vector2d &V2);
+/* (-pi, pi] */
+double CcwAngleBetween(const Vector2d &dest, const Vector2d &ref);
 
 double dist3D_Segment_to_Segment(const Vector3d &S1P0, const Vector3d &S1P1,
 				 const Vector3d &S2P0, const Vector3d &S2P1, double SMALL_NUM);
