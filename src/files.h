@@ -38,7 +38,6 @@ enum filetype_t{
     NONE_STL,
     VRML,
     SVG,
-    AMF,
     UNKNOWN_TYPE
 };
 
@@ -69,15 +68,6 @@ public:
 		      uint max_triangles=0, bool readnormals=false);
 
   bool load_VRML(vector<Triangle> &triangles, uint max_triangles=0);
-
-  bool load_AMF (vector< vector<Triangle> > &triangles,
-		 vector<ustring> &names,
-		 uint max_triangles=0);
-
-  static bool save_AMF (ustring filename,
-			const vector< vector<Triangle> > &triangles,
-			const vector<ustring> &names,
-			bool compressed = true);
 
   static bool parseSTLtriangles_ascii(istream &text,
 				      uint max_triangles, bool readnormals,

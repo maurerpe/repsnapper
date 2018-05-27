@@ -100,11 +100,6 @@ void File::loadTriangles(vector< vector<Triangle> > &triangles,
       loadTriangles(triangles, names, max_triangles);
       return;
     }
-  } else if (_type == AMF) {
-    // multiple shapes per file
-    load_AMF(triangles, names, max_triangles);
-    if (names.size() == 1) // if single shape name by file
-      names[0] = name_by_file;
   } else {
     // single shape per file
     triangles.resize(1);
@@ -116,7 +111,7 @@ void File::loadTriangles(vector< vector<Triangle> > &triangles,
       load_VRML(triangles[0], max_triangles);
     } else {
       cerr << _("Unrecognized file - ") << _file->get_parse_name() << endl;
-      cerr << _("Known extensions: ") << "STL, WRL, AMF." << endl;
+      cerr << _("Known extensions: ") << "STL, WRL" << endl;
     }
   }
   reset_locales();
@@ -132,10 +127,6 @@ filetype_t File::getFileType(ustring filename)
 
     if(extension == "wrl" || extension == "WRL") {
         return VRML;
-    }
-
-    if(extension == "amf" || extension == "AMF") {
-        return AMF;
     }
 
     if(extension != "stl" && extension != "STL") {
@@ -284,12 +275,6 @@ bool File::load_asciiSTL(vector< vector<Triangle> > &triangles,
     file.seekg(where,ios::beg);
   }
 
-  //     if (ret < 0) {// cannot parse, try binary
-  //       cerr << _("Could not read file in ASCII mode, trying Binary: ")<< filename << endl;
-  //       file.close();
-  //       return loadBinarySTL(filename, max_triangles, readnormals);
-  //     }
-
   file.close();
   return true;
 }
@@ -304,9 +289,6 @@ bool File::parseSTLtriangles_ascii (istream &text,
   //cerr << " locale " << std::locale().name() << endl;
 
   shapename = _("Unnamed");
-    // uint step = 1;
-    // if (max_triangles > 0 && max_triangles < num_triangles) {
-    //   step = ceil(num_triangles/max_triangles);
     streampos pos = text.tellg();
     text.seekg(0, ios::end);
     streampos fsize = text.tellg();
@@ -324,7 +306,6 @@ bool File::parseSTLtriangles_ascii (istream &text,
     /* ASCII files start with "solid [Name_of_file]"
      * so get rid of them to access the data */
     string solid;
-    //getline (text, solid);
 
     while(!text.eof()) { // Find next solid
       text >> solid;
@@ -453,12 +434,6 @@ bool File::load_VRML(vector<Triangle> &triangles, uint max_triangles)
     bool finished = false;
     vector<Vector3d> points;
     while(!file.eof() && !finished) {
-      // while (word!="Shape"  && !file.eof())
-      // 	file >> word;
-      // while (word!="Appearance" && !file.eof())
-      // 	file >> word;
-      // while (word!="Coordinate" && !file.eof())
-      // 	file >> word;
       points.clear();
       vertices.clear();
       while (word!="coord" && !file.eof()) // only use coord points
@@ -485,7 +460,6 @@ bool File::load_VRML(vector<Triangle> &triangles, uint max_triangles)
         if (vertices.size() % 3 == 0)
           for (uint i = 0; i < vertices.size(); i += 3)
             points.push_back(Vector3d(vertices[i], vertices[i+1], vertices[i+2]));
-	//cerr << endl;
       }
       indices.clear();
       while (word!="coordIndex"  && !file.eof())
@@ -516,148 +490,6 @@ bool File::load_VRML(vector<Triangle> &triangles, uint max_triangles)
     file.close();
     return true;
 }
-
-
-// does not cross-compile ....
-#ifndef WIN32
-#define ENABLE_AMF 1
-#else
-#define ENABLE_AMF 0
-#endif
-
-#if ENABLE_AMF
-#include "amf/amftools-code/include/AMF_File.h"
- class AMFLoader : public AmfFile
- {
-   double _scale;
- public:
-   AMFLoader() : _scale(1.) {};
-   ~AMFLoader(){};
-   bool open(ustring path) {
-     bool ok = Load(path);
-     if (!ok)
-       cerr << "AMF Error: " << GetLastErrorMsg() << endl;
-     return ok;
-   }
-   Vector3d getVertex(const nMesh &mesh, uint i) const
-   {
-     nCoordinates c = mesh.Vertices.VertexList[i].Coordinates;
-     return Vector3d(_scale * c.X, _scale * c.Y, _scale * c.Z);
-   }
-   Triangle getTriangle(const nMesh &mesh, const nTriangle &t)
-   {
-     return Triangle(getVertex(mesh, t.v1),
-		     getVertex(mesh, t.v2),
-		     getVertex(mesh, t.v3));
-   }
-
-   bool getObjectTriangles(uint onum, vector<Triangle> &triangles)
-   {
-     nObject* object = GetObject(onum);
-     uint nmeshes = object->Meshes.size();
-     for (uint m = 0; m < nmeshes; m++) {
-       const nMesh mesh = object->Meshes[m];
-       //cerr << "Units "<<  GetUnitsString() << endl;
-       switch (aUnit) {
-       case UNIT_M:  _scale = 1000.; break;
-       case UNIT_IN: _scale = 25.4;  break;
-       case UNIT_FT: _scale = 304.8; break;
-       case UNIT_UM: _scale = 0.001; break;
-       case UNIT_MM:
-       default: _scale = 1.; break;
-       }
-       uint nvolumes = mesh.Volumes.size();
-       for (uint v = 0; v < nvolumes; v++) {
-	 uint ntria = mesh.Volumes[v].Triangles.size();
-	 for (uint t = 0; t < ntria; t++) {
-	   triangles.push_back( getTriangle(mesh, mesh.Volumes[v].Triangles[t]) );
-	 }
-       }
-     }
-     return true;
-   }
-
- };
- class AMFWriter : public AmfFile
- {
- public:
-   AMFWriter() {};
-   ~AMFWriter() {};
-
-   nVertex vertex(const Vector3d &v) const {
-     return nVertex(v.x(), v.y(), v.z());
-   }
-
-   bool AddObject(const vector<Triangle> &triangles,
-		  const ustring name)
-   {
-     int num = AmfFile::AddObject(string(name));
-     if (num<0) return false;
-     nObject* object = GetObject(num, true);
-     if (!object) return false;
-     nMesh mesh;
-     for (uint t = 0; t <  triangles.size(); t++) {
-       nVertex A = vertex(triangles[t].A);
-       mesh.AddVertex(A);
-       nVertex B = vertex(triangles[t].B);
-       mesh.AddVertex(B);
-       nVertex C = vertex(triangles[t].C);
-       mesh.AddVertex(C);
-     }
-     nVolume* vol = mesh.NewVolume(name);
-     for (uint t = 0; t <  triangles.size(); t++) {
-       nTriangle tr(3*t, 3*t+1, 3*t+2);
-       vol->AddTriangle(tr);
-     }
-     object->Meshes.push_back(mesh);
-     return true;
-   }
-
- };
-#endif
-
-bool File::load_AMF(vector< vector<Triangle> > &triangles,
-		    vector<ustring> &names,
-		    uint max_triangles)
-{
-#if ENABLE_AMF
-  AMFLoader amf;
-  if (!amf.open(_file->get_path()))
-    return false;
-  uint nobjs = amf.GetObjectCount();
-  //cerr << nobjs << " objs" << endl;
-  for (uint o = 0; o < nobjs; o++) {
-    vector<Triangle> otr;
-    amf.getObjectTriangles(o,otr);
-    triangles.push_back(otr);
-    names.push_back(ustring(amf.GetObjectName(o)));
-  }
-  return true;
-#else
-  return false;
-#endif
-}
-
-bool File::save_AMF (ustring filename,
-		     const vector< vector<Triangle> > &triangles,
-		     const vector<ustring> &names,
-		     bool compressed)
-{
-#if ENABLE_AMF
-  AMFWriter amf;
-  amf.SetUnits(UNIT_MM);
-  uint nobjs = triangles.size();
-  for (uint o = 0; o < nobjs; o++) {
-    bool ok = amf.AddObject(triangles[o],names[o]);
-    if (!ok) return false;
-  }
-  amf.Save(filename, compressed);
-  return true;
-#else
-  return false;
-#endif
-}
-
 
 bool File::saveBinarySTL(ustring filename, const vector<Triangle> &triangles,
 			 const Matrix4d &T)

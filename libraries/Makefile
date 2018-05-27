@@ -102,53 +102,14 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libamf_la_LIBADD =
+libclipper_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
-am_libamf_la_OBJECTS = amf/amftools-code/src/libamf_la-Amf.lo \
-	amf/amftools-code/src/zip/libamf_la-zip.lo \
-	amf/amftools-code/src/zip/libamf_la-unzip.lo \
-	amf/amftools-code/src/libamf_la-nMetadata.lo \
-	amf/amftools-code/src/libamf_la-nTriangle.lo \
-	amf/amftools-code/src/libamf_la-nTexmap.lo \
-	amf/amftools-code/src/libamf_la-nTexture.lo \
-	amf/amftools-code/src/libamf_la-Equation.lo \
-	amf/amftools-code/src/libamf_la-nObject.lo \
-	amf/amftools-code/src/libamf_la-nVertex.lo \
-	amf/amftools-code/src/libamf_la-nComposite.lo \
-	amf/amftools-code/src/libamf_la-AMF_File.lo \
-	amf/amftools-code/src/libamf_la-nInstance.lo \
-	amf/amftools-code/src/libamf_la-nCoordinates.lo \
-	amf/amftools-code/src/libamf_la-nAmf.lo \
-	amf/amftools-code/src/libamf_la-XmlCompress.lo \
-	amf/amftools-code/src/libamf_la-nMesh.lo \
-	amf/amftools-code/src/libamf_la-nVertices.lo \
-	amf/amftools-code/src/libamf_la-nNormal.lo \
-	amf/amftools-code/src/libamf_la-nColor.lo \
-	amf/amftools-code/src/libamf_la-STL_File.lo \
-	amf/amftools-code/src/libamf_la-nVolume.lo \
-	amf/amftools-code/src/libamf_la-nEdge.lo \
-	amf/amftools-code/src/libamf_la-SimpleImage.lo \
-	amf/amftools-code/src/libamf_la-nConstellation.lo \
-	amf/amftools-code/src/libamf_la-XmlStream.lo \
-	amf/amftools-code/src/stb_image/libamf_la-stb_image.lo \
-	amf/amftools-code/src/libamf_la-nMaterial.lo \
-	amf/amftools-code/src/libamf_la-Mesh.lo \
-	amf/amftools-code/src/libamf_la-X3D_File.lo \
-	amf/amftools-code/src/libamf_la-MeshSlice.lo \
-	amf/amftools-code/src/muparser/libamf_la-muParserError.lo \
-	amf/amftools-code/src/muparser/libamf_la-muParserBase.lo \
-	amf/amftools-code/src/muparser/libamf_la-muParser.lo \
-	amf/amftools-code/src/muparser/libamf_la-muParserTokenReader.lo \
-	amf/amftools-code/src/muparser/libamf_la-muParserCallback.lo \
-	amf/amftools-code/src/muparser/libamf_la-muParserBytecode.lo
-libamf_la_OBJECTS = $(am_libamf_la_OBJECTS)
+am_libclipper_la_OBJECTS = clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo
+libclipper_la_OBJECTS = $(am_libclipper_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-libclipper_la_LIBADD =
-am_libclipper_la_OBJECTS = clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo
-libclipper_la_OBJECTS = $(am_libclipper_la_OBJECTS)
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
 am__v_P_0 = false
@@ -201,8 +162,8 @@ AM_V_CCLD = $(am__v_CCLD_$(V))
 am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libamf_la_SOURCES) $(libclipper_la_SOURCES)
-DIST_SOURCES = $(libamf_la_SOURCES) $(libclipper_la_SOURCES)
+SOURCES = $(libclipper_la_SOURCES)
+DIST_SOURCES = $(libclipper_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -227,8 +188,8 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/amf/Makefile.am \
-	$(srcdir)/clipper/Makefile.am $(srcdir)/vmmlib/Makefile.am \
+am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/clipper/Makefile.am \
+	$(srcdir)/vmmlib/Makefile.am \
 	$(srcdir)/vmmlib/include/Makefile.am \
 	$(srcdir)/vmmlib/include/vmmlib/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -246,14 +207,14 @@ CATALOGS =
 CATOBJEXT = .gmo
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -Wall -g -O0
+CFLAGS = -g -O2
 CLIPPER_LIBS = libraries/libclipper.la
 CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
 CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -Wall -g -O0
+CXXFLAGS = -g -O2
 CYGPATH_W = echo
 DATADIRNAME = share
 DEFS = -DHAVE_CONFIG_H
@@ -405,7 +366,7 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = vmmlib/README.md vmmlib/LICENSE.txt $(wildcard \
 	vmmlib/include/vmmlib/*.h) $(wildcard \
 	vmmlib/include/vmmlib/*.hpp)
-noinst_LTLIBRARIES = libclipper.la libamf.la
+noinst_LTLIBRARIES = libclipper.la
 libclipper_la_CPPFLAGS = \
 	-I$(srcdir) \
 	-I$(top_srcdir)/libraries/clipper/clipper/polyclipping-code/cpp/ \
@@ -415,104 +376,11 @@ libclipper_la_SOURCES = \
 	clipper/clipper/polyclipping-code/cpp/clipper.cpp \
 	clipper/clipper/polyclipping-code/cpp/clipper.hpp
 
-libamf_la_CPPFLAGS = \
-	-I$(srcdir) \
-	-I$(top_srcdir)/libraries/amf/amftools-code/include/ \
-	-I$(top_srcdir)/libraries/amf/amftools-code/include/muparser \
-	$(LIBZIP_CFLAGS) \
-        $(EXTRA_CFLAGS)
-
-libamf_la_SOURCES = \
-	 amf/amftools-code/include/Amf.h \
-	 amf/amftools-code/src/Amf.cpp \
-	 amf/amftools-code/include/nObject.h \
-	 amf/amftools-code/include/stb_image	\
-	 amf/amftools-code/include/stb_image/stb_image.h \
-	 amf/amftools-code/include/nTexmap.h \
-	 amf/amftools-code/include/nMesh.h \
-	 amf/amftools-code/include/Amf.h \
-	 amf/amftools-code/include/nCoordinates.h \
-	 amf/amftools-code/include/SimpleImage.h \
-	 amf/amftools-code/include/Vec3D.h \
-	 amf/amftools-code/include/nComposite.h \
-	 amf/amftools-code/include/nNormal.h \
-	 amf/amftools-code/include/X3D_File.h \
-	 amf/amftools-code/include/nVertex.h \
-	 amf/amftools-code/include/XmlCompress.h \
-	 amf/amftools-code/include/nMaterial.h \
-	 amf/amftools-code/include/muparser/muParser.h \
-	 amf/amftools-code/include/muparser/muParserCallback.h \
-	 amf/amftools-code/include/muparser/muParserBytecode.h \
-	 amf/amftools-code/include/muparser/muParserBase.h \
-	 amf/amftools-code/include/muparser/muParserError.h \
-	 amf/amftools-code/include/muparser/muParserTokenReader.h \
-	 amf/amftools-code/include/muparser/muParserStack.h \
-	 amf/amftools-code/include/muparser/muParserDef.h \
-	 amf/amftools-code/include/muparser/muParserToken.h \
-	 amf/amftools-code/include/muparser/muParserFixes.h \
-	 amf/amftools-code/include/nTriangle.h \
-	 amf/amftools-code/include/nVertices.h \
-	 amf/amftools-code/include/nInstance.h \
-	 amf/amftools-code/include/Mesh.h \
-	 amf/amftools-code/include/rapidxml/rapidxml_print.h \
-	 amf/amftools-code/include/rapidxml/rapidxml.h \
-	 amf/amftools-code/include/STL_File.h \
-	 amf/amftools-code/include/nConstellation.h \
-	 amf/amftools-code/include/nColor.h \
-	 amf/amftools-code/include/Equation.h \
-	 amf/amftools-code/include/nMetadata.h \
-	 amf/amftools-code/include/AMF_File.h \
-	 amf/amftools-code/include/nAmf.h \
-	 amf/amftools-code/include/nTexture.h \
-	 amf/amftools-code/include/nEdge.h \
-	 amf/amftools-code/include/MeshSlice.h \
-	 amf/amftools-code/include/XmlStream.h \
-	 amf/amftools-code/include/zip \
-	 amf/amftools-code/include/zip/zip.h \
-	 amf/amftools-code/include/zip/unzip.h \
-	 amf/amftools-code/include/nVolume.h \
-	 amf/amftools-code/src/zip/zip.cpp \
-	 amf/amftools-code/src/zip/unzip.cpp \
-	 amf/amftools-code/src/nMetadata.cpp \
-	 amf/amftools-code/src/nTriangle.cpp \
-	 amf/amftools-code/src/nTexmap.cpp \
-	 amf/amftools-code/src/nTexture.cpp \
-	 amf/amftools-code/src/Equation.cpp \
-	 amf/amftools-code/src/nObject.cpp \
-	 amf/amftools-code/src/nVertex.cpp \
-	 amf/amftools-code/src/nComposite.cpp \
-	 amf/amftools-code/src/AMF_File.cpp \
-	 amf/amftools-code/src/nInstance.cpp \
-	 amf/amftools-code/src/nCoordinates.cpp \
-	 amf/amftools-code/src/nAmf.cpp \
-	 amf/amftools-code/src/XmlCompress.cpp \
-	 amf/amftools-code/src/nMesh.cpp \
-	 amf/amftools-code/src/nVertices.cpp \
-	 amf/amftools-code/src/nNormal.cpp \
-	 amf/amftools-code/src/nColor.cpp \
-	 amf/amftools-code/src/STL_File.cpp \
-	 amf/amftools-code/src/nVolume.cpp \
-	 amf/amftools-code/src/nEdge.cpp \
-	 amf/amftools-code/src/SimpleImage.cpp \
-	 amf/amftools-code/src/nConstellation.cpp \
-	 amf/amftools-code/src/XmlStream.cpp \
-	 amf/amftools-code/src/stb_image/stb_image.cpp \
-	 amf/amftools-code/src/nMaterial.cpp \
-	 amf/amftools-code/src/Mesh.cpp \
-	 amf/amftools-code/src/X3D_File.cpp \
-	 amf/amftools-code/src/MeshSlice.cpp \
-	 amf/amftools-code/src/muparser/muParserError.cpp \
-	 amf/amftools-code/src/muparser/muParserBase.cpp \
-	 amf/amftools-code/src/muparser/muParser.cpp \
-	 amf/amftools-code/src/muparser/muParserTokenReader.cpp \
-	 amf/amftools-code/src/muparser/muParserCallback.cpp \
-	 amf/amftools-code/src/muparser/muParserBytecode.cpp
-
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .cpp .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/vmmlib/Makefile.am $(srcdir)/vmmlib/include/Makefile.am $(srcdir)/vmmlib/include/vmmlib/Makefile.am $(srcdir)/clipper/Makefile.am $(srcdir)/amf/Makefile.am $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/vmmlib/Makefile.am $(srcdir)/vmmlib/include/Makefile.am $(srcdir)/vmmlib/include/vmmlib/Makefile.am $(srcdir)/clipper/Makefile.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -532,7 +400,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
-$(srcdir)/vmmlib/Makefile.am $(srcdir)/vmmlib/include/Makefile.am $(srcdir)/vmmlib/include/vmmlib/Makefile.am $(srcdir)/clipper/Makefile.am $(srcdir)/amf/Makefile.am $(am__empty):
+$(srcdir)/vmmlib/Makefile.am $(srcdir)/vmmlib/include/Makefile.am $(srcdir)/vmmlib/include/vmmlib/Makefile.am $(srcdir)/clipper/Makefile.am $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -553,144 +421,6 @@ clean-noinstLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
-amf/amftools-code/src/$(am__dirstamp):
-	@$(MKDIR_P) amf/amftools-code/src
-	@: > amf/amftools-code/src/$(am__dirstamp)
-amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) amf/amftools-code/src/$(DEPDIR)
-	@: > amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-Amf.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/zip/$(am__dirstamp):
-	@$(MKDIR_P) amf/amftools-code/src/zip
-	@: > amf/amftools-code/src/zip/$(am__dirstamp)
-amf/amftools-code/src/zip/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) amf/amftools-code/src/zip/$(DEPDIR)
-	@: > amf/amftools-code/src/zip/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/zip/libamf_la-zip.lo:  \
-	amf/amftools-code/src/zip/$(am__dirstamp) \
-	amf/amftools-code/src/zip/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/zip/libamf_la-unzip.lo:  \
-	amf/amftools-code/src/zip/$(am__dirstamp) \
-	amf/amftools-code/src/zip/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nMetadata.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nTriangle.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nTexmap.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nTexture.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-Equation.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nObject.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nVertex.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nComposite.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-AMF_File.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nInstance.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nCoordinates.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nAmf.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-XmlCompress.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nMesh.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nVertices.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nNormal.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nColor.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-STL_File.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nVolume.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nEdge.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-SimpleImage.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nConstellation.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-XmlStream.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/stb_image/$(am__dirstamp):
-	@$(MKDIR_P) amf/amftools-code/src/stb_image
-	@: > amf/amftools-code/src/stb_image/$(am__dirstamp)
-amf/amftools-code/src/stb_image/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) amf/amftools-code/src/stb_image/$(DEPDIR)
-	@: > amf/amftools-code/src/stb_image/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/stb_image/libamf_la-stb_image.lo:  \
-	amf/amftools-code/src/stb_image/$(am__dirstamp) \
-	amf/amftools-code/src/stb_image/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-nMaterial.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-Mesh.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-X3D_File.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/libamf_la-MeshSlice.lo:  \
-	amf/amftools-code/src/$(am__dirstamp) \
-	amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/muparser/$(am__dirstamp):
-	@$(MKDIR_P) amf/amftools-code/src/muparser
-	@: > amf/amftools-code/src/muparser/$(am__dirstamp)
-amf/amftools-code/src/muparser/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) amf/amftools-code/src/muparser/$(DEPDIR)
-	@: > amf/amftools-code/src/muparser/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/muparser/libamf_la-muParserError.lo:  \
-	amf/amftools-code/src/muparser/$(am__dirstamp) \
-	amf/amftools-code/src/muparser/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/muparser/libamf_la-muParserBase.lo:  \
-	amf/amftools-code/src/muparser/$(am__dirstamp) \
-	amf/amftools-code/src/muparser/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/muparser/libamf_la-muParser.lo:  \
-	amf/amftools-code/src/muparser/$(am__dirstamp) \
-	amf/amftools-code/src/muparser/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/muparser/libamf_la-muParserTokenReader.lo:  \
-	amf/amftools-code/src/muparser/$(am__dirstamp) \
-	amf/amftools-code/src/muparser/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/muparser/libamf_la-muParserCallback.lo:  \
-	amf/amftools-code/src/muparser/$(am__dirstamp) \
-	amf/amftools-code/src/muparser/$(DEPDIR)/$(am__dirstamp)
-amf/amftools-code/src/muparser/libamf_la-muParserBytecode.lo:  \
-	amf/amftools-code/src/muparser/$(am__dirstamp) \
-	amf/amftools-code/src/muparser/$(DEPDIR)/$(am__dirstamp)
-
-libamf.la: $(libamf_la_OBJECTS) $(libamf_la_DEPENDENCIES) $(EXTRA_libamf_la_DEPENDENCIES) 
-	$(AM_V_CXXLD)$(CXXLINK)  $(libamf_la_OBJECTS) $(libamf_la_LIBADD) $(LIBS)
 clipper/clipper/polyclipping-code/cpp/$(am__dirstamp):
 	@$(MKDIR_P) clipper/clipper/polyclipping-code/cpp
 	@: > clipper/clipper/polyclipping-code/cpp/$(am__dirstamp)
@@ -706,57 +436,12 @@ libclipper.la: $(libclipper_la_OBJECTS) $(libclipper_la_DEPENDENCIES) $(EXTRA_li
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f amf/amftools-code/src/*.$(OBJEXT)
-	-rm -f amf/amftools-code/src/*.lo
-	-rm -f amf/amftools-code/src/muparser/*.$(OBJEXT)
-	-rm -f amf/amftools-code/src/muparser/*.lo
-	-rm -f amf/amftools-code/src/stb_image/*.$(OBJEXT)
-	-rm -f amf/amftools-code/src/stb_image/*.lo
-	-rm -f amf/amftools-code/src/zip/*.$(OBJEXT)
-	-rm -f amf/amftools-code/src/zip/*.lo
 	-rm -f clipper/clipper/polyclipping-code/cpp/*.$(OBJEXT)
 	-rm -f clipper/clipper/polyclipping-code/cpp/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-AMF_File.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-Amf.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-Equation.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-Mesh.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-MeshSlice.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-STL_File.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-SimpleImage.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-X3D_File.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-XmlCompress.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-XmlStream.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nAmf.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nColor.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nComposite.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nConstellation.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nCoordinates.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nEdge.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nInstance.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nMaterial.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nMesh.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nMetadata.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nNormal.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nObject.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nTexmap.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nTexture.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nTriangle.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nVertex.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nVertices.Plo
-include amf/amftools-code/src/$(DEPDIR)/libamf_la-nVolume.Plo
-include amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParser.Plo
-include amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserBase.Plo
-include amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserBytecode.Plo
-include amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserCallback.Plo
-include amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserError.Plo
-include amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserTokenReader.Plo
-include amf/amftools-code/src/stb_image/$(DEPDIR)/libamf_la-stb_image.Plo
-include amf/amftools-code/src/zip/$(DEPDIR)/libamf_la-unzip.Plo
-include amf/amftools-code/src/zip/$(DEPDIR)/libamf_la-zip.Plo
 include clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/libclipper_la-clipper.Plo
 
 .cpp.o:
@@ -783,265 +468,6 @@ include clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/libclipper_la-clipper.Pl
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(LTCXXCOMPILE) -c -o $@ $<
 
-amf/amftools-code/src/libamf_la-Amf.lo: amf/amftools-code/src/Amf.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-Amf.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-Amf.Tpo -c -o amf/amftools-code/src/libamf_la-Amf.lo `test -f 'amf/amftools-code/src/Amf.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/Amf.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-Amf.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-Amf.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/Amf.cpp' object='amf/amftools-code/src/libamf_la-Amf.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-Amf.lo `test -f 'amf/amftools-code/src/Amf.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/Amf.cpp
-
-amf/amftools-code/src/zip/libamf_la-zip.lo: amf/amftools-code/src/zip/zip.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/zip/libamf_la-zip.lo -MD -MP -MF amf/amftools-code/src/zip/$(DEPDIR)/libamf_la-zip.Tpo -c -o amf/amftools-code/src/zip/libamf_la-zip.lo `test -f 'amf/amftools-code/src/zip/zip.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/zip/zip.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/zip/$(DEPDIR)/libamf_la-zip.Tpo amf/amftools-code/src/zip/$(DEPDIR)/libamf_la-zip.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/zip/zip.cpp' object='amf/amftools-code/src/zip/libamf_la-zip.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/zip/libamf_la-zip.lo `test -f 'amf/amftools-code/src/zip/zip.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/zip/zip.cpp
-
-amf/amftools-code/src/zip/libamf_la-unzip.lo: amf/amftools-code/src/zip/unzip.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/zip/libamf_la-unzip.lo -MD -MP -MF amf/amftools-code/src/zip/$(DEPDIR)/libamf_la-unzip.Tpo -c -o amf/amftools-code/src/zip/libamf_la-unzip.lo `test -f 'amf/amftools-code/src/zip/unzip.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/zip/unzip.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/zip/$(DEPDIR)/libamf_la-unzip.Tpo amf/amftools-code/src/zip/$(DEPDIR)/libamf_la-unzip.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/zip/unzip.cpp' object='amf/amftools-code/src/zip/libamf_la-unzip.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/zip/libamf_la-unzip.lo `test -f 'amf/amftools-code/src/zip/unzip.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/zip/unzip.cpp
-
-amf/amftools-code/src/libamf_la-nMetadata.lo: amf/amftools-code/src/nMetadata.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nMetadata.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nMetadata.Tpo -c -o amf/amftools-code/src/libamf_la-nMetadata.lo `test -f 'amf/amftools-code/src/nMetadata.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nMetadata.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nMetadata.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nMetadata.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nMetadata.cpp' object='amf/amftools-code/src/libamf_la-nMetadata.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nMetadata.lo `test -f 'amf/amftools-code/src/nMetadata.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nMetadata.cpp
-
-amf/amftools-code/src/libamf_la-nTriangle.lo: amf/amftools-code/src/nTriangle.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nTriangle.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nTriangle.Tpo -c -o amf/amftools-code/src/libamf_la-nTriangle.lo `test -f 'amf/amftools-code/src/nTriangle.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nTriangle.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nTriangle.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nTriangle.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nTriangle.cpp' object='amf/amftools-code/src/libamf_la-nTriangle.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nTriangle.lo `test -f 'amf/amftools-code/src/nTriangle.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nTriangle.cpp
-
-amf/amftools-code/src/libamf_la-nTexmap.lo: amf/amftools-code/src/nTexmap.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nTexmap.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nTexmap.Tpo -c -o amf/amftools-code/src/libamf_la-nTexmap.lo `test -f 'amf/amftools-code/src/nTexmap.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nTexmap.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nTexmap.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nTexmap.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nTexmap.cpp' object='amf/amftools-code/src/libamf_la-nTexmap.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nTexmap.lo `test -f 'amf/amftools-code/src/nTexmap.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nTexmap.cpp
-
-amf/amftools-code/src/libamf_la-nTexture.lo: amf/amftools-code/src/nTexture.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nTexture.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nTexture.Tpo -c -o amf/amftools-code/src/libamf_la-nTexture.lo `test -f 'amf/amftools-code/src/nTexture.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nTexture.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nTexture.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nTexture.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nTexture.cpp' object='amf/amftools-code/src/libamf_la-nTexture.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nTexture.lo `test -f 'amf/amftools-code/src/nTexture.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nTexture.cpp
-
-amf/amftools-code/src/libamf_la-Equation.lo: amf/amftools-code/src/Equation.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-Equation.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-Equation.Tpo -c -o amf/amftools-code/src/libamf_la-Equation.lo `test -f 'amf/amftools-code/src/Equation.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/Equation.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-Equation.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-Equation.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/Equation.cpp' object='amf/amftools-code/src/libamf_la-Equation.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-Equation.lo `test -f 'amf/amftools-code/src/Equation.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/Equation.cpp
-
-amf/amftools-code/src/libamf_la-nObject.lo: amf/amftools-code/src/nObject.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nObject.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nObject.Tpo -c -o amf/amftools-code/src/libamf_la-nObject.lo `test -f 'amf/amftools-code/src/nObject.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nObject.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nObject.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nObject.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nObject.cpp' object='amf/amftools-code/src/libamf_la-nObject.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nObject.lo `test -f 'amf/amftools-code/src/nObject.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nObject.cpp
-
-amf/amftools-code/src/libamf_la-nVertex.lo: amf/amftools-code/src/nVertex.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nVertex.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nVertex.Tpo -c -o amf/amftools-code/src/libamf_la-nVertex.lo `test -f 'amf/amftools-code/src/nVertex.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nVertex.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nVertex.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nVertex.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nVertex.cpp' object='amf/amftools-code/src/libamf_la-nVertex.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nVertex.lo `test -f 'amf/amftools-code/src/nVertex.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nVertex.cpp
-
-amf/amftools-code/src/libamf_la-nComposite.lo: amf/amftools-code/src/nComposite.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nComposite.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nComposite.Tpo -c -o amf/amftools-code/src/libamf_la-nComposite.lo `test -f 'amf/amftools-code/src/nComposite.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nComposite.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nComposite.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nComposite.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nComposite.cpp' object='amf/amftools-code/src/libamf_la-nComposite.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nComposite.lo `test -f 'amf/amftools-code/src/nComposite.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nComposite.cpp
-
-amf/amftools-code/src/libamf_la-AMF_File.lo: amf/amftools-code/src/AMF_File.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-AMF_File.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-AMF_File.Tpo -c -o amf/amftools-code/src/libamf_la-AMF_File.lo `test -f 'amf/amftools-code/src/AMF_File.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/AMF_File.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-AMF_File.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-AMF_File.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/AMF_File.cpp' object='amf/amftools-code/src/libamf_la-AMF_File.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-AMF_File.lo `test -f 'amf/amftools-code/src/AMF_File.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/AMF_File.cpp
-
-amf/amftools-code/src/libamf_la-nInstance.lo: amf/amftools-code/src/nInstance.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nInstance.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nInstance.Tpo -c -o amf/amftools-code/src/libamf_la-nInstance.lo `test -f 'amf/amftools-code/src/nInstance.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nInstance.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nInstance.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nInstance.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nInstance.cpp' object='amf/amftools-code/src/libamf_la-nInstance.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nInstance.lo `test -f 'amf/amftools-code/src/nInstance.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nInstance.cpp
-
-amf/amftools-code/src/libamf_la-nCoordinates.lo: amf/amftools-code/src/nCoordinates.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nCoordinates.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nCoordinates.Tpo -c -o amf/amftools-code/src/libamf_la-nCoordinates.lo `test -f 'amf/amftools-code/src/nCoordinates.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nCoordinates.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nCoordinates.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nCoordinates.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nCoordinates.cpp' object='amf/amftools-code/src/libamf_la-nCoordinates.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nCoordinates.lo `test -f 'amf/amftools-code/src/nCoordinates.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nCoordinates.cpp
-
-amf/amftools-code/src/libamf_la-nAmf.lo: amf/amftools-code/src/nAmf.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nAmf.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nAmf.Tpo -c -o amf/amftools-code/src/libamf_la-nAmf.lo `test -f 'amf/amftools-code/src/nAmf.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nAmf.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nAmf.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nAmf.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nAmf.cpp' object='amf/amftools-code/src/libamf_la-nAmf.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nAmf.lo `test -f 'amf/amftools-code/src/nAmf.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nAmf.cpp
-
-amf/amftools-code/src/libamf_la-XmlCompress.lo: amf/amftools-code/src/XmlCompress.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-XmlCompress.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-XmlCompress.Tpo -c -o amf/amftools-code/src/libamf_la-XmlCompress.lo `test -f 'amf/amftools-code/src/XmlCompress.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/XmlCompress.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-XmlCompress.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-XmlCompress.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/XmlCompress.cpp' object='amf/amftools-code/src/libamf_la-XmlCompress.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-XmlCompress.lo `test -f 'amf/amftools-code/src/XmlCompress.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/XmlCompress.cpp
-
-amf/amftools-code/src/libamf_la-nMesh.lo: amf/amftools-code/src/nMesh.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nMesh.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nMesh.Tpo -c -o amf/amftools-code/src/libamf_la-nMesh.lo `test -f 'amf/amftools-code/src/nMesh.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nMesh.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nMesh.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nMesh.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nMesh.cpp' object='amf/amftools-code/src/libamf_la-nMesh.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nMesh.lo `test -f 'amf/amftools-code/src/nMesh.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nMesh.cpp
-
-amf/amftools-code/src/libamf_la-nVertices.lo: amf/amftools-code/src/nVertices.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nVertices.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nVertices.Tpo -c -o amf/amftools-code/src/libamf_la-nVertices.lo `test -f 'amf/amftools-code/src/nVertices.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nVertices.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nVertices.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nVertices.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nVertices.cpp' object='amf/amftools-code/src/libamf_la-nVertices.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nVertices.lo `test -f 'amf/amftools-code/src/nVertices.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nVertices.cpp
-
-amf/amftools-code/src/libamf_la-nNormal.lo: amf/amftools-code/src/nNormal.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nNormal.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nNormal.Tpo -c -o amf/amftools-code/src/libamf_la-nNormal.lo `test -f 'amf/amftools-code/src/nNormal.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nNormal.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nNormal.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nNormal.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nNormal.cpp' object='amf/amftools-code/src/libamf_la-nNormal.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nNormal.lo `test -f 'amf/amftools-code/src/nNormal.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nNormal.cpp
-
-amf/amftools-code/src/libamf_la-nColor.lo: amf/amftools-code/src/nColor.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nColor.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nColor.Tpo -c -o amf/amftools-code/src/libamf_la-nColor.lo `test -f 'amf/amftools-code/src/nColor.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nColor.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nColor.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nColor.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nColor.cpp' object='amf/amftools-code/src/libamf_la-nColor.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nColor.lo `test -f 'amf/amftools-code/src/nColor.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nColor.cpp
-
-amf/amftools-code/src/libamf_la-STL_File.lo: amf/amftools-code/src/STL_File.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-STL_File.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-STL_File.Tpo -c -o amf/amftools-code/src/libamf_la-STL_File.lo `test -f 'amf/amftools-code/src/STL_File.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/STL_File.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-STL_File.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-STL_File.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/STL_File.cpp' object='amf/amftools-code/src/libamf_la-STL_File.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-STL_File.lo `test -f 'amf/amftools-code/src/STL_File.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/STL_File.cpp
-
-amf/amftools-code/src/libamf_la-nVolume.lo: amf/amftools-code/src/nVolume.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nVolume.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nVolume.Tpo -c -o amf/amftools-code/src/libamf_la-nVolume.lo `test -f 'amf/amftools-code/src/nVolume.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nVolume.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nVolume.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nVolume.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nVolume.cpp' object='amf/amftools-code/src/libamf_la-nVolume.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nVolume.lo `test -f 'amf/amftools-code/src/nVolume.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nVolume.cpp
-
-amf/amftools-code/src/libamf_la-nEdge.lo: amf/amftools-code/src/nEdge.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nEdge.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nEdge.Tpo -c -o amf/amftools-code/src/libamf_la-nEdge.lo `test -f 'amf/amftools-code/src/nEdge.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nEdge.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nEdge.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nEdge.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nEdge.cpp' object='amf/amftools-code/src/libamf_la-nEdge.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nEdge.lo `test -f 'amf/amftools-code/src/nEdge.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nEdge.cpp
-
-amf/amftools-code/src/libamf_la-SimpleImage.lo: amf/amftools-code/src/SimpleImage.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-SimpleImage.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-SimpleImage.Tpo -c -o amf/amftools-code/src/libamf_la-SimpleImage.lo `test -f 'amf/amftools-code/src/SimpleImage.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/SimpleImage.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-SimpleImage.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-SimpleImage.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/SimpleImage.cpp' object='amf/amftools-code/src/libamf_la-SimpleImage.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-SimpleImage.lo `test -f 'amf/amftools-code/src/SimpleImage.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/SimpleImage.cpp
-
-amf/amftools-code/src/libamf_la-nConstellation.lo: amf/amftools-code/src/nConstellation.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nConstellation.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nConstellation.Tpo -c -o amf/amftools-code/src/libamf_la-nConstellation.lo `test -f 'amf/amftools-code/src/nConstellation.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nConstellation.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nConstellation.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nConstellation.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nConstellation.cpp' object='amf/amftools-code/src/libamf_la-nConstellation.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nConstellation.lo `test -f 'amf/amftools-code/src/nConstellation.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nConstellation.cpp
-
-amf/amftools-code/src/libamf_la-XmlStream.lo: amf/amftools-code/src/XmlStream.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-XmlStream.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-XmlStream.Tpo -c -o amf/amftools-code/src/libamf_la-XmlStream.lo `test -f 'amf/amftools-code/src/XmlStream.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/XmlStream.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-XmlStream.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-XmlStream.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/XmlStream.cpp' object='amf/amftools-code/src/libamf_la-XmlStream.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-XmlStream.lo `test -f 'amf/amftools-code/src/XmlStream.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/XmlStream.cpp
-
-amf/amftools-code/src/stb_image/libamf_la-stb_image.lo: amf/amftools-code/src/stb_image/stb_image.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/stb_image/libamf_la-stb_image.lo -MD -MP -MF amf/amftools-code/src/stb_image/$(DEPDIR)/libamf_la-stb_image.Tpo -c -o amf/amftools-code/src/stb_image/libamf_la-stb_image.lo `test -f 'amf/amftools-code/src/stb_image/stb_image.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/stb_image/stb_image.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/stb_image/$(DEPDIR)/libamf_la-stb_image.Tpo amf/amftools-code/src/stb_image/$(DEPDIR)/libamf_la-stb_image.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/stb_image/stb_image.cpp' object='amf/amftools-code/src/stb_image/libamf_la-stb_image.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/stb_image/libamf_la-stb_image.lo `test -f 'amf/amftools-code/src/stb_image/stb_image.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/stb_image/stb_image.cpp
-
-amf/amftools-code/src/libamf_la-nMaterial.lo: amf/amftools-code/src/nMaterial.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-nMaterial.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-nMaterial.Tpo -c -o amf/amftools-code/src/libamf_la-nMaterial.lo `test -f 'amf/amftools-code/src/nMaterial.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nMaterial.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-nMaterial.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-nMaterial.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/nMaterial.cpp' object='amf/amftools-code/src/libamf_la-nMaterial.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-nMaterial.lo `test -f 'amf/amftools-code/src/nMaterial.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/nMaterial.cpp
-
-amf/amftools-code/src/libamf_la-Mesh.lo: amf/amftools-code/src/Mesh.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-Mesh.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-Mesh.Tpo -c -o amf/amftools-code/src/libamf_la-Mesh.lo `test -f 'amf/amftools-code/src/Mesh.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/Mesh.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-Mesh.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-Mesh.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/Mesh.cpp' object='amf/amftools-code/src/libamf_la-Mesh.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-Mesh.lo `test -f 'amf/amftools-code/src/Mesh.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/Mesh.cpp
-
-amf/amftools-code/src/libamf_la-X3D_File.lo: amf/amftools-code/src/X3D_File.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-X3D_File.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-X3D_File.Tpo -c -o amf/amftools-code/src/libamf_la-X3D_File.lo `test -f 'amf/amftools-code/src/X3D_File.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/X3D_File.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-X3D_File.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-X3D_File.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/X3D_File.cpp' object='amf/amftools-code/src/libamf_la-X3D_File.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-X3D_File.lo `test -f 'amf/amftools-code/src/X3D_File.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/X3D_File.cpp
-
-amf/amftools-code/src/libamf_la-MeshSlice.lo: amf/amftools-code/src/MeshSlice.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/libamf_la-MeshSlice.lo -MD -MP -MF amf/amftools-code/src/$(DEPDIR)/libamf_la-MeshSlice.Tpo -c -o amf/amftools-code/src/libamf_la-MeshSlice.lo `test -f 'amf/amftools-code/src/MeshSlice.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/MeshSlice.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/$(DEPDIR)/libamf_la-MeshSlice.Tpo amf/amftools-code/src/$(DEPDIR)/libamf_la-MeshSlice.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/MeshSlice.cpp' object='amf/amftools-code/src/libamf_la-MeshSlice.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/libamf_la-MeshSlice.lo `test -f 'amf/amftools-code/src/MeshSlice.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/MeshSlice.cpp
-
-amf/amftools-code/src/muparser/libamf_la-muParserError.lo: amf/amftools-code/src/muparser/muParserError.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/muparser/libamf_la-muParserError.lo -MD -MP -MF amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserError.Tpo -c -o amf/amftools-code/src/muparser/libamf_la-muParserError.lo `test -f 'amf/amftools-code/src/muparser/muParserError.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParserError.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserError.Tpo amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserError.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/muparser/muParserError.cpp' object='amf/amftools-code/src/muparser/libamf_la-muParserError.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/muparser/libamf_la-muParserError.lo `test -f 'amf/amftools-code/src/muparser/muParserError.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParserError.cpp
-
-amf/amftools-code/src/muparser/libamf_la-muParserBase.lo: amf/amftools-code/src/muparser/muParserBase.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/muparser/libamf_la-muParserBase.lo -MD -MP -MF amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserBase.Tpo -c -o amf/amftools-code/src/muparser/libamf_la-muParserBase.lo `test -f 'amf/amftools-code/src/muparser/muParserBase.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParserBase.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserBase.Tpo amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserBase.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/muparser/muParserBase.cpp' object='amf/amftools-code/src/muparser/libamf_la-muParserBase.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/muparser/libamf_la-muParserBase.lo `test -f 'amf/amftools-code/src/muparser/muParserBase.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParserBase.cpp
-
-amf/amftools-code/src/muparser/libamf_la-muParser.lo: amf/amftools-code/src/muparser/muParser.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/muparser/libamf_la-muParser.lo -MD -MP -MF amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParser.Tpo -c -o amf/amftools-code/src/muparser/libamf_la-muParser.lo `test -f 'amf/amftools-code/src/muparser/muParser.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParser.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParser.Tpo amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParser.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/muparser/muParser.cpp' object='amf/amftools-code/src/muparser/libamf_la-muParser.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/muparser/libamf_la-muParser.lo `test -f 'amf/amftools-code/src/muparser/muParser.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParser.cpp
-
-amf/amftools-code/src/muparser/libamf_la-muParserTokenReader.lo: amf/amftools-code/src/muparser/muParserTokenReader.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/muparser/libamf_la-muParserTokenReader.lo -MD -MP -MF amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserTokenReader.Tpo -c -o amf/amftools-code/src/muparser/libamf_la-muParserTokenReader.lo `test -f 'amf/amftools-code/src/muparser/muParserTokenReader.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParserTokenReader.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserTokenReader.Tpo amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserTokenReader.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/muparser/muParserTokenReader.cpp' object='amf/amftools-code/src/muparser/libamf_la-muParserTokenReader.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/muparser/libamf_la-muParserTokenReader.lo `test -f 'amf/amftools-code/src/muparser/muParserTokenReader.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParserTokenReader.cpp
-
-amf/amftools-code/src/muparser/libamf_la-muParserCallback.lo: amf/amftools-code/src/muparser/muParserCallback.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/muparser/libamf_la-muParserCallback.lo -MD -MP -MF amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserCallback.Tpo -c -o amf/amftools-code/src/muparser/libamf_la-muParserCallback.lo `test -f 'amf/amftools-code/src/muparser/muParserCallback.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParserCallback.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserCallback.Tpo amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserCallback.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/muparser/muParserCallback.cpp' object='amf/amftools-code/src/muparser/libamf_la-muParserCallback.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/muparser/libamf_la-muParserCallback.lo `test -f 'amf/amftools-code/src/muparser/muParserCallback.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParserCallback.cpp
-
-amf/amftools-code/src/muparser/libamf_la-muParserBytecode.lo: amf/amftools-code/src/muparser/muParserBytecode.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT amf/amftools-code/src/muparser/libamf_la-muParserBytecode.lo -MD -MP -MF amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserBytecode.Tpo -c -o amf/amftools-code/src/muparser/libamf_la-muParserBytecode.lo `test -f 'amf/amftools-code/src/muparser/muParserBytecode.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParserBytecode.cpp
-	$(AM_V_at)$(am__mv) amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserBytecode.Tpo amf/amftools-code/src/muparser/$(DEPDIR)/libamf_la-muParserBytecode.Plo
-#	$(AM_V_CXX)source='amf/amftools-code/src/muparser/muParserBytecode.cpp' object='amf/amftools-code/src/muparser/libamf_la-muParserBytecode.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libamf_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o amf/amftools-code/src/muparser/libamf_la-muParserBytecode.lo `test -f 'amf/amftools-code/src/muparser/muParserBytecode.cpp' || echo '$(srcdir)/'`amf/amftools-code/src/muparser/muParserBytecode.cpp
-
 clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo: clipper/clipper/polyclipping-code/cpp/clipper.cpp
 	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libclipper_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo -MD -MP -MF clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/libclipper_la-clipper.Tpo -c -o clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo `test -f 'clipper/clipper/polyclipping-code/cpp/clipper.cpp' || echo '$(srcdir)/'`clipper/clipper/polyclipping-code/cpp/clipper.cpp
 	$(AM_V_at)$(am__mv) clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/libclipper_la-clipper.Tpo clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/libclipper_la-clipper.Plo
@@ -1054,10 +480,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-	-rm -rf amf/amftools-code/src/.libs amf/amftools-code/src/_libs
-	-rm -rf amf/amftools-code/src/muparser/.libs amf/amftools-code/src/muparser/_libs
-	-rm -rf amf/amftools-code/src/stb_image/.libs amf/amftools-code/src/stb_image/_libs
-	-rm -rf amf/amftools-code/src/zip/.libs amf/amftools-code/src/zip/_libs
 	-rm -rf clipper/clipper/polyclipping-code/cpp/.libs clipper/clipper/polyclipping-code/cpp/_libs
 
 ID: $(am__tagged_files)
@@ -1172,14 +594,6 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f amf/amftools-code/src/$(DEPDIR)/$(am__dirstamp)
-	-rm -f amf/amftools-code/src/$(am__dirstamp)
-	-rm -f amf/amftools-code/src/muparser/$(DEPDIR)/$(am__dirstamp)
-	-rm -f amf/amftools-code/src/muparser/$(am__dirstamp)
-	-rm -f amf/amftools-code/src/stb_image/$(DEPDIR)/$(am__dirstamp)
-	-rm -f amf/amftools-code/src/stb_image/$(am__dirstamp)
-	-rm -f amf/amftools-code/src/zip/$(DEPDIR)/$(am__dirstamp)
-	-rm -f amf/amftools-code/src/zip/$(am__dirstamp)
 	-rm -f clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/$(am__dirstamp)
 	-rm -f clipper/clipper/polyclipping-code/cpp/$(am__dirstamp)
 
@@ -1192,7 +606,7 @@ clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf amf/amftools-code/src/$(DEPDIR) amf/amftools-code/src/muparser/$(DEPDIR) amf/amftools-code/src/stb_image/$(DEPDIR) amf/amftools-code/src/zip/$(DEPDIR) clipper/clipper/polyclipping-code/cpp/$(DEPDIR)
+	-rm -rf clipper/clipper/polyclipping-code/cpp/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1238,7 +652,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf amf/amftools-code/src/$(DEPDIR) amf/amftools-code/src/muparser/$(DEPDIR) amf/amftools-code/src/stb_image/$(DEPDIR) amf/amftools-code/src/zip/$(DEPDIR) clipper/clipper/polyclipping-code/cpp/$(DEPDIR)
+	-rm -rf clipper/clipper/polyclipping-code/cpp/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

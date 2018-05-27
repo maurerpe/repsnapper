@@ -229,10 +229,7 @@ void View::do_save_stl ()
 
     string file_path = files[0]->get_path();
     uint len = file_path.length();
-    if (file_path.find(".amf") == len-4 || file_path.find(".AMF") == len-4)
-      m_model->SaveAMF (files[0]);
-    else
-      m_model->SaveStl (files[0]);
+    m_model->SaveStl(files[0]);
   }
 }
 

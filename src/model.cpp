@@ -194,20 +194,6 @@ Shape Model::GetCombinedShape() const
   return shape;
 }
 
-void Model::SaveAMF(Glib::RefPtr<Gio::File> file)
-{
-  vector<Shape*> shapes;
-  vector<Matrix4d> transforms;
-  objtree.get_all_shapes(shapes,transforms);
-  vector< vector<Triangle> > triangles;
-  vector<ustring> names;
-  for(uint s = 0; s < shapes.size(); s++) {
-    triangles.push_back(shapes[s]->getTriangles(transforms[s]));
-    names.push_back(shapes[s]->filename);
-  }
-  File::save_AMF(file->get_path(), triangles, names);
-}
-
 void Model::Read(Glib::RefPtr<Gio::File> file)
 {
   std::string basename = file->get_basename();

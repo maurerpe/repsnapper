@@ -6,4 +6,3 @@ noinst_LTLIBRARIES =
 
 include vmmlib/Makefile.am
 include clipper/Makefile.am
-include amf/Makefile.am
