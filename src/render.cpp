@@ -36,7 +36,7 @@ int Render::fontheight = 0;
 
 inline GtkWidget *Render::get_widget()
 {
-  return GTK_WIDGET (gobj());
+  return GTK_WIDGET(gobj());
 }
 
 inline Model *Render::get_model() const { return m_view->get_model(); }
@@ -86,10 +86,10 @@ Render::Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
   Matrix3fT identity;
   Matrix3fSetIdentity(&identity);
 
-  // set initial rotation 30 degrees around Y axis
-  identity.s.M11 = identity.s.M22 = 0.5253; // cos -45
-  identity.s.M12 = 0.851; // -sin -45
-  identity.s.M21 = -0.851; // sin -45
+  // set initial rotation
+  identity.s.M11 = identity.s.M22 = 0.5253; // cos -58.3
+  identity.s.M12 = 0.851; // -sin -58.3
+  identity.s.M21 = -0.851; // sin -58.3
 
   Matrix4fSetRotationScaleFromMatrix3f(&m_transform, &identity);
   m_transform.s.SW = 1.0;
@@ -282,21 +282,21 @@ bool Render::on_key_press_event(GdkEventKey* event) {
   bool ret = false;
   switch (event->keyval)
     {
-    case GDK_Up: case GDK_KP_Up:
+    case GDK_KEY_Up: case GDK_KEY_KP_Up:
       if (rotate)     ret = m_view->rotate_selection(Vector3d(1.,0.,0.), tendeg);
       else if (moveZ) ret = m_view->move_selection( 0.0,  0.0, 1.0 );
       else            ret = m_view->move_selection( 0.0,  1.0 );
       break;
-    case GDK_Down: case GDK_KP_Down:
+    case GDK_KEY_Down: case GDK_KEY_KP_Down:
       if (rotate)     ret = m_view->rotate_selection(Vector3d(1.,0.,0.), -tendeg);
       else if (moveZ) ret = m_view->move_selection( 0.0,  0.0, -1.0 );
       else            ret = m_view->move_selection( 0.0, -1.0 );
       break;
-    case GDK_Left: case GDK_KP_Left:
+    case GDK_KEY_Left: case GDK_KEY_KP_Left:
       if (rotate)     ret = m_view->rotate_selection(Vector3d(0.,0.,1.), tendeg);
       else            ret = m_view->move_selection( -1.0, 0.0 );
       break;
-    case GDK_Right: case GDK_KP_Right:
+    case GDK_KEY_Right: case GDK_KEY_KP_Right:
       if (rotate)     ret = m_view->rotate_selection(Vector3d(0.,0.,1.), -tendeg);
       else            ret = m_view->move_selection(  1.0, 0.0 );
       break;
@@ -312,11 +312,10 @@ bool Render::on_key_press_event(GdkEventKey* event) {
 bool Render::on_key_release_event(GdkEventKey* event) {
   switch (event->keyval)
     {
-    case GDK_Up: case GDK_KP_Up:
-    case GDK_Down: case GDK_KP_Down:
-    case GDK_Left: case GDK_KP_Left:
-    case GDK_Right: case GDK_KP_Right:
-      //m_view->get_model()->ModelChanged(); // interrupts key_press_event actions!
+    case GDK_KEY_Up: case GDK_KEY_KP_Up:
+    case GDK_KEY_Down: case GDK_KEY_KP_Down:
+    case GDK_KEY_Left: case GDK_KEY_KP_Left:
+    case GDK_KEY_Right: case GDK_KEY_KP_Right:
       return false;
     }
   return true;
@@ -338,13 +337,9 @@ bool Render::on_button_press_event(GdkEventButton* event)
     if (index) {
       Gtk::TreeModel::iterator iter = get_model()->objtree.find_stl_by_index(index);
       if (!m_selection->is_selected(iter)) {
-	// if (!(event->state & GDK_CONTROL_MASK))  // add to selection by CONTROL
 	m_selection->unselect_all();
 	m_selection->select(iter);
       }
-      // else
-      // 	if ((event->state & GDK_CONTROL_MASK))  // remove from selection by CONTROL
-      // 	  m_selection->unselect(iter);
     }
   }
   return true;
@@ -378,7 +373,6 @@ bool Render::on_button_release_event(GdkEventButton* event)
 	}
 	// click on no object -> clear the selection:
 	else if (event->button == 1)  {
-	  //if (m_downPoint.x() == event->x && m_downPoint.y() == event->y) // click only
 	  m_selection->unselect_all();
 	}
       }
@@ -455,8 +449,6 @@ bool Render::on_motion_notify_event(GdkEventMotion* event)
       m_dragStart = dragp;
     }
     else { // rotate view
-      //Vector3d axis(delta.y(), delta.x(), 0);
-      //rotArcballTrans(m_transform, axis, -delta.length()/100.);
       m_arcBall->dragAccumulate(event->x, event->y, &m_transform);
     }
     if (redraw) queue_draw();
@@ -496,7 +488,6 @@ bool Render::on_motion_notify_event(GdkEventMotion* event)
       } else {  // move view XY  / pan
 	moveArcballTrans(m_transform, delta3f);
 	m_dragStart = dragp;
-	//setArcballTrans(m_transform, delta3f);
       }
     } // BUTTON 3
     if (redraw) queue_draw();

@@ -19,10 +19,6 @@
 
 #include "config.h"
 
-#if HAVE_GTK_NEW_KEYSMS
-#include <gdk/gdkkeysyms-compat.h>
-#endif
-
 #include "view.h"
 #include "model.h"
 #include "objtree.h"
@@ -227,8 +223,7 @@ void View::do_save_stl ()
       if (!get_userconfirm(_("Overwrite File?"), files[0]->get_basename()))
 	return;
 
-    string file_path = files[0]->get_path();
-    uint len = file_path.length();
+    files[0]->get_path();
     m_model->SaveStl(files[0]);
   }
 }
@@ -957,7 +952,7 @@ bool View::key_pressed_event(GdkEventKey *event)
   //   return false;
   switch (event->keyval)
     {
-    case GDK_Tab:
+    case GDK_KEY_Tab:
       {
 	if (event->state & GDK_CONTROL_MASK) {
 	  Gtk::Notebook *nb;
@@ -972,14 +967,14 @@ bool View::key_pressed_event(GdkEventKey *event)
 	}
       }
       break;
-    case GDK_Escape:
+    case GDK_KEY_Escape:
       {
 	stop_progress();
 	return true;
       }
       break;
-    case GDK_Delete:
-    case GDK_KP_Delete:
+    case GDK_KEY_Delete:
+    case GDK_KEY_KP_Delete:
       delete_selected_objects();
       return true;
     default:
