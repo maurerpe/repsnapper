@@ -13,8 +13,7 @@ src/RepSnapper.log
 *.orig
 TAGS
 .deps
-/Makefile
-Makefile.in
+Makefile
 config.*
 aclocal.m4
 autogen.lastrun
@@ -22,7 +21,6 @@ autom4te.cache/
 m4/
 repsnapper.desktop
 compile
-configure
 depcomp
 install-sh
 libtool
