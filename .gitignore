@@ -14,10 +14,11 @@ TAGS
 Makefile
 config.h
 config.[ls]*
+libtool
 autogen.lastrun
 autom4te.cache/
 repsnapper.desktop
-po/Makefile.in.in
+po/Makefile.in
 po/POTFILES
 po/stamp-it
 po/.intltool-merge-cache
