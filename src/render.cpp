@@ -16,6 +16,9 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
+
+#include <epoxy/gl.h>
+
 #include "config.h"
 #include "stdafx.h"
 #include "render.h"
@@ -26,24 +29,19 @@
 #include "model.h"
 #include "geometry.h"
 
-#define N_LIGHTS (sizeof (m_lights) / sizeof(m_lights[0]))
-
-
 #define TRYFONTS "helvetica,arial,dejavu sans,sans,courier"
 #define FONTSIZE 8
 GLuint Render::fontlistbase = 0;
 int Render::fontheight = 0;
 
-inline GtkWidget *Render::get_widget()
-{
+inline GtkWidget *Render::get_widget() {
   return GTK_WIDGET(gobj());
 }
 
 inline Model *Render::get_model() const { return m_view->get_model(); }
 
 Render::Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
-  m_arcBall(new ArcBall()), m_view (view), m_selection(selection)
-{
+  m_arcBall(new ArcBall()), m_view (view), m_selection(selection) {
 
   set_events (Gdk::POINTER_MOTION_MASK |
 	      Gdk::BUTTON_MOTION_MASK |
@@ -53,31 +51,9 @@ Render::Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
 	      Gdk::BUTTON2_MOTION_MASK |
 	      Gdk::BUTTON3_MOTION_MASK |
 	      Gdk::KEY_PRESS_MASK |
-	      Gdk::KEY_RELEASE_MASK
+	      Gdk::KEY_RELEASE_MASK |
+	      Gdk::SCROLL_MASK
 	      );
-
-  Glib::RefPtr<Gdk::GL::Config> glconfig;
-
-  glconfig = Gdk::GL::Config::create(Gdk::GL::MODE_RGBA |
-				     Gdk::GL::MODE_DEPTH |
-				     Gdk::GL::MODE_ALPHA |
-				     Gdk::GL::MODE_STENCIL |
-				     Gdk::GL::MODE_DOUBLE);
-  if (!glconfig) { // try single buffered
-    std::cerr << "*** Cannot find the double-buffered visual."
-	      << " Trying single-buffered visual.\n";
-    glconfig = Gdk::GL::Config::create(Gdk::GL::MODE_RGBA |
-				       Gdk::GL::MODE_DEPTH |
-				       Gdk::GL::MODE_ALPHA |
-				       Gdk::GL::MODE_STENCIL
-				       );
-  }
-
-  if (!glconfig) {
-    g_error (_("failed to init gl area\n"));
-  }
-
-  set_gl_capability(glconfig);
 
   set_can_focus (true);
 
@@ -95,21 +71,88 @@ Render::Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
   m_transform.s.SW = 1.0;
 
   m_zoom = 120.0;
-  for (uint i = 0; i < N_LIGHTS; i++)
-    m_lights[i] = NULL;
 
   m_selection->signal_changed().connect (sigc::mem_fun(*this, &Render::selection_changed));
 }
 
-Render::~Render()
-{
-  delete m_arcBall;
-  for (uint i = 0; i < N_LIGHTS; i++)
-    delete (m_lights[i]);
+void Render::init_buffers() {
+  glGenVertexArrays(1, &m_vao);
+  glBindVertexArray(m_vao);
+
+  glGenBuffers(1, &m_buffer);
 }
 
-void Render::set_model(Model *model)
-{
+static GLuint create_shader(int type, const char *src) {
+  auto shader = glCreateShader(type);
+  glShaderSource(shader, 1, &src, nullptr);
+  glCompileShader(shader);
+
+  int status;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+  if (status == GL_FALSE) {
+    int log_len;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_len);
+    string log_space(log_len+1, ' ');
+    glGetShaderInfoLog(shader, log_len, nullptr, (GLchar *) log_space.c_str());
+
+    cerr << "Compile failure int " <<
+      (type == GL_VERTEX_SHADER ? "vertex" : "fragment") <<
+      " shader: " << log_space << endl;
+    
+    glDeleteShader(shader);
+
+    return 0;
+  }
+
+  return shader;
+}
+
+void Render::init_shaders() {
+  auto vertex = create_shader(GL_VERTEX_SHADER,
+			      "#version 330\n"
+			      "in vec3 vp;"
+ 			      "uniform mat4 trans;"
+			      "void main() {"
+			      "  gl_Position = trans * vec4(vp, 1.0);"
+			      "}");
+
+  auto fragment = create_shader(GL_FRAGMENT_SHADER,
+				"#version 330\n"
+				"out vec4 frag_color;"
+				"uniform vec4 color;"
+				"void main() {"
+				"  frag_color = color;"
+				"}");
+  
+  m_program = glCreateProgram();
+  glAttachShader(m_program, vertex);
+  glAttachShader(m_program, fragment);
+
+  glLinkProgram(m_program);
+  int status;
+  glGetProgramiv(m_program, GL_LINK_STATUS, &status);
+  if (status == GL_FALSE) {
+    int log_len;
+    glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &log_len);
+    
+    string log_space(log_len+1, ' ');
+    glGetProgramInfoLog(m_program, log_len, nullptr, (GLchar*)log_space.c_str());
+    
+    cerr << "Linking failure: " << log_space << endl;
+    
+    glDeleteProgram(m_program);
+    m_program = 0;
+  }
+  
+  m_trans = glGetUniformLocation(m_program, "trans");
+  m_color = glGetUniformLocation(m_program, "color");
+}
+
+Render::~Render() {
+  delete m_arcBall;
+}
+
+void Render::set_model(Model *model) {
   if (!model)
     return;
   
@@ -119,158 +162,127 @@ void Render::set_model(Model *model)
   queue_draw();
 }
 
-void Render::selection_changed()
-{
+void Render::selection_changed() {
   queue_draw();
 }
 
-void Render::draw_string(const Vector3d &pos, const string s)
-{
+void Render::draw_string(const Vector3d &pos, const string s) {
   if (fontheight == 0) return;
-  glRasterPos3dv(pos);
-  glListBase(fontlistbase);
-  glCallLists(s.length(), GL_UNSIGNED_BYTE, s.c_str());
+  /* FIXME: Draw string */
 }
 
-void Render::on_realize()
-{
-  Gtk::GL::DrawingArea::on_realize();
+void Render::on_realize() {
+  Gtk::GLArea::on_realize();
 
-  fontlistbase = glGenLists (128);
+  cout << "Initalizing render" << endl;
+  make_current();
+  init_buffers();
+  init_shaders();
+  
+  set_hexpand(true);
+  set_vexpand(true);
+  set_auto_render(true);
+  cout << "Render Initialized" << endl;
+  
+  /* FIXME: Find fonts */
 
-  Glib::RefPtr<Pango::Context> pcontext = get_pango_context();
-
-  Pango::FontDescription font_desc;
-
-  vector < Glib::RefPtr< Pango::FontFamily > > families = pcontext->list_families();
-  bool found_font = false;
-  vector<Glib::ustring> fonts = Glib::Regex::split_simple(",", TRYFONTS);
-  for (uint i = 0; !found_font && i < families.size(); i++) {
-    Glib::ustring famname = families[i]->get_name().lowercase();
-    // cerr <<"Family: " << famname << endl;
-    for (uint k = 0; !found_font && k < fonts.size(); k++) {
-      if ((int)famname.find(fonts[k])!=-1) {
-	// found_font family, now get normal style and weight
-	vector< Glib::RefPtr< Pango::FontFace > > faces = families[i]->list_faces();
-	for (uint j = 0; !found_font && j < faces.size(); j++) {
-	  font_desc = faces[j]->describe();
-	  if (font_desc.get_style() == Pango::STYLE_NORMAL
-	      && font_desc.get_weight() == Pango::WEIGHT_NORMAL ) {
-	    font_desc.set_size(Pango::SCALE * FONTSIZE);
-	    //cerr <<"Trying " << font_desc.to_string() << endl;
-	    Glib::RefPtr<Pango::Font> font =
-	      Gdk::GL::Font::use_pango_font(font_desc, 0, 128, fontlistbase);
-	    if (font) {
-	      //cerr <<"Using " << font_desc.to_string() << endl;
-	      found_font = true;
-	      Pango::FontMetrics font_metrics = font->get_metrics();
-	      fontheight = font_metrics.get_ascent() + font_metrics.get_descent();
-	      fontheight = PANGO_PIXELS(fontheight);
-	    } else {
-	      std::cerr << "*** Can't load font \""
-			<< font_desc.to_string() << "\"" << std::endl;
-	      found_font = false;
-	    }
-	  }
-	}
-      }
-    }
-  }
-
-  if (!found_font) {
-    cerr << "Did not find any working font matching \"" << TRYFONTS << "\""
-	 << " on your system!" << endl
-	 << "Cannot display any numbers"
-	 << endl;
-    fontheight = 0;
-  }
-
+  queue_draw();
 }
 
-
-bool Render::on_configure_event(GdkEventConfigure* event)
-{
-  Glib::RefPtr<Gdk::GL::Drawable> gldrawable = get_gl_drawable();
-  if (!gldrawable->gl_begin(get_gl_context()))
-    return false;
-
+bool Render::on_configure_event(GdkEventConfigure* event) {
   const int w = get_width(), h = get_height();
-
-  glLoadIdentity();
-  glViewport (0, 0, w, h);
-  glMatrixMode (GL_PROJECTION);
-  glLoadIdentity ();
-  gluPerspective (45.0f, (float)get_width()/(float)get_height(),1.0f, 1000000.0f);
-  glMatrixMode (GL_MODELVIEW);
-  glLoadIdentity ();
-
+  
   if (w > 1 && h > 1) // Limit arcball minimum size or it asserts
     m_arcBall->setBounds(w, h);
-  glEnable(GL_LIGHTING);
-
-  struct { GLfloat x; GLfloat y; GLfloat z; } light_locations[] = {
-    { -100,  100, 200 },
-    {  100,  100, 200 },
-    {  100, -100, 200 },
-    {  100, -100, 200 }
-  };
-  for (uint i = 0; i < N_LIGHTS; i++) {
-    delete (m_lights[i]);
-    m_lights[i] = new gllight();
-    m_lights[i]->Init((GLenum)(GL_LIGHT0+i));
-    m_lights[i]->SetAmbient(0.2f, 0.2f, 0.2f, 1.0f);
-    m_lights[i]->SetDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
-    m_lights[i]->SetSpecular(1.0f, 1.0f, 1.0f, 1.0f);
-    m_lights[i]->Enable(false);
-    m_lights[i]->SetLocation(light_locations[i].x,
-			     light_locations[i].y,
-			     light_locations[i].z, 0);
-  }
-  m_lights[0]->Enable(true);
-  m_lights[3]->Enable(true);
-
-  glDisable ( GL_LIGHTING);
-  glDepthFunc (GL_LEQUAL);
-  glEnable (GL_DEPTH_TEST);
-  glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-  gldrawable->gl_end();
 
   return true;
 }
 
-bool Render::on_expose_event(GdkEventExpose* event)
-{
-  Glib::RefPtr<Gdk::GL::Drawable> gldrawable = get_gl_drawable();
+bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
+  // cout << "Render::on_draw" << endl;
+  // cout << "Transform:" << endl;
+  // cout << m_transform;
+  // cout << "Zoom: " << m_zoom << endl;
+  
+  /*glClearColor(0.5, 0.5, 0.5, 1.0);*/
+  make_current();
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glUseProgram(m_program);
 
-  if (!gldrawable || !gldrawable->gl_begin(get_gl_context()))
-    return false;
+  /* 1/z  0    0   0    M00 M01 M02 M03     M00/z M01/z M02/z M03/z
+      0  1/z   0   0  * M10 M11 M12 M13  =  M10/z M11/z M12/z M13/z
+      0   0   1/z  0    M20 M22 M22 M23     M20/z M21/z M22/z M23/z
+      0   0    0   1    M30 M32 M32 M33     M30   M31   M32   M33   */
 
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  glLoadIdentity();
-  glTranslatef (0.0, 0.0, -2.0 * m_zoom);
-  glMultMatrixf (m_transform.M);
-  CenterView();
-  glPushMatrix();
-  glColor3f(0.75f,0.75f,1.0f);
-
-  glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
-  // Gtk::TreeModel::iterator iter = m_selection->get_selected();
-
-  vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
-
-  m_view->Draw (selpath);
-
-  glPopMatrix();
-
-  if (gldrawable->is_double_buffered()) {
-    gldrawable->swap_buffers();
-  } else {
-    glFlush();
+  Matrix4fT trans;
+  for (int count = 0; count < 16; count++) {
+    trans.M[count] = m_transform.M[count];
+    if (count % 4 != 3)
+      trans.M[count] /= m_zoom;
   }
-  gldrawable->gl_end();
-
+  glUniformMatrix4fv(m_trans, 1, GL_FALSE, trans.M);
+  
+  vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
+  m_view->Draw(selpath);
+  
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glUseProgram(0);
+  
+  glFlush();
+  
+  Gtk::GLArea::on_draw(cr);
+  
   return true;
+}
+
+void Render::draw_triangles(const float color[4], const RenderVert &vert, Matrix4f trans4) {
+  //cout << "draw_triangles tranform:" << endl << trans4 << endl;
+  
+  Matrix4fT trans;
+  for (int count = 0; count < 16; count++) {
+    trans.M[count] = m_transform.M[count];
+    if (count % 4 != 3)
+      trans.M[count] /= m_zoom;
+  }
+  //cout << "Scaled:" << endl << trans;
+
+  Matrix4fT tri_trans;
+  for (int i = 0; i < 4; i ++) {
+    for (int j = 0; j < 4; j++) {
+      tri_trans.M[4*i+j] =
+	trans4(0,i) * trans.M[ 0+j] +
+	trans4(1,i) * trans.M[ 4+j] +
+	trans4(2,i) * trans.M[ 8+j] +
+	trans4(3,i) * trans.M[12+j];
+    }
+  }
+  glUniformMatrix4fv(m_trans, 1, GL_FALSE, tri_trans.M);
+  //cout << "Combined:" << endl << tri_trans;
+  
+  glUniform4fv(m_color, 1, color);
+
+  glBindBuffer(GL_ARRAY_BUFFER, m_vao);
+  glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+  glBufferData(GL_ARRAY_BUFFER, vert.size(), vert.data(), GL_STREAM_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+  glDrawArrays(GL_TRIANGLES, 0, vert.size() / (3 * sizeof(GLfloat)));
+  
+  glUniformMatrix4fv(m_trans, 1, GL_FALSE, trans.M);
+}
+
+void Render::draw_lines(const float color[4], const RenderVert &vert, float line_width) {
+  glUniform4fv(m_color, 1, color);
+  glLineWidth(line_width);
+
+  glBindBuffer(GL_ARRAY_BUFFER, m_vao);
+  glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+  glBufferData(GL_ARRAY_BUFFER, vert.size(), vert.data(), GL_STREAM_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+  glDrawArrays(GL_LINES, 0, vert.size() / (3 * sizeof(GLfloat)));
 }
 
 bool Render::on_key_press_event(GdkEventKey* event) {
@@ -321,9 +333,7 @@ bool Render::on_key_release_event(GdkEventKey* event) {
   return true;
 }
 
-
-bool Render::on_button_press_event(GdkEventButton* event)
-{
+bool Render::on_button_press_event(GdkEventButton* event) {
   grab_focus();
   // real mouse-down:
   m_downPoint = Vector2f(event->x, event->y);
@@ -345,8 +355,7 @@ bool Render::on_button_press_event(GdkEventButton* event)
   return true;
 }
 
-bool Render::on_button_release_event(GdkEventButton* event)
-{
+bool Render::on_button_release_event(GdkEventButton* event) {
   //dragging = false;
   if (event->state & GDK_SHIFT_MASK || event->state & GDK_CONTROL_MASK)  {
     // move/rotate object
@@ -381,8 +390,8 @@ bool Render::on_button_release_event(GdkEventButton* event)
   return true;
 }
 
-bool Render::on_scroll_event(GdkEventScroll* event)
-{
+bool Render::on_scroll_event(GdkEventScroll* event) {
+  cout << "Render::on_scroll_event" << endl;
   double factor = 110.0/100.0;
   if (event->direction == GDK_SCROLL_UP)
     m_zoom /= factor;
@@ -394,8 +403,7 @@ bool Render::on_scroll_event(GdkEventScroll* event)
 
 const double drag_factor = 0.3;
 
-bool Render::on_motion_notify_event(GdkEventMotion* event)
-{
+bool Render::on_motion_notify_event(GdkEventMotion* event) {
   bool redraw=true;
   const Vector2f dragp(event->x, event->y);
   const Vector2f delta = dragp - m_dragStart;
@@ -494,123 +502,22 @@ bool Render::on_motion_notify_event(GdkEventMotion* event)
     return true;
   }
   if (redraw) queue_draw();
-  return Gtk::DrawingArea::on_motion_notify_event (event);
+  return Gtk::Widget::on_motion_notify_event (event);
 }
 
-void Render::SetEnableLight(unsigned int i, bool on)
-{
-  assert (i < N_LIGHTS);
-  m_lights[i]->Enable(on);
-  queue_draw();
+void Render::CenterView() {
+  /* FIXME */
+  /* Vector3d c = get_model()->GetViewCenter(); */
 }
 
-void Render::CenterView()
-{
-  Vector3d c = get_model()->GetViewCenter();
-  glTranslatef (-c.x(), -c.y(), -c.z());
+guint Render::find_object_at(gdouble x, gdouble y) {
+  /* FIXME */
+  
+  return 0;
 }
 
+Vector3d Render::mouse_on_plane(double x, double y, double plane_z) const {
+  /* FIXME */
 
-guint Render::find_object_at(gdouble x, gdouble y)
-{
-  // Render everything in selection mode
-  Glib::RefPtr<Gdk::GL::Drawable> gldrawable = get_gl_drawable();
-  if (!gldrawable->gl_begin(get_gl_context()))
-    return false;
-
-  const GLsizei BUFSIZE = 256;
-  GLuint select_buffer[BUFSIZE];
-
-  glSelectBuffer(BUFSIZE, select_buffer);
-  (void)glRenderMode(GL_SELECT);
-
-  GLint viewport[4];
-
-  glMatrixMode (GL_PROJECTION);
-  glPushMatrix();
-  glLoadIdentity ();
-  glGetIntegerv(GL_VIEWPORT,viewport);
-  gluPickMatrix(x,viewport[3]-y,2,2,viewport); // 2x2 pixels around the cursor
-  gluPerspective (45.0f, (float)get_width()/(float)get_height(),1.0f, 1000000.0f);
-  glMatrixMode (GL_MODELVIEW);
-  glInitNames();
-  glPushName(0);
-  glLoadIdentity ();
-
-  glTranslatef (0.0, 0.0, -2.0 * m_zoom);
-  glMultMatrixf (m_transform.M);
-  CenterView();
-  glPushMatrix();
-  glColor3f(0.75f,0.75f,1.0f);
-
-  glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
-
-  vector<Gtk::TreeModel::Path> no_object;
-  m_view->Draw (no_object, true);
-
-  // restor projection and model matrices
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
-  // restore rendering mode
-  GLint hits = glRenderMode(GL_RENDER);
-
-  if (gldrawable->is_double_buffered())
-    gldrawable->swap_buffers();
-  else
-    glFlush();
-  gldrawable->gl_end();
-
-  // Process the selection hits
-  GLuint *ptr = select_buffer;
-  GLuint name = 0;
-  GLuint minZ = G_MAXUINT;
-
-  for (GLint i = 0; i < hits; i++) { /*  for each hit  */
-     GLuint n = *ptr++; // number of hits in this record
-     GLuint z1 = *ptr++; // Minimum Z in the hit record
-     ptr++; // Skip Maximum Z coord
-     if (n > 0 && z1 < minZ) {
-       // Found an object further forward.
-       name = *ptr;
-       minZ = z1;
-     }
-     ptr += n; // Skip n name records;
-  }
-
-  return name;
-}
-
-
-// http://www.3dkingdoms.com/selection.html
-Vector3d Render::mouse_on_plane(double x, double y, double plane_z) const
-{
-  Vector3d margin;
-  Model *m = get_model();
-  if (m!=NULL) margin = m->settings.getPrintMargin();
-
- // This function will find 2 points in world space that are on the line into the screen defined by screen-space( ie. window-space ) point (x,y)
-  double mvmatrix[16];
-  double projmatrix[16];
-  int viewport[4];
-  double dX, dY, dZ, dClickY; // glUnProject uses doubles,
-
-  glGetIntegerv(GL_VIEWPORT, viewport);
-  glGetDoublev (GL_MODELVIEW_MATRIX, mvmatrix);
-  glGetDoublev (GL_PROJECTION_MATRIX, projmatrix);
-  dClickY = double ((double)get_height() - y); // OpenGL renders with (0,0) on bottom, mouse reports with (0,0) on top
-
-  gluUnProject ((double) x, dClickY, 0.0, mvmatrix, projmatrix, viewport, &dX, &dY, &dZ);
-  Vector3d rayP1( dX, dY, dZ );
-  gluUnProject ((double) x, dClickY, 1.0, mvmatrix, projmatrix, viewport, &dX, &dY, &dZ);
-  Vector3d rayP2( dX, dY, dZ );
-
-  // intersect with z=plane_z;
-  if (rayP2.z() != rayP1.z()) {
-    double t = (plane_z-rayP1.z())/(rayP2.z()-rayP1.z());
-    Vector3d downP = rayP1 +  (rayP2-rayP1) * t;
-    return downP - margin;
-  }
-  else return rayP1 - margin;
+  return {0, 0, 0};
 }

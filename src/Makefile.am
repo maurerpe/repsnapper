@@ -15,7 +15,6 @@ WARNING_FLAGS = -Wall -Wsign-compare -Wno-invalid-offsetof
 
 repsnapper_CPPFLAGS = \
 	-I$(LIB_DIR)/vmmlib/include \
-	-I$(LIB_DIR)/lmfit/lmfit-5.0/lib \
 	-I$(top_srcdir) \
 	-I$(top_srcdir)/src \
 	-I$(top_builddir)/src \
@@ -24,7 +23,6 @@ repsnapper_CPPFLAGS = \
         -DRSDATADIR='$(repsnapperdatadir)' \
         -DSYSCONFDIR='$(repsnapperconfdir)' \
 	-DLOCALEDIR='"$(localedir)"' \
-	$(XMLPP_CFLAGS) \
 	$(OPENMP_CFLAGS) \
 	$(LIBZIP_CFLAGS) \
 	$(WARNING_FLAGS)
@@ -64,16 +62,13 @@ SHARED_INC= \
 	src/types.h
 
 include src/ui/Makefile.am
-#include src/gcode/Makefile.am
 include src/printer/Makefile.am
-
-# TEST_SOURCES=unittest.cpp
 
 repsnapper_SOURCES = $(SHARED_SRC) $(SHARED_INC) src/repsnapper.cpp
 
 repsnapper_LDFLAGS = $(EXTRA_LDFLAGS)
 
-repsnapper_LDADD = $(CLIPPER_LIBS) $(OPENMP_CFLAGS) $(OPENVRML_LIBS) $(GTKMM_LIBS) $(GL_LIBS) $(XMLPP_LIBS) $(LIBZIP_LIBS) $(BOOST_LDFLAGS)
+repsnapper_LDADD = $(CLIPPER_LIBS) $(OPENMP_CFLAGS) $(GTKMM_LIBS) $(LIBZIP_LIBS)
 
 repsnapperdatadir = $(datadir)/@PACKAGE@
 dist_repsnapperdata_DATA = src/repsnapper.ui src/repsnapper.svg

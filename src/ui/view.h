@@ -63,11 +63,8 @@ class View : public Gtk::Window
   void printing_changed();
   void power_toggled(Gtk::ToggleToolButton *button);
   void print_clicked();
-  /* void stop_clicked(); */
   void pause_toggled(Gtk::ToggleToolButton *button);
   void reset_clicked();
-  /* void add_statusbar_msg(const char *name, const char *message); */
-  /* void add_statusbar_msg(Gtk::Widget *widget, const char *message); */
   void update_scale_value();
   void scale_object_x();
   void scale_object_y();
@@ -89,7 +86,7 @@ class View : public Gtk::Window
   Render *m_renderer;
 
   RSFilechooser *m_filechooser;
-  void on_controlnotebook_switch(GtkNotebookPage* page, guint page_num);
+  void on_controlnotebook_switch(Gtk::Widget* page, guint page_num);
 
   void on_gcodebuffer_cursor_set (const Gtk::TextIter &iter,
 				  const Glib::RefPtr <Gtk::TextMark> &refMark);
@@ -123,7 +120,6 @@ class View : public Gtk::Window
   void run_extruder();
   void clear_logs();
   void home_all();
-  /* Gtk::CheckButton *m_extruder_reverse; */
   Gtk::SpinButton *m_extruder_speed;
   Gtk::SpinButton *m_extruder_length;
   Gtk::SpinButton *m_extruder_speed_mult;
@@ -210,10 +206,6 @@ class View : public Gtk::Window
 
   void preview_file(Glib::RefPtr<Gio::File> file);
 
-  /* Matrix4d &SelectedNodeMatrix(guint objectNr = 1); */
-  /* void SelectedNodeMatrices(std::vector<Matrix4d *> &result ); */
-  /* void newObject(); */
-
   void show_dialog(const char *name);
   void show_preferences();
   Glib::RefPtr<Gtk::Builder> getBuilder() const { return m_builder; };
@@ -226,8 +218,7 @@ class View : public Gtk::Window
   void set_logging(bool);
   bool logprint_timeout_cb();
 
-  // view nasties ...
-  void Draw (vector<Gtk::TreeModel::Path> &selected, bool objects_only=false);
+  void Draw(vector<Gtk::TreeModel::Path> selected, bool objects_only=false);
   void DrawGrid ();
   void showCurrentPrinting(unsigned long line);
 

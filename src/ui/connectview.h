@@ -30,7 +30,7 @@ class ConnectView : public Gtk::VBox {
   Gtk::ToggleButton  m_connect;
   Gtk::Label         m_port_label;
   Gtk::Alignment     m_port_align;
-  Gtk::ComboBoxEntryText m_combo;
+  Gtk::ComboBoxText  m_combo;
   bool               m_setting_state;
 
   Settings          *m_settings;

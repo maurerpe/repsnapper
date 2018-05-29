@@ -20,14 +20,30 @@
 #define RENDER_H
 
 #include "arcball.h"
-#include <gtkglmm.h>
+#include <gtkmm.h>
+#include <gtkmm/glarea.h>
 
 class View;
 class Model;
-class gllight;
 class Settings;
 
-class Render : public Gtk::GL::DrawingArea
+class RenderVert {
+  vector< float > vec;
+
+ public:
+  RenderVert() {};
+  ~RenderVert() {};
+  void clear() {vec.clear();};
+  void add(float x, float y, float z) {vec.push_back(x); vec.push_back(y); vec.push_back(z);};
+  void add(float v[3]) {add(v[0], v[1], v[2]);};
+  void add(double v[3]) {add(v[0], v[1], v[2]);};
+  void add(Vector3d v) {add(v[0], v[1], v[2]);};
+  
+  size_t size() const {return vec.size() * sizeof(float);};
+  const float *data() const {return &vec[0];};
+};
+
+class Render : public Gtk::GLArea
 {
   ArcBall  *m_arcBall;
   Matrix4fT m_transform;
@@ -37,14 +53,20 @@ class Render : public Gtk::GL::DrawingArea
   Model *get_model() const;
   Glib::RefPtr<Gtk::TreeSelection> m_selection;
 
+  void init_buffers();
+  void init_shaders();
+
+  GLuint m_trans;
+  GLuint m_color;
+  GLuint m_vao;
+  GLuint m_buffer;
+  GLuint m_program;
+  
   // font rendering:
   static GLuint fontlistbase;
   static int fontheight;
 
   float m_zoom;
-  gllight *m_lights[4];
-
-  void SetEnableLight(unsigned int lightNr, bool on);
   void CenterView();
   void selection_changed();
   guint find_object_at(gdouble x, gdouble y);
@@ -59,11 +81,13 @@ class Render : public Gtk::GL::DrawingArea
   void set_zoom (float zoom) {m_zoom=zoom;};
   void set_transform(const Matrix4fT &transform) {m_transform=transform;};
 
-  static void draw_string(const Vector3d &pos, const string s);
+  void draw_string(const Vector3d &pos, const string s);
+  void draw_triangles(const float color[4], const RenderVert &vert, Matrix4f trans4);
+  void draw_lines(const float color[4], const RenderVert &vert, float line_width);
 
   virtual void on_realize();
   virtual bool on_configure_event(GdkEventConfigure* event);
-  virtual bool on_expose_event(GdkEventExpose* event);
+  virtual bool on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr);
   virtual bool on_motion_notify_event(GdkEventMotion* event);
   virtual bool on_button_press_event(GdkEventButton* event);
   virtual bool on_button_release_event(GdkEventButton* event);

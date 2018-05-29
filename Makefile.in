@@ -175,7 +175,6 @@ am_repsnapper_OBJECTS = $(am__objects_1) $(am__objects_2) \
 repsnapper_OBJECTS = $(am_repsnapper_OBJECTS)
 am__DEPENDENCIES_1 =
 repsnapper_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -465,8 +464,6 @@ STRIP = @STRIP@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
-XMLPP_CFLAGS = @XMLPP_CFLAGS@
-XMLPP_LIBS = @XMLPP_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -543,7 +540,6 @@ LIB_DIR = $(top_srcdir)/libraries
 WARNING_FLAGS = -Wall -Wsign-compare -Wno-invalid-offsetof
 repsnapper_CPPFLAGS = \
 	-I$(LIB_DIR)/vmmlib/include \
-	-I$(LIB_DIR)/lmfit/lmfit-5.0/lib \
 	-I$(top_srcdir) \
 	-I$(top_srcdir)/src \
 	-I$(top_builddir)/src \
@@ -552,7 +548,6 @@ repsnapper_CPPFLAGS = \
         -DRSDATADIR='$(repsnapperdatadir)' \
         -DSYSCONFDIR='$(repsnapperconfdir)' \
 	-DLOCALEDIR='"$(localedir)"' \
-	$(XMLPP_CFLAGS) \
 	$(OPENMP_CFLAGS) \
 	$(LIBZIP_CFLAGS) \
 	$(WARNING_FLAGS)
@@ -577,13 +572,9 @@ SHARED_INC = src/geometry.h src/transform3d.h src/arcball.h \
 	src/printer/thread_buffer.h \
 	src/printer/threaded_printer_serial.h src/printer/printer.h \
 	src/printer/custom_baud.h
-
-#include src/gcode/Makefile.am
-
-# TEST_SOURCES=unittest.cpp
 repsnapper_SOURCES = $(SHARED_SRC) $(SHARED_INC) src/repsnapper.cpp
 repsnapper_LDFLAGS = $(EXTRA_LDFLAGS)
-repsnapper_LDADD = $(CLIPPER_LIBS) $(OPENMP_CFLAGS) $(OPENVRML_LIBS) $(GTKMM_LIBS) $(GL_LIBS) $(XMLPP_LIBS) $(LIBZIP_LIBS) $(BOOST_LDFLAGS)
+repsnapper_LDADD = $(CLIPPER_LIBS) $(OPENMP_CFLAGS) $(GTKMM_LIBS) $(LIBZIP_LIBS)
 repsnapperdatadir = $(datadir)/@PACKAGE@
 dist_repsnapperdata_DATA = src/repsnapper.ui src/repsnapper.svg
 repsnapperconfdir = $(sysconfdir)/xdg/@PACKAGE@

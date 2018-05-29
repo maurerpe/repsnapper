@@ -156,6 +156,16 @@ THE SOFTWARE.
     } Matrix4dT;     //A double precision floating point 4 by 4 matrix.
 
 
+inline static ostream &operator<<(ostream &os, Matrix4fT mat) {
+  os << "    " << mat.s.M00 << " " << mat.s.M01 << " " << mat.s.M02 << " " << mat.s.M03 << endl;
+  os << "    " << mat.s.M10 << " " << mat.s.M11 << " " << mat.s.M12 << " " << mat.s.M13 << endl;
+  os << "    " << mat.s.M20 << " " << mat.s.M21 << " " << mat.s.M22 << " " << mat.s.M23 << endl;
+  os << "    " << mat.s.M30 << " " << mat.s.M31 << " " << mat.s.M32 << " " << mat.s.M33 << endl;
+  
+  
+  return os;
+}
+
 //"Inherited" types
 #define Point2fT    Tuple2fT   //A 2 element point that is represented by single precision floating point x,y coordinates. 
 

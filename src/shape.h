@@ -31,6 +31,7 @@
 #include "stdafx.h"
 #include "transform3d.h"
 #include "triangle.h"
+#include "render.h"
 
 struct Segment {
   Segment(guint s, guint e) { start = s; end = e; }
@@ -66,10 +67,11 @@ public:
 	virtual void clear();
 	/* void displayInfillOld(const Settings &settings, CuttingPlane &plane,  */
 	/* 		      guint LayerNr, vector<int>& altInfillLayers); */
-	void draw (const Settings &settings,
-		   bool highlight=false, uint max_triangles=0);
-	virtual void draw_geometry (uint max_triangles=0);
-	void drawBBox() const;
+	void draw(Render &render,
+		  const Settings &settings,
+		  bool highlight=false, uint max_triangles=0);
+	virtual void draw_geometry(Render &render, uint max_triangles=0);
+	void drawBBox(Render &render) const;
 
     virtual vector<Vector3d> getMostUsedNormals() const;
 	// Auto-Rotate object to have the largest area surface down for printing:

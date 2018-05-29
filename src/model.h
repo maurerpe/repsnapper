@@ -31,6 +31,7 @@
 #include "objtree.h"
 #include "gcode.h"
 #include "settings.h"
+#include "render.h"
 
 #ifdef _MSC_VER // Visual C++ compiler
 #  pragma warning( disable : 4244 4267)
@@ -101,8 +102,8 @@ public:
 	void WriteGCode(Glib::RefPtr<Gio::File> file);
 	void ClearGCode();
 	Glib::RefPtr<Gtk::TextBuffer> GetGCodeBuffer();
-	void GlDrawGCode(int layer=-1); // should be in the view
-	void GlDrawGCode(double Z);
+	void GlDrawGCode(Render &render, int layer=-1); // should be in the view
+	void GlDrawGCode(Render &render, double z);
 	void setCurrentPrintingLine(long line){ currentprintingline = line; }
 	unsigned long currentprintingline;
 
@@ -132,7 +133,7 @@ public:
 	ObjectsTree objtree;
 	Glib::RefPtr<Gtk::TextBuffer> errlog, echolog;
 
-	int draw(vector<Gtk::TreeModel::Path> &selected);
+	int draw(Render &render, vector<Gtk::TreeModel::Path> &selected);
 	void setMeasuresPoint(const Vector3d &point);
 	Vector2d measuresPoint;
 

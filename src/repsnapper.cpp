@@ -23,7 +23,6 @@
 #include <vector>
 
 #include <giomm/file.h>
-#include <gtkglmm.h>
 
 #include "ui/view.h"
 #include "ui/progress.h"
@@ -297,8 +296,6 @@ int main(int argc, char **argv)
     delete model;
     return 0;
   }
-
-  Gdk::GL::init(argc, argv);
 
   View* mainwin = View::create(model);
 

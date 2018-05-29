@@ -1085,8 +1085,6 @@ View::View(BaseObjectType* cobject,
   rot_value->signal_value_changed().connect
     (sigc::mem_fun(*this, &View::rot_object_from_spinbutton));
 
-  //add_statusbar_msg("m_scale_event_box", _("Scale the selected object"));
-
   // GCode tab
   m_builder->get_widget ("g_gcode", m_gcode_entry);
   m_gcode_entry->set_activates_default();
@@ -1103,8 +1101,6 @@ View::View(BaseObjectType* cobject,
   connect_button ("p_print",         sigc::mem_fun(*this, &View::print_clicked) );
   m_builder->get_widget ("p_pause", m_pause_button);
   connect_tooltoggled("p_pause",     sigc::mem_fun(*this, &View::pause_toggled));
-  // m_builder->get_widget ("p_stop", m_stop_button);
-  // m_stop_button->signal_clicked().connect    (sigc::mem_fun(*this, &View::stop_clicked) );
   connect_button ("p_home",          sigc::mem_fun(*this, &View::home_all));
   connect_button ("p_reset",         sigc::mem_fun(*this, &View::reset_clicked));
   connect_tooltoggled("p_power",     sigc::mem_fun(*this, &View::power_toggled) );
@@ -1112,22 +1108,11 @@ View::View(BaseObjectType* cobject,
   // Interactive tab
   connect_toggled ("Printer.Logging", sigc::mem_fun(*this, &View::enable_logging_toggled));
   connect_button ("Printer.ClearLog",      sigc::mem_fun(*this, &View::clear_logs) );
-  //m_builder->get_widget ("i_reverse", m_extruder_reverse);
   m_builder->get_widget ("Printer.ExtrudeSpeed", m_extruder_speed);
-  // m_extruder_speed->set_range(10.0, 10000.0);
-  // m_extruder_speed->set_increments (10, 100);
-  // m_extruder_speed->set_value (300.0);
   m_builder->get_widget ("Printer.ExtrudeAmount", m_extruder_length);
-  // m_extruder_length->set_range(0.0, 1000.0);
-  // m_extruder_length->set_increments (1, 10);
-  // m_extruder_length->set_value (10.0);
-  // FIXME: connect i_update_interval (etc.)
   connect_toggled ("Misc.TempReadingEnabled", sigc::mem_fun(*this, &View::temp_monitor_enabled_toggled));
   connect_toggled ("i_fan_enabled", sigc::mem_fun(*this, &View::fan_enabled_toggled));
   m_builder->get_widget ("Printer.FanVoltage", m_fan_voltage);
-  // m_fan_voltage->set_range(0.0, 255.0);
-  // m_fan_voltage->set_increments (1, 2);
-  // m_fan_voltage->set_value (180.0);
 
   connect_button ("i_extrude_length", sigc::mem_fun(*this, &View::run_extruder) );
 
@@ -1171,10 +1156,6 @@ View::View(BaseObjectType* cobject,
     extruder_treeview->set_model(extruder_liststore);
     extruder_treeview->set_headers_visible(false);
     extruder_treeview->append_column("Extruder",extrudername);
-    // Gtk::TreeModel::Row row = *(extruder_liststore->append());
-    // row[extrudername] = "Extruder 1";
-    // extruder_treeview->get_selection()->select(row);
-    // extruder_treeview->set_reorderable(true);
   }
 
   showAllWidgets();
@@ -1237,7 +1218,7 @@ void View::update_extruderlist()
 }
 
 //  stop file preview when leaving file tab
-void View::on_controlnotebook_switch(GtkNotebookPage* page, guint page_num)
+void View::on_controlnotebook_switch(Gtk::Widget* page, guint page_num)
 {
   if (!page) return;
   if (m_filechooser) m_filechooser->set_filetype();
@@ -1686,185 +1667,172 @@ void View::update_scale_value()
 // GPL bits below from model.cpp ...
 void View::DrawGrid()
 {
-        Vector3d volume = m_model->settings.getPrintVolume();
+  Vector3d volume = m_model->settings.getPrintVolume();
 
-	glEnable (GL_BLEND);
-	glEnable (GL_DEPTH_TEST);
-	glDisable (GL_LIGHTING);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // define blending factors
+  RenderVert vert;
+  
+  // glEnable (GL_BLEND);
+  // glEnable (GL_DEPTH_TEST);
+  // glDisable (GL_LIGHTING);
+  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // define blending factors
+  
+  // Boarder lines
+  // left edge
+  vert.add(0.0f, 0.0f, 0.0f);
+  vert.add(0.0f, volume.y(), 0.0f);
+  // near edge
+  vert.add(0.0f, 0.0f, 0.0f);
+  vert.add(volume.x(), 0.0f, 0.0f);
+  // right edge
+  vert.add(volume.x(), 0.0f, 0.0f);
+  vert.add(volume.x(), volume.y(), 0.0f);
+  // far edge
+  vert.add(0.0f, volume.y(), 0.0f);
+  vert.add(volume.x(), volume.y(), 0.0f);
+  // left edge
+  vert.add(0.0f, 0.0f, volume.z());
+  vert.add(0.0f, volume.y(), volume.z());
+  // near edge
+  vert.add(0.0f, 0.0f, volume.z());
+  vert.add(volume.x(), 0.0f, volume.z());
+  // right edge
+  vert.add(volume.x(), 0.0f, volume.z());
+  vert.add(volume.x(), volume.y(), volume.z());
+  // far edge
+  vert.add(0.0f, volume.y(), volume.z());
+  vert.add(volume.x(), volume.y(), volume.z());
+	 
+  // verticals at rear
+  vert.add(0.0f, volume.y(), 0);
+  vert.add(0.0f, volume.y(), volume.z());
+  vert.add(volume.x(), volume.y(), 0);
+  vert.add(volume.x(), volume.y(), volume.z());
 
-	glColor4f (0.5f, 0.5f, 0.5f, 1.0f);
+  float color[4] = {0.5f, 0.5f, 0.5f, 1.0f}; // Gray
+  m_renderer->draw_lines(color, vert, 2.0);
 
-        // Draw outer border double width
-	glLineWidth (2.0);
+  // Draw thin internal lines
+  vert.clear();
+  for (uint x = 10; x < volume.x(); x += 10) {
+    vert.add(x, 0.0f, 0.0f);
+    vert.add(x, volume.y(), 0.0f);
+  }
 
-	glBegin(GL_LINES);
-	//glColor4f (0.8f, 0.8f, 0.8f, 1.0f);
-        // left edge
-	glVertex3f (0.0f, 0.0f, 0.0f);
-	glVertex3f (0.0f, volume.y(), 0.0f);
-        // near edge
-	glVertex3f (0.0f, 0.0f, 0.0f);
-	glVertex3f (volume.x(), 0.0f, 0.0f);
+  for (uint y = 10; y < volume.y(); y += 10) {
+    vert.add(0.0f, y, 0.0f);
+    vert.add(volume.x(), y, 0.0f);
+  }
+  m_renderer->draw_lines(color, vert, 1.0);
+  
+  glEnable (GL_LIGHTING);
+  glEnable (GL_CULL_FACE);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	glColor4f (0.5f, 0.5f, 0.5f, 1.0f);
-        // right edge
-	glVertex3f (volume.x(), 0.0f, 0.0f);
-	glVertex3f (volume.x(), volume.y(), 0.0f);
-        // far edge
-	glVertex3f (0.0f, volume.y(), 0.0f);
-	glVertex3f (volume.x(), volume.y(), 0.0f);
+  // Draw print margin in faint red
+  Vector3d pM = m_model->settings.getPrintMargin();
 
-	// top
-	glColor4f (0.5f, 0.5f, 0.5f, 0.5f);
-        // left edge
-	glVertex3f (0.0f, 0.0f, volume.z());
-	glVertex3f (0.0f, volume.y(), volume.z());
-        // near edge
-	glVertex3f (0.0f, 0.0f, volume.z());
-	glVertex3f (volume.x(), 0.0f, volume.z());
-        // right edge
-	glVertex3f (volume.x(), 0.0f, volume.z());
-	glVertex3f (volume.x(), volume.y(), volume.z());
-        // far edge
-	glVertex3f (0.0f, volume.y(), volume.z());
-	glVertex3f (volume.x(), volume.y(), volume.z());
+  float no_mat[] = {0.0f, 0.0f, 0.0f, 0.5f};
+  float mat_diffuse[] = {1.0f, 0.1f, 0.1f, 0.2f};
+  float mat_specular[] = {0.025f, 0.025f, 0.025f, 0.3f};
 
-	// verticals at rear
-	glVertex3f (0.0f, volume.y(), 0);
-	glVertex3f (0.0f, volume.y(), volume.z());
-	glVertex3f (volume.x(), volume.y(), 0);
-	glVertex3f (volume.x(), volume.y(), volume.z());
+  glMaterialfv(GL_FRONT, GL_AMBIENT, no_mat);
+  glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+  glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+  glMaterialf(GL_FRONT, GL_SHININESS, 0.5f);
+  glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
 
-	glEnd();
+  // bottom
+  glBegin(GL_TRIANGLE_STRIP);
+  glNormal3f (0.0f, 0.0f, 1.0f);
+  glVertex3f (pM.x(), pM.y(), 0.0f);
+  glVertex3f (0.0f, 0.0f, 0.0f);
+  glVertex3f (volume.x() - pM.x(), pM.y(), 0.0f);
+  glVertex3f (volume.x(), 0.0f, 0.0f);
+  glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), 0.0f);
+  glVertex3f (volume.x(), volume.y(), 0.0f);
+  glVertex3f (pM.x(), volume.y() - pM.y(), 0.0f);
+  glVertex3f (0.0f, volume.y(), 0.0f);
+  glVertex3f (pM.x(), pM.y(), 0.0f);
+  glVertex3f (0.0f, 0.0f, 0.0f);
+  glEnd();
 
+  glDisable (GL_DEPTH_TEST);
+  // top
+  glBegin(GL_TRIANGLE_STRIP);
+  glNormal3f (0.0f, 0.0f, 1.0f);
+  glVertex3f (pM.x(), pM.y(), volume.z());
+  glVertex3f (0.0f, 0.0f, volume.z());
+  glVertex3f (volume.x() - pM.x(), pM.y(), volume.z());
+  glVertex3f (volume.x(), 0.0f, volume.z());
+  glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), volume.z());
+  glVertex3f (volume.x(), volume.y(), volume.z());
+  glVertex3f (pM.x(), volume.y() - pM.y(), volume.z());
+  glVertex3f (0.0f, volume.y(), volume.z());
+  glVertex3f (pM.x(), pM.y(), volume.z());
+  glVertex3f (0.0f, 0.0f, volume.z());
+  glEnd();
 
+  // mark front left
+  // glBegin(GL_TRIANGLES);
+  // glNormal3f (0.0f, 0.0f, 1.0f);
+  // glVertex3f (pM.x(), pM.y(), 0.0f);
+  // glVertex3f (pM.x()+10.0f, pM.y(), 0.0f);
+  // glVertex3f (pM.x(), pM.y()+10.0f, 0.0f);
+  // glEnd();
 
-        // Draw thin internal lines
-	glLineWidth (1.0);
+  glEnable (GL_DEPTH_TEST);
+  // Draw print surface
+  float mat_diffuse_white[] = {0.2f, 0.2f, 0.2f, 0.2f};
+  glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse_white);
 
-	glBegin(GL_LINES);
-	for (uint x = 10; x < volume.x(); x += 10) {
-		glVertex3f (x, 0.0f, 0.0f);
-		glVertex3f (x, volume.y(), 0.0f);
-	}
+  glBegin(GL_QUADS);
+  glVertex3f (pM.x(), pM.y(), 0.0f);
+  glVertex3f (volume.x() - pM.x(), pM.y(), 0.0f);
+  glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), 0.0f);
+  glVertex3f (pM.x(), volume.y() - pM.y(), 0.0f);
+  glEnd();
 
-	for (uint y = 10; y < volume.y(); y += 10) {
-		glVertex3f (0.0f, y, 0.0f);
-		glVertex3f (volume.x(), y, 0.0f);
-	}
-
-	glEnd();
-
-	glEnable (GL_LIGHTING);
-        glEnable (GL_CULL_FACE);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-        // Draw print margin in faint red
-	Vector3d pM = m_model->settings.getPrintMargin();
-
-        float no_mat[] = {0.0f, 0.0f, 0.0f, 0.5f};
-        float mat_diffuse[] = {1.0f, 0.1f, 0.1f, 0.2f};
-        float mat_specular[] = {0.025f, 0.025f, 0.025f, 0.3f};
-
-        glMaterialfv(GL_FRONT, GL_AMBIENT, no_mat);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-        glMaterialf(GL_FRONT, GL_SHININESS, 0.5f);
-        glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
-
-	// bottom
-        glBegin(GL_TRIANGLE_STRIP);
-        glNormal3f (0.0f, 0.0f, 1.0f);
-	glVertex3f (pM.x(), pM.y(), 0.0f);
-	glVertex3f (0.0f, 0.0f, 0.0f);
-	glVertex3f (volume.x() - pM.x(), pM.y(), 0.0f);
-	glVertex3f (volume.x(), 0.0f, 0.0f);
-	glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), 0.0f);
-	glVertex3f (volume.x(), volume.y(), 0.0f);
-	glVertex3f (pM.x(), volume.y() - pM.y(), 0.0f);
-	glVertex3f (0.0f, volume.y(), 0.0f);
-	glVertex3f (pM.x(), pM.y(), 0.0f);
-	glVertex3f (0.0f, 0.0f, 0.0f);
-        glEnd();
-
-	glDisable (GL_DEPTH_TEST);
-	// top
-        glBegin(GL_TRIANGLE_STRIP);
-        glNormal3f (0.0f, 0.0f, 1.0f);
-	glVertex3f (pM.x(), pM.y(), volume.z());
-	glVertex3f (0.0f, 0.0f, volume.z());
-	glVertex3f (volume.x() - pM.x(), pM.y(), volume.z());
-	glVertex3f (volume.x(), 0.0f, volume.z());
-	glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), volume.z());
-	glVertex3f (volume.x(), volume.y(), volume.z());
-	glVertex3f (pM.x(), volume.y() - pM.y(), volume.z());
-	glVertex3f (0.0f, volume.y(), volume.z());
-	glVertex3f (pM.x(), pM.y(), volume.z());
-	glVertex3f (0.0f, 0.0f, volume.z());
-        glEnd();
-
-	// mark front left
-        // glBegin(GL_TRIANGLES);
-        // glNormal3f (0.0f, 0.0f, 1.0f);
-	// glVertex3f (pM.x(), pM.y(), 0.0f);
-	// glVertex3f (pM.x()+10.0f, pM.y(), 0.0f);
-	// glVertex3f (pM.x(), pM.y()+10.0f, 0.0f);
-        // glEnd();
-
-	glEnable (GL_DEPTH_TEST);
-        // Draw print surface
-	float mat_diffuse_white[] = {0.2f, 0.2f, 0.2f, 0.2f};
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse_white);
-
-        glBegin(GL_QUADS);
-	glVertex3f (pM.x(), pM.y(), 0.0f);
-	glVertex3f (volume.x() - pM.x(), pM.y(), 0.0f);
-	glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), 0.0f);
-	glVertex3f (pM.x(), volume.y() - pM.y(), 0.0f);
-        glEnd();
-
-	glDisable (GL_LIGHTING);
+  glDisable (GL_LIGHTING);
 }
 
-// called from Render::on_expose_event
-void View::Draw (vector<Gtk::TreeModel::Path> &selected, bool objects_only)
+// called from Render::on_draw
+void View::Draw(vector<Gtk::TreeModel::Path> selected, bool objects_only)
 {
-	// Draw the grid, pushed back so it can be seen
-	// when viewed from below.
-        if (!objects_only) {
-	  glEnable (GL_POLYGON_OFFSET_FILL);
-	  glPolygonOffset (1.0f, 1.0f);
-    	  DrawGrid();
-	}
-
-	glPolygonOffset (-0.5f, -0.5f);
-	glDisable (GL_POLYGON_OFFSET_FILL);
-
-	// FIXME: Add functionality back in
-	// Draw GCode, which already incorporates any print offset
-        if (!objects_only && !m_model->isCalculating()) {
-	  //if (m_gcodetextview->has_focus()) {
-	  //  double z = m_model->gcode.currentCursorWhere.z();
-	  //  m_model->GlDrawGCode(z);
-	  //}
-	  //else {
-	    //m_model->gcode.currentCursorWhere = Vector3d::ZERO;
-	  m_model->GlDrawGCode(m_model->settings.get_double("Display", "GCodeDrawStart"));
-	    //}
-	}
-
-	// Draw all objects
-	int layerdrawn = m_model->draw(selected);
-	if (layerdrawn > -1) {
-	  Gtk::Label *layerlabel;
-	  m_builder->get_widget("layerno_label", layerlabel);
-	  if (layerlabel){
-	    stringstream s;
-	    s << layerdrawn ;
-	    layerlabel->set_text(s.str());
-	  }
-	}
+  // Draw the grid, pushed back so it can be seen
+  // when viewed from below.
+  if (!objects_only) {
+    // glEnable (GL_POLYGON_OFFSET_FILL);
+    // glPolygonOffset (1.0f, 1.0f);
+    DrawGrid();
+  }
+  
+  // glPolygonOffset (-0.5f, -0.5f);
+  // glDisable (GL_POLYGON_OFFSET_FILL);
+  
+  // FIXME: Add functionality back in
+  // Draw GCode, which already incorporates any print offset
+  if (!objects_only && !m_model->isCalculating()) {
+    //if (m_gcodetextview->has_focus()) {
+    //  double z = m_model->gcode.currentCursorWhere.z();
+    //  m_model->GlDrawGCode(z);
+    //}
+    //else {
+    //m_model->gcode.currentCursorWhere = Vector3d::ZERO;
+    m_model->GlDrawGCode(*m_renderer, m_model->settings.get_double("Display", "GCodeDrawStart"));
+    //}
+  }
+  
+  // Draw all objects
+  int layerdrawn = m_model->draw(*m_renderer, selected);
+  if (layerdrawn > -1) {
+    Gtk::Label *layerlabel;
+    m_builder->get_widget("layerno_label", layerlabel);
+    if (layerlabel){
+      stringstream s;
+      s << layerdrawn ;
+      layerlabel->set_text(s.str());
+    }
+  }
 }
 
 void View::showCurrentPrinting(unsigned long lineno)

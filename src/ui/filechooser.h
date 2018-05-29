@@ -56,7 +56,7 @@ class RSFilechooser
 
   string ModelPath, GCodePath, SettingsPath;
 
-  Gtk::FileFilter allfiles, modelfiles, gcodefiles, settingsfiles;
+  Glib::RefPtr< Gtk::FileFilter > allfiles, modelfiles, gcodefiles, settingsfiles;
 
   void on_filechooser_preview    (Gtk::FileChooserWidget *chooser);
   bool on_filechooser_key        (GdkEventKey* event);

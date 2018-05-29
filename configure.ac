@@ -36,11 +36,7 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <polyclipping/clipper.hpp>], [ClipperL
     [AC_MSG_WARN([libclipper is not installed. Using internal copy.])])
 AC_SUBST(CLIPPER_LIBS)
 
-
-dnl If your script errors here on OSX, see this URL http://myitcorner.com/blog/?p=207
-PKG_CHECK_MODULES(GTKMM, [gobject-2.0 glib-2.0 gtkmm-2.4 gtkglextmm-1.2 gtk+-2.0 cairomm-1.0 glibmm-2.4 >= 2.27])
-
-PKG_CHECK_MODULES(XMLPP, libxml++-2.6 >= 2.10.0)
+PKG_CHECK_MODULES(GTKMM, [gtkmm-3.0 gtk+-3.0 epoxy])
 
 AC_OPENMP()
 

@@ -302,7 +302,7 @@ void GCode::Read(Model *model, const vector<char> E_letters,
   file.close();
 }
 
-void GCode::draw(const Settings &settings,
+void GCode::draw(Render &render, const Settings &settings,
 		 int layer, bool liveprinting,
 		 int linewidth) {
   if (layer < 0)
@@ -311,15 +311,15 @@ void GCode::draw(const Settings &settings,
   if (cmds.empty())
     return;
   
-  drawCommands(settings,
+  drawCommands(render, settings,
 	       getLayerStart(layer), getLayerEnd(layer) + 1,
 	       liveprinting, linewidth);
 }
 
-void GCode::drawSeg(const GCodeCmd *cmd) {
+void GCode::addSeg(RenderVert &vert, const GCodeCmd *cmd) {
   if (cmd->type == line) {
-    glVertex3dv((GLdouble*)&cmd->start);
-    glVertex3dv((GLdouble*)&cmd->stop);
+    vert.add(cmd->start);
+    vert.add(cmd->stop);
     return;
   }
 
@@ -341,66 +341,66 @@ void GCode::drawSeg(const GCodeCmd *cmd) {
   if (angle<0) ccw=!ccw;
   Vector3d axis(0.,0.,ccw?1.:-1.);
   double startZ = lastPos.z();
-  for (long double a = 0; abs(a) < abs(angle); a+=astep){
+  for (long double a = 0; abs(a) < abs(angle); a+=astep) {
     arcpoint = center + radiusv.rotate(a, axis);
     if (dz!=0 && angle!=0) arcpoint.z() = startZ + dz*a/angle;
-    glVertex3dv(lastPos);
-    glVertex3dv(arcpoint);
+    vert.add(lastPos);
+    vert.add(arcpoint);
     lastPos = arcpoint;
   }
 }
 
-void GCode::drawCommands(const Settings &settings, uint start, uint end,
+void GCode::drawCommands(Render &render,
+			 const Settings &settings, uint start, uint end,
 			 bool liveprinting, int linewidth) {
   size_t count;
   GCodeCmd *cmd;
-
+  RenderVert vert;
+  
   //cout << "Drawing gcode from " << start << " to " << end << endl;
   
   if (end > cmds.size())
     end = cmds.size();
   
-  glEnable(GL_BLEND);
-  glDisable(GL_CULL_FACE);
-  glDisable(GL_LIGHTING);
+  // glEnable(GL_BLEND);
+  // glDisable(GL_CULL_FACE);
+  // glDisable(GL_LIGHTING);
 
-  if (start < cmds.size()) {
-    glPointSize(20);
-    glBegin(GL_POINTS);
-    glVertex3dv((GLdouble*)&cmds[start].start);
-    glEnd();
-  }
+  // if (start < cmds.size()) {
+  //   glPointSize(20);
+  //   glBegin(GL_POINTS);
+  //   glVertex3dv((GLdouble*)&cmds[start].start);
+  //   glEnd();
+  // }
   
-  glLineWidth(1);
-  glColor4fv(settings.get_colour("Display","GCodeMoveColour"));
-  glBegin(GL_LINES);
   for (count = start; count < end; count++) {
     cmd = &cmds[count];
     if (cmd->spec_e)
       continue;
 
-    drawSeg(cmd);
+    addSeg(vert, cmd);
   }
-  glEnd();
+  render.draw_lines(settings.get_colour("Display","GCodeMoveColour"), vert, 1.0);
 
   /* FIXME: More colors for multiple extruders */
-  glLineWidth(linewidth);
+  vert.clear();
+  float *color;
   if (liveprinting) {
-    glColor4fv(settings.get_colour("Display","GCodePrintingColour"));
+    color = settings.get_colour("Display","GCodePrintingColour");
   } else {
     string extrudername =
       settings.numberedExtruder("Extruder", 0);
-    glColor4fv(settings.get_colour(extrudername,"DisplayColour"));
+    color = settings.get_colour(extrudername,"DisplayColour");
   }
-  glBegin(GL_LINES);
   for (count = start; count < end; count++) {
     cmd = &cmds[count];
     if (!cmd->spec_e)
       continue;
-
-    drawSeg(cmd);
+    
+    addSeg(vert, cmd);
   }
-  glEnd();
+  
+  render.draw_lines(color, vert, linewidth);
 }
 
 double GCode::GetTotalExtruded(void) const {

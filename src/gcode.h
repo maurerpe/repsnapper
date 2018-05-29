@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "stdafx.h"
+#include "render.h"
 
 class GCode {
  private:
@@ -76,7 +77,7 @@ class GCode {
   vector<size_t> layers; // First command at each layer
   
   static void ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, double &max_feedrate, double &home_feedrate);
-  void drawSeg(const GCodeCmd *cmd);
+  static void addSeg(RenderVert &vert, const GCodeCmd *cmd);
   
   Glib::RefPtr<Gtk::TextBuffer> buffer;
  public:
@@ -91,11 +92,13 @@ class GCode {
   void Read(Model *model, const vector<char> E_letters,
 	    ViewProgress *progress, string filename);
   
-  void draw(const Settings &settings,
+  void draw(Render &render,
+	    const Settings &settings,
 	    int layer=-1, bool liveprinting=false,
 	    int linewidth=3);
   
-  void drawCommands(const Settings &settings, uint start, uint end,
+  void drawCommands(Render &render,
+		    const Settings &settings, uint start, uint end,
 		    bool liveprinting, int linewidth);
   
   double GetTotalExtruded(void) const;

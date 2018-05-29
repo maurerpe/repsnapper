@@ -94,10 +94,10 @@ Glib::RefPtr<Gtk::TextBuffer> Model::GetGCodeBuffer()
   return gcode.get_buffer();
 }
 
-void Model::GlDrawGCode(int layerno)
+void Model::GlDrawGCode(Render &render, int layerno)
 {
   if (settings.get_boolean("Display","DisplayGCode"))  {
-    gcode.draw (settings, layerno, false);
+    gcode.draw(render, settings, layerno, false);
   }
   // assume that the real printing line is the one at the start of the buffer
   if (currentprintingline > 0) {
@@ -105,20 +105,19 @@ void Model::GlDrawGCode(int layerno)
     if (currentlayer>=0) {
       int start = gcode.getLayerStart(currentlayer);
       int end   = gcode.getLayerEnd(currentlayer);
-      gcode.drawCommands(settings, start, currentprintingline, true, 4);
-      gcode.drawCommands(settings, currentprintingline,  end,  true, 1);
+      gcode.drawCommands(render, settings, start, currentprintingline, true, 4);
+      gcode.drawCommands(render, settings, currentprintingline,  end,  true, 1);
     }
   }
 }
 
-void Model::GlDrawGCode(double layerz)
+void Model::GlDrawGCode(Render &render, double layerz)
 {
   if (!settings.get_boolean("Display","DisplayGCode")) return;
   int layer = gcode.getLayerNo(layerz);
   if (layer>=0)
-    GlDrawGCode(layer);
+    GlDrawGCode(render, layer);
 }
-
 
 void Model::init() {}
 
@@ -650,7 +649,7 @@ Vector3d Model::GetViewCenter()
 }
 
 // called from View::Draw
-int Model::draw (vector<Gtk::TreeModel::Path> &iter)
+int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter)
 {
   vector<Shape*> sel_shapes;
   vector<Matrix4d> transforms;
@@ -682,8 +681,8 @@ int Model::draw (vector<Gtk::TreeModel::Path> &iter)
 	glTranslated(offset.x(), offset.y(), offset.z());
 	// glPushMatrix();
 	// glMultMatrixd (&preview_shapes[i]->transform3D.transform.array[0]);
-	preview_shapes[i]->draw (settings, false, 20000);
-	preview_shapes[i]->drawBBox ();
+	preview_shapes[i]->draw(render, settings, false, 2000000);
+	preview_shapes[i]->drawBBox(render);
 	// glPopMatrix();
       }
       glPopMatrix();
@@ -720,7 +719,7 @@ int Model::draw (vector<Gtk::TreeModel::Path> &iter)
 	  glStencilFunc(GL_ALWAYS, 1, 1);
 	  glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 
-	  shape->draw (settings);
+	  shape->draw(render, settings);
 
 	  if (!displaypolygons) {
 	    // If not drawing polygons, need to draw the geometry
@@ -732,7 +731,7 @@ int Model::draw (vector<Gtk::TreeModel::Path> &iter)
 	    glDepthMask(GL_FALSE);
 	    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-	    shape->draw_geometry();
+	    shape->draw_geometry(render);
 
 	    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	    glDepthMask(GL_TRUE);
@@ -749,17 +748,17 @@ int Model::draw (vector<Gtk::TreeModel::Path> &iter)
 	  glStencilFunc(GL_NOTEQUAL, 1, 1);
 	  glEnable(GL_DEPTH_TEST);
 
-	  shape->draw_geometry();
+	  shape->draw_geometry(render);
 
 	  glEnable (GL_CULL_FACE);
 	  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	  glDisable(GL_STENCIL_TEST);
 	  glDisable(GL_POLYGON_OFFSET_LINE);
 	}
-	else shape->draw (settings, true);
+	else shape->draw(render, settings, true);
       }
       else {
-	shape->draw (settings, false);
+	shape->draw(render, settings, false);
       }
       // draw support triangles
       if (support) {
@@ -771,7 +770,7 @@ int Model::draw (vector<Gtk::TreeModel::Path> &iter)
       }
       glPopMatrix();
       if(displaybbox)
-	shape->drawBBox();
+	shape->drawBBox(render);
      }
     glPopMatrix();
   }
@@ -814,15 +813,15 @@ int Model::draw (vector<Gtk::TreeModel::Path> &iter)
       Vector3d pos;
       val << fixed << (Max.x()-Min.x());
       pos = Vector3d((Max.x()+Min.x())/2.,Min.y(),Max.z());
-      Render::draw_string(pos,val.str());
+      //Render::draw_string(pos,val.str());
       val.str("");
       val << fixed << (Max.y()-Min.y());
       pos = Vector3d(Min.x(),(Max.y()+Min.y())/2.,Max.z());
-      Render::draw_string(pos,val.str());
+      //Render::draw_string(pos,val.str());
       val.str("");
       val << fixed << (Max.z()-minz);
       pos = Vector3d(Min.x(),Min.y(),(Max.z()+minz)/2.);
-      Render::draw_string(pos,val.str());
+      //Render::draw_string(pos,val.str());
     }
   return -1;
 }

@@ -80,7 +80,8 @@ void ConnectView::signal_entry_changed()
   // Use the value of the entry widget, rather than the
   // active text, so the user can enter other values.
   Gtk::Entry *entry = m_combo.get_entry();
-  m_settings->set_string("Hardware","PortName", entry->get_text());
+  if (entry != NULL)
+    m_settings->set_string("Hardware","PortName", entry->get_text());
 }
 
 void ConnectView::find_ports() {

@@ -38,25 +38,29 @@ RSFilechooser::RSFilechooser(View * view_)
 		 (*this, &RSFilechooser::on_filechooser_preview), chooser) );
 
   // file patterns
-  allfiles.set_name(_("All Files"));
-  allfiles.add_pattern("*");
+  allfiles = Gtk::FileFilter::create();
+  allfiles->set_name(_("All Files"));
+  allfiles->add_pattern("*");
 
-  modelfiles.set_name(_("Models"));
-  modelfiles.add_pattern("*.stl");
-  modelfiles.add_pattern("*.STL");
-  modelfiles.add_pattern("*.svg");
-  modelfiles.add_pattern("*.SVG");
-  modelfiles.add_pattern("*.wrl");
-  modelfiles.add_pattern("*.WRL");
+  modelfiles = Gtk::FileFilter::create();
+  modelfiles->set_name(_("Models"));
+  modelfiles->add_pattern("*.stl");
+  modelfiles->add_pattern("*.STL");
+  modelfiles->add_pattern("*.svg");
+  modelfiles->add_pattern("*.SVG");
+  modelfiles->add_pattern("*.wrl");
+  modelfiles->add_pattern("*.WRL");
 
-  gcodefiles.set_name(_("GCode"));
-  gcodefiles.add_pattern("*.g");
-  gcodefiles.add_pattern("*.G");
-  gcodefiles.add_pattern("*.gcode");
-  gcodefiles.add_pattern("*.GCODE");
+  gcodefiles = Gtk::FileFilter::create();
+  gcodefiles->set_name(_("GCode"));
+  gcodefiles->add_pattern("*.g");
+  gcodefiles->add_pattern("*.G");
+  gcodefiles->add_pattern("*.gcode");
+  gcodefiles->add_pattern("*.GCODE");
 
-  settingsfiles.set_name(_("Settings"));
-  settingsfiles.add_pattern("*.conf");
+  settingsfiles = Gtk::FileFilter::create();
+  settingsfiles->set_name(_("Settings"));
+  settingsfiles->add_pattern("*.conf");
 
   chooser->add_filter(allfiles);
   chooser->add_filter(modelfiles);
@@ -186,7 +190,7 @@ bool RSFilechooser::on_filechooser_key(GdkEventKey* event)
 {
   if (event->state & GDK_SHIFT_MASK) {
     switch (event->keyval) {
-    case GDK_Return: do_action();
+    case GDK_KEY_Return: do_action();
     }
     return true;
   }

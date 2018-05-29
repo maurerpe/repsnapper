@@ -596,7 +596,7 @@ vector<Segment> Shape::getCutlines(const Matrix4d &T, double z,
 
 
 // called from Model::draw
-void Shape::draw(const Settings &settings, bool highlight, uint max_triangles)
+void Shape::draw(Render &render, const Settings &settings, bool highlight, uint max_triangles)
 {
   //cerr << "Shape::draw" <<  endl;
 	// polygons
@@ -604,14 +604,8 @@ void Shape::draw(const Settings &settings, bool highlight, uint max_triangles)
 
 	Vector4f no_mat(0.0f, 0.0f, 0.0f, 1.0f);
 	Vector4f low_mat(0.2f, 0.2f, 0.2f, 1.0f);
-//	float mat_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
-//	float mat_ambient_color[] = {0.8f, 0.8f, 0.2f, 1.0f};
 	Vector4f mat_diffuse(0.1f, 0.5f, 0.8f, 1.0f);
         Vector4f mat_specular(1.0f, 1.0f, 1.0f, 1.0f);
-//	float no_shininess = 0.0f;
-//	float low_shininess = 5.0f;
-//	float high_shininess = 100.0f;
-//	float mat_emission[] = {0.3f, 0.2f, 0.2f, 0.0f};
 
 
         //for (uint i = 0; i < 4; i++) {
@@ -648,7 +642,7 @@ void Shape::draw(const Settings &settings, bool highlight, uint max_triangles)
 		glEnable(GL_BLEND);
 //		glDepthMask(GL_TRUE);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  //define blending factors
-                draw_geometry(max_triangles);
+                draw_geometry(render, max_triangles);
 	}
 
 	glDisable (GL_POLYGON_OFFSET_FILL);
@@ -714,7 +708,7 @@ void Shape::draw(const Settings &settings, bool highlight, uint max_triangles)
 }
 
 // the bounding box is in real coordinates (not transformed)
-void Shape::drawBBox() const
+void Shape::drawBBox(Render &render) const
 {
   const double minz = max(0.,Min.z()); // draw above zero plane only
 
@@ -762,67 +756,29 @@ void Shape::drawBBox() const
   Vector3d pos;
   val << fixed << (Max.x()-Min.x());
   pos = Vector3d((Max.x()+Min.x())/2.,Min.y(),Max.z());
-  Render::draw_string(pos,val.str());
+  //Render::draw_string(pos,val.str());
   val.str("");
   val << fixed << (Max.y()-Min.y());
   pos = Vector3d(Min.x(),(Max.y()+Min.y())/2.,Max.z());
-  Render::draw_string(pos,val.str());
+  //Render::draw_string(pos,val.str());
   val.str("");
   val << fixed << (Max.z()-minz);
   pos = Vector3d(Min.x(),Min.y(),(Max.z()+minz)/2.);
-  Render::draw_string(pos,val.str());
-
+  //Render::draw_string(pos,val.str());
 }
 
-
-void Shape::draw_geometry(uint max_triangles)
+void Shape::draw_geometry(Render &render, uint max_triangles)
 {
-
-  bool listDraw = (max_triangles == 0); // not in preview mode
-  bool haveList = gl_List >= 0;
-
-  if (!listDraw && haveList) {
-    if (gl_List>=0)
-      glDeleteLists(gl_List,1);
-    gl_List = -1;
-    haveList = false;
+  RenderVert vert;
+  float color[4] = {1.0, 1.0, 1.0, 0.3};
+  
+  for(size_t i = 0; i < triangles.size(); i++) {
+    vert.add(triangles[i].A);
+    vert.add(triangles[i].B);
+    vert.add(triangles[i].C);
   }
-  if (listDraw && !haveList) {
-    gl_List = glGenLists(1);
-    glNewList(gl_List, GL_COMPILE);
-  }
-  if (!listDraw || !haveList) {
-	uint step = 1;
-	if (max_triangles>0) step = floor(triangles.size()/max_triangles);
-	step = max((uint)1,step);
-
-	glBegin(GL_TRIANGLES);
-	for(size_t i=0;i<triangles.size();i+=step)
-	{
-		glNormal3dv(triangles[i].Normal);
-		glVertex3dv(triangles[i].A);
-		glVertex3dv(triangles[i].B);
-		glVertex3dv(triangles[i].C);
-	}
-	glEnd();
-  }
-  if (listDraw && !haveList) {
-    glEndList();
-  }
-
-  if (listDraw && gl_List >= 0) { // have stored list
-    Glib::TimeVal starttime, endtime;
-    if (!slow_drawing) {
-      starttime.assign_current_time();
-    }
-    glCallList(gl_List);
-    if (!slow_drawing) {
-      endtime.assign_current_time();
-      Glib::TimeVal usedtime = endtime-starttime;
-      if (usedtime.as_double() > 0.2) slow_drawing = true;
-    }
-    return;
-  }
+  
+  render.draw_triangles(color, vert, transform3D.getFloatTransform());
 }
 
 /*
