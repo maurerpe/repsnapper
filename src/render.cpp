@@ -166,11 +166,6 @@ void Render::selection_changed() {
   queue_draw();
 }
 
-void Render::draw_string(const Vector3d &pos, const string s) {
-  if (fontheight == 0) return;
-  /* FIXME: Draw string */
-}
-
 void Render::on_realize() {
   Gtk::GLArea::on_realize();
 
@@ -219,16 +214,26 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   
   glEnable(GL_LINE_SMOOTH);
   
-  /* 1/z  0    0   0    M00 M01 M02 M03     M00/z M01/z M02/z M03/z
-      0  1/z   0   0  * M10 M11 M12 M13  =  M10/z M11/z M12/z M13/z
-      0   0   1/z  0    M20 M22 M22 M23     M20/z M21/z M22/z M23/z
-      0   0    0   1    M30 M32 M32 M33     M30   M31   M32   M33   */
-
-  for (int count = 0; count < 16; count++) {
-    m_full_transform.M[count] = m_transform.M[count];
-    if (count % 4 != 3)
-      m_full_transform.M[count] /= m_zoom;
+  Matrix4fT view_mat = m_transform;
+  view_mat.s.M23 -= m_zoom / 100;
+  
+  Matrix4d camera_mat;
+  vmml::frustum< double > camera;
+  camera.set_perspective(45.0,
+			 ((double) get_width()) / ((double) get_height()),
+			 0.1,
+			 100);
+  camera.compute_matrix(camera_mat);
+  for (int i = 0; i < 4; i ++) {
+    for (int j = 0; j < 4; j++) {
+      m_full_transform.M[4*i+j] =
+	view_mat.M[4*i+0] * camera_mat(j,0) +
+	view_mat.M[4*i+1] * camera_mat(j,1) +
+	view_mat.M[4*i+2] * camera_mat(j,2) +
+	view_mat.M[4*i+3] * camera_mat(j,3);
+    }
   }
+  
   glUniformMatrix4fv(m_trans, 1, GL_FALSE, m_full_transform.M);
   
   vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
@@ -262,6 +267,11 @@ void Render::set_model_transform(const Matrix4f &trans) {
 
 void Render::set_default_transform(void) {
   glUniformMatrix4fv(m_trans, 1, GL_FALSE, m_full_transform.M);
+}
+
+void Render::draw_string(const Vector3d &pos, const string s) {
+  if (fontheight == 0) return;
+  /* FIXME: Draw string */
 }
 
 void Render::draw_triangles(const float color[4], const RenderVert &vert) {
