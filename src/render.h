@@ -28,6 +28,7 @@ class Model;
 class Settings;
 
 class RenderVert {
+ private:
   vector< float > vec;
 
  public:
@@ -45,8 +46,10 @@ class RenderVert {
 
 class Render : public Gtk::GLArea
 {
+ private:
   ArcBall  *m_arcBall;
   Matrix4fT m_transform;
+  Matrix4fT m_full_transform;
   Vector2f  m_downPoint;
   Vector2f  m_dragStart;
   View *m_view;
@@ -81,8 +84,11 @@ class Render : public Gtk::GLArea
   void set_zoom (float zoom) {m_zoom=zoom;};
   void set_transform(const Matrix4fT &transform) {m_transform=transform;};
 
+  void set_model_transform(const Matrix4f &trans);
+  void set_default_transform(void);
+  
   void draw_string(const Vector3d &pos, const string s);
-  void draw_triangles(const float color[4], const RenderVert &vert, Matrix4f trans4);
+  void draw_triangles(const float color[4], const RenderVert &vert);
   void draw_lines(const float color[4], const RenderVert &vert, float line_width);
 
   virtual void on_realize();
@@ -94,6 +100,15 @@ class Render : public Gtk::GLArea
   virtual bool on_scroll_event(GdkEventScroll* event);
   virtual bool on_key_press_event(GdkEventKey* event);
   virtual bool on_key_release_event(GdkEventKey* event);
+};
+
+class RenderModelTrans {
+ private:
+  Render *m_render;
+  
+ public:
+  RenderModelTrans(Render &render, const Matrix4f &trans) {m_render = &render; m_render->set_model_transform(trans);};
+  ~RenderModelTrans() {m_render->set_default_transform();};
 };
 
 #endif // RENDER_H

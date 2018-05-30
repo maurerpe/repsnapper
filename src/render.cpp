@@ -209,18 +209,27 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glUseProgram(m_program);
 
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  //define blending factors
+
+  glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+
+  //glEnable(GL_CULL_FACE);
+  
+  glEnable(GL_LINE_SMOOTH);
+  
   /* 1/z  0    0   0    M00 M01 M02 M03     M00/z M01/z M02/z M03/z
       0  1/z   0   0  * M10 M11 M12 M13  =  M10/z M11/z M12/z M13/z
       0   0   1/z  0    M20 M22 M22 M23     M20/z M21/z M22/z M23/z
       0   0    0   1    M30 M32 M32 M33     M30   M31   M32   M33   */
 
-  Matrix4fT trans;
   for (int count = 0; count < 16; count++) {
-    trans.M[count] = m_transform.M[count];
+    m_full_transform.M[count] = m_transform.M[count];
     if (count % 4 != 3)
-      trans.M[count] /= m_zoom;
+      m_full_transform.M[count] /= m_zoom;
   }
-  glUniformMatrix4fv(m_trans, 1, GL_FALSE, trans.M);
+  glUniformMatrix4fv(m_trans, 1, GL_FALSE, m_full_transform.M);
   
   vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
   m_view->Draw(selpath);
@@ -235,29 +244,28 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   return true;
 }
 
-void Render::draw_triangles(const float color[4], const RenderVert &vert, Matrix4f trans4) {
-  //cout << "draw_triangles tranform:" << endl << trans4 << endl;
+void Render::set_model_transform(const Matrix4f &trans) {
+  Matrix4fT comb_trans;
   
-  Matrix4fT trans;
-  for (int count = 0; count < 16; count++) {
-    trans.M[count] = m_transform.M[count];
-    if (count % 4 != 3)
-      trans.M[count] /= m_zoom;
-  }
-  //cout << "Scaled:" << endl << trans;
-
-  Matrix4fT tri_trans;
   for (int i = 0; i < 4; i ++) {
     for (int j = 0; j < 4; j++) {
-      tri_trans.M[4*i+j] =
-	trans4(0,i) * trans.M[ 0+j] +
-	trans4(1,i) * trans.M[ 4+j] +
-	trans4(2,i) * trans.M[ 8+j] +
-	trans4(3,i) * trans.M[12+j];
+      comb_trans.M[4*i+j] =
+	trans(0,i) * m_full_transform.M[ 0+j] +
+	trans(1,i) * m_full_transform.M[ 4+j] +
+	trans(2,i) * m_full_transform.M[ 8+j] +
+	trans(3,i) * m_full_transform.M[12+j];
     }
   }
-  glUniformMatrix4fv(m_trans, 1, GL_FALSE, tri_trans.M);
-  //cout << "Combined:" << endl << tri_trans;
+  
+  glUniformMatrix4fv(m_trans, 1, GL_FALSE, comb_trans.M);
+}
+
+void Render::set_default_transform(void) {
+  glUniformMatrix4fv(m_trans, 1, GL_FALSE, m_full_transform.M);
+}
+
+void Render::draw_triangles(const float color[4], const RenderVert &vert) {
+  //cout << "draw_triangles tranform:" << endl;
   
   glUniform4fv(m_color, 1, color);
 
@@ -267,9 +275,7 @@ void Render::draw_triangles(const float color[4], const RenderVert &vert, Matrix
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-  glDrawArrays(GL_TRIANGLES, 0, vert.size() / (3 * sizeof(GLfloat)));
-  
-  glUniformMatrix4fv(m_trans, 1, GL_FALSE, trans.M);
+  glDrawArrays(GL_TRIANGLES, 0, vert.size() / (3 * sizeof(GLfloat)));  
 }
 
 void Render::draw_lines(const float color[4], const RenderVert &vert, float line_width) {

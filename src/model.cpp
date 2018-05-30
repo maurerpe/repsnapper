@@ -664,13 +664,7 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter)
   }
   Vector3d translation = objtree.transform3D.getTranslation();
   Vector3d offset = printOffset + translation;
-
-  // Add the print offset to the drawing location of the STL objects.
-  glTranslated(offset.x(),offset.y(),offset.z());
-
-  glPushMatrix();
-  glMultMatrixd (&objtree.transform3D.transform.array[0]);
-
+  
   // draw preview shapes and nothing else
   if (settings.get_boolean("Display","PreviewLoad"))
     if (preview_shapes.size() > 0) {
@@ -679,150 +673,31 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter)
       for (uint i = 0; i < preview_shapes.size(); i++) {
 	offset = preview_shapes[i]->t_Center();
 	glTranslated(offset.x(), offset.y(), offset.z());
-	// glPushMatrix();
-	// glMultMatrixd (&preview_shapes[i]->transform3D.transform.array[0]);
 	preview_shapes[i]->draw(render, settings, false, 2000000);
 	preview_shapes[i]->drawBBox(render);
-	// glPopMatrix();
       }
-      glPopMatrix();
-      glPopMatrix();
       return 0;
     }
-  bool support = settings.get_boolean("Slicing","Support");
-  double supportangle = settings.get_double("Slicing","SupportAngle");
-  bool displaypolygons = settings.get_boolean("Display","DisplayPolygons");
-  bool displaybbox = settings.get_boolean("Display","DisplayBBox");
+  
   for (uint i = 0; i < objtree.Objects.size(); i++) {
     TreeObject *object = objtree.Objects[i];
     index++;
 
-    glPushMatrix();
-    glMultMatrixd (&object->transform3D.transform.array[0]);
     for (uint j = 0; j < object->shapes.size(); j++) {
       Shape *shape = object->shapes[j];
       glLoadName(index); // Load select/pick index
       index++;
-      glPushMatrix();
-      glMultMatrixd (&shape->transform3D.transform.array[0]);
 
       bool is_selected = false;
       for (uint s = 0; s < sel_shapes.size(); s++)
 	if (sel_shapes[s] == shape)
 	  is_selected = true;
 
-      // this is slow for big shapes
-      if (is_selected) {
-	if (!shape->slow_drawing && shape->dimensions()>2) {
-	  // Enable stencil buffer when we draw the selected object.
-	  glEnable(GL_STENCIL_TEST);
-	  glStencilFunc(GL_ALWAYS, 1, 1);
-	  glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
-
-	  shape->draw(render, settings);
-
-	  if (!displaypolygons) {
-	    // If not drawing polygons, need to draw the geometry
-	    // manually, but invisible, to set up the stencil buffer
-	    glEnable(GL_CULL_FACE);
-	    glEnable(GL_DEPTH_TEST);
-	    glEnable(GL_BLEND);
-	    // Set to not draw anything, and not update depth buffer
-	    glDepthMask(GL_FALSE);
-	    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-
-	    shape->draw_geometry(render);
-
-	    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	    glDepthMask(GL_TRUE);
-	  }
-
-	  // draw highlight around selected object
-	  glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-	  glLineWidth(3.0);
-	  glEnable (GL_POLYGON_OFFSET_LINE);
-
-	  glDisable (GL_CULL_FACE);
-	  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	  glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	  glStencilFunc(GL_NOTEQUAL, 1, 1);
-	  glEnable(GL_DEPTH_TEST);
-
-	  shape->draw_geometry(render);
-
-	  glEnable (GL_CULL_FACE);
-	  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	  glDisable(GL_STENCIL_TEST);
-	  glDisable(GL_POLYGON_OFFSET_LINE);
-	}
-	else shape->draw(render, settings, true);
-      }
-      else {
-	shape->draw(render, settings, false);
-      }
-      // draw support triangles
-      if (support) {
-	glColor4f(0.8f,0.f,0.f,0.5f);
-	vector<Triangle> suppTr =
-	  shape->trianglesSteeperThan(supportangle*M_PI/180.);
-	for (uint i=0; i < suppTr.size(); i++)
-	  suppTr[i].draw(GL_TRIANGLES);
-      }
-      glPopMatrix();
-      if(displaybbox)
-	shape->drawBBox(render);
-     }
-    glPopMatrix();
-  }
-  glPopMatrix();
-  glLoadName(0); // Clear selection name to avoid selecting last object with later rendering.
-
-  // draw total bounding box
-  if(displaybbox)
-    {
-      const double minz = max(0., Min.z()); // above xy plane only
-      // Draw bbox
-      glDisable(GL_DEPTH_TEST);
-      glLineWidth(1);
-      glColor3f(1,0,0);
-      glBegin(GL_LINE_LOOP);
-      glVertex3f(Min.x(), Min.y(), minz);
-      glVertex3f(Min.x(), Max.y(), minz);
-      glVertex3f(Max.x(), Max.y(), minz);
-      glVertex3f(Max.x(), Min.y(), minz);
-      glEnd();
-      glBegin(GL_LINE_LOOP);
-      glVertex3f(Min.x(), Min.y(), Max.z());
-      glVertex3f(Min.x(), Max.y(), Max.z());
-      glVertex3f(Max.x(), Max.y(), Max.z());
-      glVertex3f(Max.x(), Min.y(), Max.z());
-      glEnd();
-      glBegin(GL_LINES);
-      glVertex3f(Min.x(), Min.y(), minz);
-      glVertex3f(Min.x(), Min.y(), Max.z());
-      glVertex3f(Min.x(), Max.y(), minz);
-      glVertex3f(Min.x(), Max.y(), Max.z());
-      glVertex3f(Max.x(), Max.y(), minz);
-      glVertex3f(Max.x(), Max.y(), Max.z());
-      glVertex3f(Max.x(), Min.y(), minz);
-      glVertex3f(Max.x(), Min.y(), Max.z());
-      glEnd();
-      glColor3f(1,0.6,0.6);
-      ostringstream val;
-      val.precision(1);
-      Vector3d pos;
-      val << fixed << (Max.x()-Min.x());
-      pos = Vector3d((Max.x()+Min.x())/2.,Min.y(),Max.z());
-      //Render::draw_string(pos,val.str());
-      val.str("");
-      val << fixed << (Max.y()-Min.y());
-      pos = Vector3d(Min.x(),(Max.y()+Min.y())/2.,Max.z());
-      //Render::draw_string(pos,val.str());
-      val.str("");
-      val << fixed << (Max.z()-minz);
-      pos = Vector3d(Min.x(),Min.y(),(Max.z()+minz)/2.);
-      //Render::draw_string(pos,val.str());
+      shape->draw(render, settings, is_selected);
+      shape->draw_geometry(render);
     }
+  }
+  
   return -1;
 }
 

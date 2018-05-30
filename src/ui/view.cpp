@@ -1724,53 +1724,53 @@ void View::DrawGrid()
   }
   m_renderer->draw_lines(color, vert, 1.0);
   
-  glEnable (GL_LIGHTING);
-  glEnable (GL_CULL_FACE);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  // glEnable (GL_LIGHTING);
+  // glEnable (GL_CULL_FACE);
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   // Draw print margin in faint red
   Vector3d pM = m_model->settings.getPrintMargin();
 
-  float no_mat[] = {0.0f, 0.0f, 0.0f, 0.5f};
-  float mat_diffuse[] = {1.0f, 0.1f, 0.1f, 0.2f};
-  float mat_specular[] = {0.025f, 0.025f, 0.025f, 0.3f};
+  // float no_mat[] = {0.0f, 0.0f, 0.0f, 0.5f};
+  // float mat_diffuse[] = {1.0f, 0.1f, 0.1f, 0.2f};
+  // float mat_specular[] = {0.025f, 0.025f, 0.025f, 0.3f};
 
-  glMaterialfv(GL_FRONT, GL_AMBIENT, no_mat);
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-  glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-  glMaterialf(GL_FRONT, GL_SHININESS, 0.5f);
-  glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
+  // glMaterialfv(GL_FRONT, GL_AMBIENT, no_mat);
+  // glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+  // glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+  // glMaterialf(GL_FRONT, GL_SHININESS, 0.5f);
+  // glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
 
-  // bottom
-  glBegin(GL_TRIANGLE_STRIP);
-  glNormal3f (0.0f, 0.0f, 1.0f);
-  glVertex3f (pM.x(), pM.y(), 0.0f);
-  glVertex3f (0.0f, 0.0f, 0.0f);
-  glVertex3f (volume.x() - pM.x(), pM.y(), 0.0f);
-  glVertex3f (volume.x(), 0.0f, 0.0f);
-  glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), 0.0f);
-  glVertex3f (volume.x(), volume.y(), 0.0f);
-  glVertex3f (pM.x(), volume.y() - pM.y(), 0.0f);
-  glVertex3f (0.0f, volume.y(), 0.0f);
-  glVertex3f (pM.x(), pM.y(), 0.0f);
-  glVertex3f (0.0f, 0.0f, 0.0f);
-  glEnd();
+  // // bottom
+  // glBegin(GL_TRIANGLE_STRIP);
+  // glNormal3f (0.0f, 0.0f, 1.0f);
+  // glVertex3f (pM.x(), pM.y(), 0.0f);
+  // glVertex3f (0.0f, 0.0f, 0.0f);
+  // glVertex3f (volume.x() - pM.x(), pM.y(), 0.0f);
+  // glVertex3f (volume.x(), 0.0f, 0.0f);
+  // glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), 0.0f);
+  // glVertex3f (volume.x(), volume.y(), 0.0f);
+  // glVertex3f (pM.x(), volume.y() - pM.y(), 0.0f);
+  // glVertex3f (0.0f, volume.y(), 0.0f);
+  // glVertex3f (pM.x(), pM.y(), 0.0f);
+  // glVertex3f (0.0f, 0.0f, 0.0f);
+  // glEnd();
 
-  glDisable (GL_DEPTH_TEST);
-  // top
-  glBegin(GL_TRIANGLE_STRIP);
-  glNormal3f (0.0f, 0.0f, 1.0f);
-  glVertex3f (pM.x(), pM.y(), volume.z());
-  glVertex3f (0.0f, 0.0f, volume.z());
-  glVertex3f (volume.x() - pM.x(), pM.y(), volume.z());
-  glVertex3f (volume.x(), 0.0f, volume.z());
-  glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), volume.z());
-  glVertex3f (volume.x(), volume.y(), volume.z());
-  glVertex3f (pM.x(), volume.y() - pM.y(), volume.z());
-  glVertex3f (0.0f, volume.y(), volume.z());
-  glVertex3f (pM.x(), pM.y(), volume.z());
-  glVertex3f (0.0f, 0.0f, volume.z());
-  glEnd();
+  // glDisable (GL_DEPTH_TEST);
+  // // top
+  // glBegin(GL_TRIANGLE_STRIP);
+  // glNormal3f (0.0f, 0.0f, 1.0f);
+  // glVertex3f (pM.x(), pM.y(), volume.z());
+  // glVertex3f (0.0f, 0.0f, volume.z());
+  // glVertex3f (volume.x() - pM.x(), pM.y(), volume.z());
+  // glVertex3f (volume.x(), 0.0f, volume.z());
+  // glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), volume.z());
+  // glVertex3f (volume.x(), volume.y(), volume.z());
+  // glVertex3f (pM.x(), volume.y() - pM.y(), volume.z());
+  // glVertex3f (0.0f, volume.y(), volume.z());
+  // glVertex3f (pM.x(), pM.y(), volume.z());
+  // glVertex3f (0.0f, 0.0f, volume.z());
+  // glEnd();
 
   // mark front left
   // glBegin(GL_TRIANGLES);

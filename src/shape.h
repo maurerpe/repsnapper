@@ -121,7 +121,6 @@ public:
     int saveBinarySTL(Glib::ustring filename) const;
 
 
-    bool slow_drawing;
     virtual string info() const;
 
     vector<Triangle> getTriangles(const Matrix4d &T=Matrix4d::IDENTITY) const;
@@ -130,10 +129,6 @@ public:
     void setTriangles(const vector<Triangle> &triangles_);
 
     uint size() const {return triangles.size();}
-
-protected:
-
-    int gl_List;
 
 private:
 

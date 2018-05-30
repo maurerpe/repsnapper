@@ -29,9 +29,7 @@
 #endif
 
 // Constructor
-Shape::Shape()
-  : slow_drawing(false), gl_List(-1)
-{
+Shape::Shape() {
   Min.set(0,0,0);
   Max.set(200,200,200);
   CalcBBox();
@@ -39,13 +37,9 @@ Shape::Shape()
 
 void Shape::clear() {
   triangles.clear();
-  if (gl_List>=0)
-    glDeleteLists(gl_List,1);
-  gl_List = -1;
 };
 
-void Shape::setTriangles(const vector<Triangle> &triangles_)
-{
+void Shape::setTriangles(const vector<Triangle> &triangles_) {
   triangles = triangles_;
 
   CalcBBox();
@@ -331,9 +325,6 @@ void Shape::CalcBBox()
     triangles[i].AccumulateMinMax (Min, Max, transform3D.transform);
   }
   Center = (Max + Min) / 2;
-  if (gl_List>=0)
-    glDeleteLists(gl_List,1);
-  gl_List = -1;
 }
 
 Vector3d Shape::scaledCenter() const
@@ -345,7 +336,7 @@ struct SNorm {
   Vector3d normal;
   double area;
   bool operator<(const SNorm &other) const {return (area<other.area);};
-} ;
+};
 
 vector<Vector3d> Shape::getMostUsedNormals() const
 {
@@ -596,115 +587,12 @@ vector<Segment> Shape::getCutlines(const Matrix4d &T, double z,
 
 
 // called from Model::draw
-void Shape::draw(Render &render, const Settings &settings, bool highlight, uint max_triangles)
-{
+void Shape::draw(Render &render, const Settings &settings, bool highlight, uint max_triangles) {
   //cerr << "Shape::draw" <<  endl;
-	// polygons
-	glEnable(GL_LIGHTING);
 
-	Vector4f no_mat(0.0f, 0.0f, 0.0f, 1.0f);
-	Vector4f low_mat(0.2f, 0.2f, 0.2f, 1.0f);
-	Vector4f mat_diffuse(0.1f, 0.5f, 0.8f, 1.0f);
-        Vector4f mat_specular(1.0f, 1.0f, 1.0f, 1.0f);
-
-
-        //for (uint i = 0; i < 4; i++) {
-	mat_diffuse = settings.get_colour("Display","PolygonColour");
-	//}
-
-	if (highlight)
-	  mat_diffuse.array[3] += 0.3*(1.-mat_diffuse.array[3]);
-
-	// invert colours if partial draw (preview mode)
-	if (max_triangles > 0) {
-	  for (uint i = 0; i < 3; i++)
-	    mat_diffuse.array[i] = 1.-mat_diffuse.array[i];
-	  mat_diffuse[3] = 0.9;
-	}
-
-	mat_specular.array[0] = mat_specular.array[1] = mat_specular.array[2] = settings.get_double("Display","Highlight");;
-
-	/* draw sphere in first row, first column
-	* diffuse reflection only; no ambient or specular
-	*/
-	glMaterialfv(GL_FRONT, GL_AMBIENT, low_mat);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-	glMaterialf(GL_FRONT, GL_SHININESS, 90); // 0..128
-	glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
-
-	// glEnable (GL_POLYGON_OFFSET_FILL);
-
-	if(settings.get_boolean("Display","DisplayPolygons"))
-	{
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-//		glDepthMask(GL_TRUE);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  //define blending factors
-                draw_geometry(render, max_triangles);
-	}
-
-	glDisable (GL_POLYGON_OFFSET_FILL);
-
-	// WireFrame
-	if(settings.get_boolean("Display","DisplayWireframe"))
-	{
-	  if(!settings.get_boolean("Display","DisplayWireframeShaded"))
-			glDisable(GL_LIGHTING);
-
-
-	  //for (uint i = 0; i < 4; i++)
-	  mat_diffuse = settings.get_colour("Display","WireframeColour");
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-
-		glColor4fv(mat_diffuse);
-		for(size_t i=0;i<triangles.size();i++)
-		{
-			glBegin(GL_LINE_LOOP);
-			glLineWidth(1);
-			glNormal3dv((GLdouble*)&(triangles[i].Normal));
-			glVertex3dv((GLdouble*)&(triangles[i].A));
-			glVertex3dv((GLdouble*)&(triangles[i].B));
-			glVertex3dv((GLdouble*)&(triangles[i].C));
-			glEnd();
-		}
-	}
-
-	glDisable(GL_LIGHTING);
-
-	// normals
-	if(settings.get_boolean("Display","DisplayNormals"))
-	{
-	        glColor4fv(settings.get_colour("Display","NormalsColour"));
-		glBegin(GL_LINES);
-		double nlength = settings.get_double("Display","NormalsLength");
-		for(size_t i=0;i<triangles.size();i++)
-		{
-			Vector3d center = (triangles[i].A+triangles[i].B+triangles[i].C)/3.0;
-			glVertex3dv((GLdouble*)&center);
-			Vector3d N = center + (triangles[i].Normal*nlength);
-			glVertex3dv((GLdouble*)&N);
-		}
-		glEnd();
-	}
-
-	// Endpoints
-	if(settings.get_boolean("Display","DisplayEndpoints"))
-	{
-      	        glColor4fv(settings.get_colour("Display","EndpointsColour"));
-		glPointSize(settings.get_double("Display","EndPointSize"));
-		glBegin(GL_POINTS);
-		for(size_t i=0;i<triangles.size();i++)
-		{
-		  glVertex3dv((GLdouble*)&(triangles[i].A));
-		  glVertex3dv((GLdouble*)&(triangles[i].B));
-		  glVertex3dv((GLdouble*)&(triangles[i].C));
-		}
-		glEnd();
-	}
-	glDisable(GL_DEPTH_TEST);
-
+  if(settings.get_boolean("Display","DisplayPolygons")) {
+    draw_geometry(render, max_triangles);
+  }
 }
 
 // the bounding box is in real coordinates (not transformed)
@@ -712,43 +600,47 @@ void Shape::drawBBox(Render &render) const
 {
   const double minz = max(0.,Min.z()); // draw above zero plane only
 
-		// Draw bbox
-		glColor3f(1,0.2,0.2);
-		glLineWidth(1);
-		glBegin(GL_LINE_LOOP);
-		glVertex3f(Min.x(), Min.y(), minz);
-		glVertex3f(Min.x(), Max.y(), minz);
-		glVertex3f(Max.x(), Max.y(), minz);
-		glVertex3f(Max.x(), Min.y(), minz);
-		glEnd();
-		glBegin(GL_LINE_LOOP);
-		glVertex3f(Min.x(), Min.y(), Max.z());
-		glVertex3f(Min.x(), Max.y(), Max.z());
-		glVertex3f(Max.x(), Max.y(), Max.z());
-		glVertex3f(Max.x(), Min.y(), Max.z());
-		glEnd();
-		glBegin(GL_LINES);
-		glVertex3f(Min.x(), Min.y(), minz);
-		glVertex3f(Min.x(), Min.y(), Max.z());
-		glVertex3f(Min.x(), Max.y(), minz);
-		glVertex3f(Min.x(), Max.y(), Max.z());
-		glVertex3f(Max.x(), Max.y(), minz);
-		glVertex3f(Max.x(), Max.y(), Max.z());
-		glVertex3f(Max.x(), Min.y(), minz);
-		glVertex3f(Max.x(), Min.y(), Max.z());
-		glEnd();
-		/*// show center:
-		glBegin(GL_LINES);
-		glVertex3f(Min.x(), Min.y(), minz);
-		glVertex3f(Max.x(), Max.y(), Max.z());
-		glVertex3f(Max.x(), Min.y(), minz);
-		glVertex3f(Min.x(), Max.y(), Max.z());
-		glEnd();
-		glPointSize(10);
-		glBegin(GL_POINTS);
-		glVertex3dv(Center);
-		glEnd();
-		*/
+  // Draw bbox
+  RenderVert vert;
+  vert.add(Min.x(), Min.y(), minz);
+  vert.add(Min.x(), Max.y(), minz);
+
+  vert.add(Min.x(), Max.y(), minz);
+  vert.add(Max.x(), Max.y(), minz);
+  
+  vert.add(Max.x(), Max.y(), minz);
+  vert.add(Max.x(), Min.y(), minz);
+  
+  vert.add(Max.x(), Min.y(), minz);
+  vert.add(Min.x(), Min.y(), minz);
+  
+  vert.add(Min.x(), Min.y(), Max.z());
+  vert.add(Min.x(), Max.y(), Max.z());
+  
+  vert.add(Min.x(), Max.y(), Max.z());
+  vert.add(Max.x(), Max.y(), Max.z());
+  
+  vert.add(Max.x(), Max.y(), Max.z());
+  vert.add(Max.x(), Min.y(), Max.z());
+  
+  vert.add(Max.x(), Min.y(), Max.z());
+  vert.add(Min.x(), Min.y(), Max.z());
+
+  vert.add(Min.x(), Min.y(), minz);
+  vert.add(Min.x(), Min.y(), Max.z());
+  
+  vert.add(Min.x(), Max.y(), minz);
+  vert.add(Min.x(), Max.y(), Max.z());
+  
+  vert.add(Max.x(), Max.y(), minz);
+  vert.add(Max.x(), Max.y(), Max.z());
+  
+  vert.add(Max.x(), Min.y(), minz);
+  vert.add(Max.x(), Min.y(), Max.z());
+  
+  RenderModelTrans mt(render, transform3D.getFloatTransform());
+  float color[4] = {1, 0.2, 0.2, 1};
+  render.draw_lines(color, vert, 1.0);
 
   glColor3f(1,0.6,0.6);
   ostringstream val;
@@ -756,15 +648,15 @@ void Shape::drawBBox(Render &render) const
   Vector3d pos;
   val << fixed << (Max.x()-Min.x());
   pos = Vector3d((Max.x()+Min.x())/2.,Min.y(),Max.z());
-  //Render::draw_string(pos,val.str());
+  render.draw_string(pos,val.str());
   val.str("");
   val << fixed << (Max.y()-Min.y());
   pos = Vector3d(Min.x(),(Max.y()+Min.y())/2.,Max.z());
-  //Render::draw_string(pos,val.str());
+  render.draw_string(pos,val.str());
   val.str("");
   val << fixed << (Max.z()-minz);
   pos = Vector3d(Min.x(),Min.y(),(Max.z()+minz)/2.);
-  //Render::draw_string(pos,val.str());
+  render.draw_string(pos,val.str());
 }
 
 void Shape::draw_geometry(Render &render, uint max_triangles)
@@ -777,8 +669,9 @@ void Shape::draw_geometry(Render &render, uint max_triangles)
     vert.add(triangles[i].B);
     vert.add(triangles[i].C);
   }
-  
-  render.draw_triangles(color, vert, transform3D.getFloatTransform());
+
+  RenderModelTrans mt(render, transform3D.getFloatTransform());
+  render.draw_triangles(color, vert);
 }
 
 /*
@@ -791,7 +684,6 @@ void Shape::draw_geometry(Render &render, uint max_triangles)
 // done easier by just running through all lines and finding them?
 bool CleanupSharedSegments(vector<Segment> &lines)
 {
-#if 1 // just remove coincident lines
   vector<int> lines_to_delete;
   int count = (int)lines.size();
 #ifdef _OPENMP
@@ -819,70 +711,6 @@ bool CleanupSharedSegments(vector<Segment> &lines)
       lines.erase(lines.begin() + lines_to_delete[r]);
     }
   return true;
-
-#endif
-
-
-#if 0
-  vector<int> vertex_counts; // how many lines have each point
-  vertex_counts.resize (vertices.size());
-
-  for (uint i = 0; i < lines.size(); i++)
-    {
-      vertex_counts[lines[i].start]++;
-      vertex_counts[lines[i].end]++;
-    }
-
-  // ideally all points have an entrance and
-  // an exit, if we have co-incident lines, then
-  // we have more than one; do we ?
-  std::vector<int> duplicate_points;
-  for (uint i = 0; i < vertex_counts.size(); i++)
-    if (vertex_counts[i] > 2) // no more than 2 lines should share a point
-      duplicate_points.push_back (i);
-
-  if (duplicate_points.size() == 0)
-    return true; // all sane
-
-  for (uint i = 0; i < duplicate_points.size(); i++)
-    {
-      std::vector<int> dup_lines;
-
-      // find all line segments with this point in use
-      for (uint j = 0; j < lines.size(); j++)
-	{
-	  if (lines[j].start == duplicate_points[i] ||
-	      lines[j].end == duplicate_points[i])
-	    dup_lines.push_back (j);
-	}
-
-      // identify and eliminate identical line segments
-      // NB. hopefully by here dup_lines.size is small.
-      std::vector<int> lines_to_delete;
-      for (uint j = 0; j < dup_lines.size(); j++)
-	{
-	  const Segment &jr = lines[dup_lines[j]];
-	  for (uint k = j + 1; k < dup_lines.size(); k++)
-	    {
-	      const Segment &kr = lines[dup_lines[k]];
-	      if ((jr.start == kr.start && jr.end == kr.end) ||
-		  (jr.end == kr.start && jr.start == kr.end))
-		{
-		  lines_to_delete.push_back (dup_lines[j]);
-		  lines_to_delete.push_back (dup_lines[k]);
-		}
-	    }
-	}
-      // we need to remove from the end first to avoid disturbing
-      // the order of removed items
-      std::sort(lines_to_delete.begin(), lines_to_delete.end());
-      for (int r = lines_to_delete.size() - 1; r >= 0; r--)
-	{
-	  lines.erase(lines.begin() + lines_to_delete[r]);
-	}
-    }
-  return true;
-#endif
 }
 
 /*
@@ -1001,7 +829,3 @@ string Shape::info() const
        << "min/max/center: "<<Min<<Max <<Center ;
   return ostr.str();
 }
-
-
-
-
