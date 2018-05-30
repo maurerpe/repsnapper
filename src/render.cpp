@@ -215,14 +215,14 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   glEnable(GL_LINE_SMOOTH);
   
   Matrix4fT view_mat = m_transform;
-  view_mat.s.M23 -= m_zoom / 100;
+  view_mat.s.M23 -= m_zoom - 100;
   
   Matrix4d camera_mat;
   vmml::frustum< double > camera;
-  camera.set_perspective(45.0,
+  camera.set_perspective(20.0,
 			 ((double) get_width()) / ((double) get_height()),
 			 0.1,
-			 100);
+			 500);
   camera.compute_matrix(camera_mat);
   for (int i = 0; i < 4; i ++) {
     for (int j = 0; j < 4; j++) {
@@ -238,7 +238,7 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   
   vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
   m_view->Draw(selpath);
-  
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glUseProgram(0);
   
@@ -407,12 +407,14 @@ bool Render::on_button_release_event(GdkEventButton* event) {
 }
 
 bool Render::on_scroll_event(GdkEventScroll* event) {
-  cout << "Render::on_scroll_event" << endl;
   double factor = 110.0/100.0;
   if (event->direction == GDK_SCROLL_UP)
     m_zoom /= factor;
   else
     m_zoom *= factor;
+  
+  cout << "Render::on_scroll_event: " << m_zoom << endl;
+
   queue_draw();
   return true;
 }
@@ -533,7 +535,40 @@ guint Render::find_object_at(gdouble x, gdouble y) {
 }
 
 Vector3d Render::mouse_on_plane(double x, double y, double plane_z) const {
-  /* FIXME */
+  Matrix4d full;
+  
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
+      full(j, i) = m_full_transform.M[4*i+j];
+  
+  Matrix4d inv;
+  full.inverse(inv);
+  
+  // cout << "mouse_on_plane (" << x << "," << y << "," << plane_z << ")" << endl;
+  
+  // cout << full << endl;
+  // cout << inv << endl;
+  
+  double h = get_height();
+  double w = get_height();
+  Vector4d mouse0 = {2 * x/w - 1, 2 * (1 - y / h) - 1,  0, 1};
+  Vector4d mouse1 = {2 * x/w - 1, 2 * (1 - y / h) - 1, -1, 1};
+  
+  Vector4d view0h = inv * mouse0;
+  Vector4d view1h = inv * mouse1;
+  Vector3d view0 = {view0h[0], view0h[1], view0h[2]};
+  Vector3d view1 = {view1h[0], view1h[1], view1h[2]};
+  view0 /= view0h[3];
+  view1 /= view1h[3];
 
-  return {0, 0, 0};
+  // cout << view0 << endl;
+  // cout << view1 << endl;
+  
+  Vector3d vnorm = normalized(view1 - view0);
+  double dz = plane_z - view0.z();
+  Vector3d onp = view0 + vnorm * (dz / vnorm.z());
+
+  // cout << "mouse_on_plane (" << plane_z << "): " << onp << endl;
+  
+  return onp;
 }
