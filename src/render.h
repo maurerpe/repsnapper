@@ -19,7 +19,6 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#include "arcball.h"
 #include <gtkmm.h>
 #include <gtkmm/glarea.h>
 
@@ -44,18 +43,17 @@ class RenderVert {
   const float *data() const {return &vec[0];};
 };
 
-class Render : public Gtk::GLArea
-{
+class Render : public Gtk::GLArea {
  private:
-  ArcBall  *m_arcBall;
-  Matrix4fT m_transform;
-  Matrix4fT m_full_transform;
-  Vector2f  m_downPoint;
-  Vector2f  m_dragStart;
+  Matrix4d m_transform;
+  Matrix4d m_full_transform;  
   View *m_view;
   Model *get_model() const;
   Glib::RefPtr<Gtk::TreeSelection> m_selection;
-
+  
+  Vector2d m_down_point;
+  Matrix4d m_down_trans;
+  
   void init_buffers();
   void init_shaders();
 
@@ -73,7 +71,9 @@ class Render : public Gtk::GLArea
   void CenterView();
   void selection_changed();
   guint find_object_at(gdouble x, gdouble y);
-  Vector3d mouse_on_plane(double x, double y, double plane_z=0) const;
+  Vector3d mouse_on_plane(Vector2d scaled) const;
+  Vector2d get_scaled(double x, double y);
+  void SetTrans(const Matrix4d &trans);
 
  public:
   Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection);
@@ -82,9 +82,8 @@ class Render : public Gtk::GLArea
   GtkWidget *get_widget();
   void set_model (Model *model);
   void set_zoom (float zoom) {m_zoom=zoom;};
-  void set_transform(const Matrix4fT &transform) {m_transform=transform;};
 
-  void set_model_transform(const Matrix4f &trans);
+  void set_model_transform(const Matrix4d &trans);
   void set_default_transform(void);
   
   void draw_string(const Vector3d &pos, const string s);

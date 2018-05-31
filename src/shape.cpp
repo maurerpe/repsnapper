@@ -638,7 +638,7 @@ void Shape::drawBBox(Render &render) const
   vert.add(Max.x(), Min.y(), minz);
   vert.add(Max.x(), Min.y(), Max.z());
   
-  RenderModelTrans mt(render, transform3D.getFloatTransform());
+  RenderModelTrans mt(render, transform3D.getTransform());
   float color[4] = {1, 0.2, 0.2, 1};
   render.draw_lines(color, vert, 1.0);
 
@@ -670,7 +670,7 @@ void Shape::draw_geometry(Render &render, uint max_triangles)
     vert.add(triangles[i].C);
   }
 
-  RenderModelTrans mt(render, transform3D.getFloatTransform());
+  RenderModelTrans mt(render, transform3D.getTransform());
   render.draw_triangles(color, vert);
 }
 

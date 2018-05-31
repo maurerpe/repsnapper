@@ -37,8 +37,6 @@ SHARED_SRC= \
 	src/shape.cpp \
 	src/gcode.cpp \
 	src/triangle.cpp \
-	src/gllight.cpp \
-	src/arcball.cpp \
 	src/render.cpp \
 	src/files.cpp \
 	src/settings.cpp
@@ -46,8 +44,6 @@ SHARED_SRC= \
 SHARED_INC= \
 	src/geometry.h \
 	src/transform3d.h \
-	src/arcball.h \
-	src/gllight.h \
 	src/miniball.h \
 	src/model.h \
 	src/objtree.h \

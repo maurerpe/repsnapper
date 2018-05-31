@@ -154,8 +154,6 @@ am__objects_1 = src/repsnapper-geometry.$(OBJEXT) \
 	src/repsnapper-model_slice.$(OBJEXT) \
 	src/repsnapper-shape.$(OBJEXT) src/repsnapper-gcode.$(OBJEXT) \
 	src/repsnapper-triangle.$(OBJEXT) \
-	src/repsnapper-gllight.$(OBJEXT) \
-	src/repsnapper-arcball.$(OBJEXT) \
 	src/repsnapper-render.$(OBJEXT) src/repsnapper-files.$(OBJEXT) \
 	src/repsnapper-settings.$(OBJEXT) \
 	src/ui/repsnapper-widgets.$(OBJEXT) \
@@ -554,20 +552,19 @@ repsnapper_CPPFLAGS = \
 
 SHARED_SRC = src/geometry.cpp src/transform3d.cpp src/platform.cpp \
 	src/objtree.cpp src/model.cpp src/model_slice.cpp \
-	src/shape.cpp src/gcode.cpp src/triangle.cpp src/gllight.cpp \
-	src/arcball.cpp src/render.cpp src/files.cpp src/settings.cpp \
-	src/ui/widgets.cpp src/ui/view.cpp src/ui/prefs_dlg.cpp \
-	src/ui/connectview.cpp src/ui/filechooser.cpp \
-	src/ui/progress.cpp src/printer/printer_serial.cpp \
-	src/printer/thread_buffer.cpp \
+	src/shape.cpp src/gcode.cpp src/triangle.cpp src/render.cpp \
+	src/files.cpp src/settings.cpp src/ui/widgets.cpp \
+	src/ui/view.cpp src/ui/prefs_dlg.cpp src/ui/connectview.cpp \
+	src/ui/filechooser.cpp src/ui/progress.cpp \
+	src/printer/printer_serial.cpp src/printer/thread_buffer.cpp \
 	src/printer/threaded_printer_serial.cpp \
 	src/printer/printer.cpp src/printer/custom_baud.cpp
-SHARED_INC = src/geometry.h src/transform3d.h src/arcball.h \
-	src/gllight.h src/miniball.h src/model.h src/objtree.h \
-	src/shape.h src/gcode.h src/triangle.h src/files.h \
-	src/stdafx.h src/platform.h src/render.h src/settings.h \
-	src/types.h src/ui/widgets.h src/ui/view.h src/ui/prefs_dlg.h \
-	src/ui/connectview.h src/ui/filechooser.h src/ui/progress.h \
+SHARED_INC = src/geometry.h src/transform3d.h src/miniball.h \
+	src/model.h src/objtree.h src/shape.h src/gcode.h \
+	src/triangle.h src/files.h src/stdafx.h src/platform.h \
+	src/render.h src/settings.h src/types.h src/ui/widgets.h \
+	src/ui/view.h src/ui/prefs_dlg.h src/ui/connectview.h \
+	src/ui/filechooser.h src/ui/progress.h \
 	src/printer/printer_serial.h src/printer/thread.h \
 	src/printer/thread_buffer.h \
 	src/printer/threaded_printer_serial.h src/printer/printer.h \
@@ -713,10 +710,6 @@ src/repsnapper-gcode.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/repsnapper-triangle.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/repsnapper-gllight.$(OBJEXT): src/$(am__dirstamp) \
-	src/$(DEPDIR)/$(am__dirstamp)
-src/repsnapper-arcball.$(OBJEXT): src/$(am__dirstamp) \
-	src/$(DEPDIR)/$(am__dirstamp)
 src/repsnapper-render.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/repsnapper-files.$(OBJEXT): src/$(am__dirstamp) \
@@ -777,11 +770,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-arcball.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-files.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-gcode.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-geometry.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-gllight.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-model.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-model_slice.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-objtree.Po@am__quote@
@@ -953,34 +944,6 @@ src/repsnapper-triangle.obj: src/triangle.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/triangle.cpp' object='src/repsnapper-triangle.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-triangle.obj `if test -f 'src/triangle.cpp'; then $(CYGPATH_W) 'src/triangle.cpp'; else $(CYGPATH_W) '$(srcdir)/src/triangle.cpp'; fi`
-
-src/repsnapper-gllight.o: src/gllight.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-gllight.o -MD -MP -MF src/$(DEPDIR)/repsnapper-gllight.Tpo -c -o src/repsnapper-gllight.o `test -f 'src/gllight.cpp' || echo '$(srcdir)/'`src/gllight.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-gllight.Tpo src/$(DEPDIR)/repsnapper-gllight.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/gllight.cpp' object='src/repsnapper-gllight.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-gllight.o `test -f 'src/gllight.cpp' || echo '$(srcdir)/'`src/gllight.cpp
-
-src/repsnapper-gllight.obj: src/gllight.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-gllight.obj -MD -MP -MF src/$(DEPDIR)/repsnapper-gllight.Tpo -c -o src/repsnapper-gllight.obj `if test -f 'src/gllight.cpp'; then $(CYGPATH_W) 'src/gllight.cpp'; else $(CYGPATH_W) '$(srcdir)/src/gllight.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-gllight.Tpo src/$(DEPDIR)/repsnapper-gllight.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/gllight.cpp' object='src/repsnapper-gllight.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-gllight.obj `if test -f 'src/gllight.cpp'; then $(CYGPATH_W) 'src/gllight.cpp'; else $(CYGPATH_W) '$(srcdir)/src/gllight.cpp'; fi`
-
-src/repsnapper-arcball.o: src/arcball.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-arcball.o -MD -MP -MF src/$(DEPDIR)/repsnapper-arcball.Tpo -c -o src/repsnapper-arcball.o `test -f 'src/arcball.cpp' || echo '$(srcdir)/'`src/arcball.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-arcball.Tpo src/$(DEPDIR)/repsnapper-arcball.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/arcball.cpp' object='src/repsnapper-arcball.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-arcball.o `test -f 'src/arcball.cpp' || echo '$(srcdir)/'`src/arcball.cpp
-
-src/repsnapper-arcball.obj: src/arcball.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-arcball.obj -MD -MP -MF src/$(DEPDIR)/repsnapper-arcball.Tpo -c -o src/repsnapper-arcball.obj `if test -f 'src/arcball.cpp'; then $(CYGPATH_W) 'src/arcball.cpp'; else $(CYGPATH_W) '$(srcdir)/src/arcball.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-arcball.Tpo src/$(DEPDIR)/repsnapper-arcball.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/arcball.cpp' object='src/repsnapper-arcball.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-arcball.obj `if test -f 'src/arcball.cpp'; then $(CYGPATH_W) 'src/arcball.cpp'; else $(CYGPATH_W) '$(srcdir)/src/arcball.cpp'; fi`
 
 src/repsnapper-render.o: src/render.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-render.o -MD -MP -MF src/$(DEPDIR)/repsnapper-render.Tpo -c -o src/repsnapper-render.o `test -f 'src/render.cpp' || echo '$(srcdir)/'`src/render.cpp

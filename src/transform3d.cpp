@@ -127,12 +127,6 @@ void Transform3D::rotate(const Vector3d &center, const Vector3d &axis, double an
 }
 
 
-//not used
-void Transform3D::rotate(const Vector3d &center, double x, double y, double z)
-{
-  cerr << "Transform3D::rotate has no effect " << x << y << z << endl;
-}
-
 void Transform3D::rotate_to(const Vector3d &center, double x, double y, double z)
 {
   const Vector3d trans = getTranslation();

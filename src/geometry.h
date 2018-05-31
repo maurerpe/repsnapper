@@ -20,14 +20,9 @@
 #pragma once
 
 #include "stdafx.h"
-#include "arcball.h"
 
 Vector3d normalized(const Vector3d &v);
 Vector2d normalized(const Vector2d &v);
-
-void moveArcballTrans(Matrix4fT &matfT, const Vector3d &delta);
-void setArcballTrans(Matrix4fT &matfT, const Vector3d &trans);
-void rotArcballTrans(Matrix4fT &transform,  const Vector3d &axis, double angle);
 
 /* (-pi, pi] */
 double CcwAngleBetween(const Vector2d &dest, const Vector2d &ref);

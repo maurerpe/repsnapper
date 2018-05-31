@@ -33,7 +33,7 @@ public:
 	Matrix4d transform;
 
 	void identity();
-	Matrix4d getTransform() const;
+	Matrix4d getTransform() const {return transform;};
 	Matrix4f getFloatTransform() const;
 	Vector3d getTranslation() const;
 	Matrix4d getInverse() const;
@@ -43,7 +43,6 @@ public:
 	void scale_y(double x);
 	void scale_z(double x);
 	void move(const Vector3d &delta);
-	void rotate(const Vector3d &center, double x, double y, double z);
 	void rotate_to(const Vector3d &center, double x, double y, double z);
 	void rotate(const Vector3d &axis, double angle);
 	void rotate(const Vector3d &center, const Vector3d &axis, double angle);

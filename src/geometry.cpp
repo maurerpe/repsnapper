@@ -53,52 +53,6 @@ double CcwAngleBetween(const Vector2d &dest, const Vector2d &ref) {
   return atan2(y, x);
 }
 
-void moveArcballTrans(Matrix4fT &matfT, const Vector3d &delta) {
-  Matrix4f matf;
-  typedef Matrix4f::iterator mIt;
-  for (mIt it = matf.begin(); it!=matf.end(); ++it){
-    uint i = it - matf.begin();
-    *it = matfT.M[i];
-  }
-  move(delta,matf);
-  for (mIt it = matf.begin(); it!=matf.end(); ++it){
-    uint i = it - matf.begin();
-    matfT.M[i] = *it;
-  }
-}
-
-void setArcballTrans(Matrix4fT &matfT, const Vector3d &trans) {
-  Matrix4f matf;
-  typedef Matrix4f::iterator  mIt;
-  for (mIt it = matf.begin(); it!=matf.end(); ++it){
-    uint i = it - matf.begin();
-    *it = matfT.M[i];
-  }
-  matf.set_translation(trans);
-  for (mIt it = matf.begin(); it!=matf.end(); ++it){
-    uint i = it - matf.begin();
-    matfT.M[i] = *it;
-  }
-}
-
-void rotArcballTrans(Matrix4fT &matfT,  const Vector3d &axis, double angle)
-{
-  Matrix4f rot = Matrix4f::IDENTITY;
-  Vector3d naxis(axis); naxis.normalize();
-  rot.rotate(angle, naxis);
-  Matrix4f matf;
-  typedef Matrix4f::iterator  mIt;
-  for (mIt it = matf.begin(); it!=matf.end(); ++it){
-    uint i = it - matf.begin();
-    *it = matfT.M[i];
-  }
-  matf = rot * matf;
-  for (mIt it = matf.begin(); it!=matf.end(); ++it){
-    uint i = it - matf.begin();
-    matfT.M[i] = *it;
-  }
-}
-
 // The following functions
 // (inSegment, intersect2D_Segments and dist3D_Segment_to_Segment)
 // are licensed as:
