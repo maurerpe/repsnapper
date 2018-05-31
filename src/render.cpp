@@ -58,11 +58,11 @@ Render::Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
 
   Transform3D trans;
   /* FIXME: Set initial transform from settings */
-  trans.rotate_to(Vector3d(0, 0, 0), -90, 0, 0);
-  trans.move(Vector3d(-150, -200, -150));
+  trans.rotate_to(Vector3d(0, 0, 0), -1.3, 0, 0);
+  trans.move(Vector3d(-150, -150, -500));
   m_transform = trans.getTransform();
   
-  m_zoom = 30.0;
+  m_zoom = 10.0;
 
   m_selection->signal_changed().connect (sigc::mem_fun(*this, &Render::selection_changed));
 }
