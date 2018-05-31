@@ -48,7 +48,6 @@ typedef unsigned int        guint;
 #define random   rand
 #define srandom  srand
 #endif
-#include "platform.h"   // OpenGL, glu, glut in cross-platform way
 #include <stdio.h>
 #include <glib/gi18n.h>
 #include <gtkmm.h>

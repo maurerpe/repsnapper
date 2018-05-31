@@ -69,7 +69,6 @@ public:
 			 vector<Triangle> &lowertriangles,
 			 const Matrix4d &T=Matrix4d::IDENTITY) const;
 	string getSTLfacet(const Matrix4d &T=Matrix4d::IDENTITY) const;
-	void draw(int gl_type) const;
 
 	double projectedvolume(const Matrix4d &T=Matrix4d::IDENTITY) const;
 
@@ -78,4 +77,3 @@ public:
 
 	string info() const;
 };
-

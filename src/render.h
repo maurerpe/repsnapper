@@ -22,6 +22,8 @@
 #include <gtkmm.h>
 #include <gtkmm/glarea.h>
 
+#include <epoxy/gl.h>
+
 class View;
 class Model;
 class Settings;

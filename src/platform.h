@@ -26,8 +26,6 @@
 #include <vector>
 #include <string>
 
-#include <epoxy/gl.h>
-
 class Platform {
   public:
 	static unsigned long getTickCount();

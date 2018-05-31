@@ -361,16 +361,6 @@ int Triangle::CutWithPlane(double z, const Matrix4d &T,
 	return num_cutpoints;
 }
 
-void Triangle::draw(int gl_type) const
-{
-  glBegin(gl_type);
-  glVertex3f(A.x(),A.y(),A.z());
-  glVertex3f(B.x(),B.y(),B.z());
-  glVertex3f(C.x(),C.y(),C.z());
-  glEnd();
-}
-
-
 string Triangle::getSTLfacet(const Matrix4d &T) const
 {
   Vector3d TA=T*A,TB=T*B,TC=T*C,TN=T*Normal;TN.normalize();

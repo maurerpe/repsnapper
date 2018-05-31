@@ -28,6 +28,7 @@
 #include "progress.h"
 #include "connectview.h"
 #include "widgets.h"
+#include "platform.h"
 
 bool View::on_delete_event(GdkEventAny* event)
 {

@@ -28,6 +28,7 @@
 #include "ui/progress.h"
 #include "gcode.h"
 #include "model.h"
+#include "platform.h"
 
 using namespace std;
 
