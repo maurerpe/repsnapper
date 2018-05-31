@@ -233,6 +233,8 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
 	view_mat.M[4*i+3] * camera_mat(j,3);
     }
   }
+
+  // cout << "on_draw: m_full_transform" << endl << m_full_transform << endl;
   
   glUniformMatrix4fv(m_trans, 1, GL_FALSE, m_full_transform.M);
   
@@ -534,6 +536,12 @@ guint Render::find_object_at(gdouble x, gdouble y) {
   return 0;
 }
 
+static inline Vector3d hom(Vector4d v) {
+  Vector3d ret = {v[0]/v[3], v[1]/v[3], v[2]/v[3]};
+  
+  return ret;
+}
+
 Vector3d Render::mouse_on_plane(double x, double y, double plane_z) const {
   Matrix4d full;
   
@@ -544,31 +552,19 @@ Vector3d Render::mouse_on_plane(double x, double y, double plane_z) const {
   Matrix4d inv;
   full.inverse(inv);
   
-  // cout << "mouse_on_plane (" << x << "," << y << "," << plane_z << ")" << endl;
-  
-  // cout << full << endl;
-  // cout << inv << endl;
-  
+  double w = get_width();
   double h = get_height();
-  double w = get_height();
-  Vector4d mouse0 = {2 * x/w - 1, 2 * (1 - y / h) - 1,  0, 1};
-  Vector4d mouse1 = {2 * x/w - 1, 2 * (1 - y / h) - 1, -1, 1};
+  double xs = 2 * x/w - 1;
+  double ys = 2 * (1 - y / h) - 1;
+  Vector4d mouse0 = {xs, ys, 1.01, 1};
+  Vector4d mouse1 = {xs, ys, 0.99, 1};
   
-  Vector4d view0h = inv * mouse0;
-  Vector4d view1h = inv * mouse1;
-  Vector3d view0 = {view0h[0], view0h[1], view0h[2]};
-  Vector3d view1 = {view1h[0], view1h[1], view1h[2]};
-  view0 /= view0h[3];
-  view1 /= view1h[3];
+  Vector3d view0 = hom(inv * mouse0);
+  Vector3d view1 = hom(inv * mouse1);
 
-  // cout << view0 << endl;
-  // cout << view1 << endl;
-  
   Vector3d vnorm = normalized(view1 - view0);
   double dz = plane_z - view0.z();
   Vector3d onp = view0 + vnorm * (dz / vnorm.z());
 
-  // cout << "mouse_on_plane (" << plane_z << "): " << onp << endl;
-  
   return onp;
 }
