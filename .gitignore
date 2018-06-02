@@ -13,7 +13,7 @@ TAGS
 .deps
 Makefile
 config.h
-config.[ls]*
+config.log
 libtool
 autogen.lastrun
 autom4te.cache/
