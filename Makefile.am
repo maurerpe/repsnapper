@@ -17,10 +17,7 @@ Applicationsdir = $(datadir)/applications/
 Applications_in_files = repsnapper.desktop.in
 Applications_DATA = repsnapper.desktop
 
-@INTLTOOL_DESKTOP_RULE@
-
 # AppData support
-@INTLTOOL_XML_RULE@
 appdatadir = $(datadir)/appdata
 appdata_DATA = $(appdata_in_files:.xml.in=.xml)
 appdata_in_files = repsnapper.appdata.xml.in
@@ -29,4 +26,4 @@ CLEANFILES += $(appdata_DATA)
 
 include src/Makefile.am
 # po doesn't use automake, so it can't be included.
-SUBDIRS = po libraries
+SUBDIRS = po intl libraries

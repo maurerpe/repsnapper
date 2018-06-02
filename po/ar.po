@@ -2,12 +2,11 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # Ibrahim Saed <ibraheem5000@gmail.com>, 2014.
-#: ../src/slicer/printlines.h:33
 msgid ""
 msgstr ""
 "Project-Id-Version: repsnapper 1.9.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-16 04:58+0200\n"
+"Report-Msgid-Bugs-To: https://github.com/maurerpe/repsnapper\n"
+"POT-Creation-Date: 2018-06-01 21:54-0400\n"
 "PO-Revision-Date: 2014-03-07 14:06+0200\n"
 "Last-Translator: Ibrahim Saed <ibraheem5000@gmail.com>\n"
 "Language-Team: arabeyes.org\n"
@@ -19,208 +18,91 @@ msgstr ""
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
 "X-Generator: Virtaal 0.7.1\n"
 
-#: ../repsnapper.desktop.in.h:1
-msgid "Controls your 3D plastic printer"
-msgstr "للتحكم بطابعة البلاستيك ثلاثية الأبعاد"
-
-#: ../repsnapper.desktop.in.h:2
-msgid "RepRap control software"
-msgstr "برنامج التحكم برِب راب"
-
-#: ../repsnapper.desktop.in.h:3
+#: repsnapper.desktop.in:8
 msgid "repsnapper"
 msgstr "رِب سنابر"
 
-#: ../src/files.cpp:117
+#: src/files.cpp:113
 msgid "Unrecognized file - "
 msgstr "ملف غير مُعرّف - "
 
-#: ../src/files.cpp:118
+#: src/files.cpp:114
 msgid "Known extensions: "
 msgstr "الامتدادات المعروفة: "
 
-#: ../src/files.cpp:148
+#: src/files.cpp:140
 msgid "Error: Unable to open file - "
 msgstr "خطأ: تعذّر فتح الملف - "
 
-#: ../src/files.cpp:184 ../src/files.cpp:264 ../src/files.cpp:652
+#: src/files.cpp:176 src/files.cpp:256 src/files.cpp:501
 msgid "Error: Unable to open stl file - "
 msgstr "خطأ: تعذّر فتح ملف stl - "
 
-#: ../src/files.cpp:230
+#: src/files.cpp:222
 msgid "Unexpected EOF reading STL file - "
 msgstr ""
 
 #. cerr << "loading ascii " << endl;
 #. cerr << " locale " << std::locale().name() << endl;
-#: ../src/files.cpp:305
+#: src/files.cpp:291
 msgid "Unnamed"
 msgstr "غير مُسمّى"
 
-#: ../src/files.cpp:365
+#: src/files.cpp:347
 msgid "Error: Facet keyword not found in STL text!"
 msgstr ""
 
-#: ../src/files.cpp:374
+#: src/files.cpp:356
 msgid "Error: normal keyword not found in STL text!"
 msgstr ""
 
-#: ../src/files.cpp:391
+#: src/files.cpp:373
 msgid "Error: Outer/Loop keywords not found!"
 msgstr ""
 
-#: ../src/files.cpp:405
+#: src/files.cpp:387
 msgid "Error: Vertex keyword not found"
 msgstr ""
 
-#: ../src/files.cpp:415
+#: src/files.cpp:397
 msgid "Error: Endloop or endfacet keyword not found"
 msgstr ""
 
-#: ../src/files.cpp:443
+#: src/files.cpp:426
 msgid "Error: Unable to open vrml file - "
 msgstr "خطأ: تعذّر فتح ملف vrml - "
 
-#: ../src/flatshape.cpp:254
-msgid "Split Polygons"
-msgstr "فصل المضلعات"
-
-#: ../src/model.cpp:87
+#: src/model.cpp:79
 msgid "not yet implemented\n"
 msgstr ""
 
-#: ../src/model.cpp:312
+#: src/model.cpp:227
 msgid "Reading GCode"
 msgstr "يقرأ الجي كود"
 
-#. display whole layer if flat shapes
-#. if (shapes.back()->dimensions() == 2)
-#. gcode.layerchanges.push_back(0);
-#: ../src/model.cpp:314 ../src/model_slice.cpp:899 ../src/model_slice.cpp:978
-#: ../src/model_slice.cpp:1000 ../src/ui/view.cpp:1988
-#: ../src/printer/printer.cpp:664 ../src/printer/printer_iochannel.cpp:454
-#: ../src/printer/printer_libreprap.cpp:386
+#: src/model.cpp:229 src/ui/view.cpp:365 src/ui/view.cpp:1842
 msgid "Done"
 msgstr "تم"
 
-#: ../src/model.cpp:587
-msgid "_upper"
-msgstr "_العلوي"
-
-#: ../src/model.cpp:588
-msgid "_lower"
-msgstr "_السفلي"
-
-#: ../src/model_slice.cpp:243
-msgid "Cleanup"
-msgstr ""
-
-#: ../src/model_slice.cpp:318
-msgid "Slicing"
-msgstr ""
-
-#. not bottom layer
-#: ../src/model_slice.cpp:470
-msgid "Skins"
-msgstr ""
-
-#: ../src/model_slice.cpp:500
-msgid "Find Uncovered"
-msgstr ""
-
-#: ../src/model_slice.cpp:565
-msgid "Uncovered Shells"
-msgstr ""
-
-#: ../src/model_slice.cpp:601
-msgid "Merging Full Polygons"
-msgstr ""
-
-#: ../src/model_slice.cpp:660 ../src/slicer/printlines.h:34
-msgid "Support"
-msgstr "التدعيم"
-
-#: ../src/model_slice.cpp:719 ../src/repsnapper.ui.h:242
-msgid "Shells"
-msgstr "القشور"
-
-#: ../src/model_slice.cpp:755 ../src/slicer/printlines.h:33
-#: ../src/repsnapper.ui.h:134
-msgid "Infill"
-msgstr "الملء"
-
-#: ../src/model_slice.cpp:847
-msgid "Making Lines"
-msgstr "إنشاء الخطوط"
-
-#: ../src/model_slice.cpp:849
-msgid "Millimeters"
-msgstr "مليمترات"
-
-#: ../src/model_slice.cpp:850
-msgid "Absolute Pos"
-msgstr ""
-
-#: ../src/model_slice.cpp:852
-msgid "Relative E Code"
-msgstr ""
-
-#: ../src/model_slice.cpp:854
-msgid "Absolute E Code"
-msgstr ""
-
-#: ../src/model_slice.cpp:905
-msgid "Time Estimation: "
-msgstr "الوقت المُقدّر: "
-
-#: ../src/model_slice.cpp:906 ../src/model_slice.cpp:915
-msgid "h"
-msgstr "س"
-
-#: ../src/model_slice.cpp:907 ../src/model_slice.cpp:916
-msgid "m"
-msgstr "د"
-
-#: ../src/model_slice.cpp:907 ../src/model_slice.cpp:916
-#: ../src/ui/progress.cpp:97
-msgid "s"
-msgstr "ث"
-
-#: ../src/model_slice.cpp:914
-msgid " / GCode Estimation: "
-msgstr " / الوقت المُقدّر لإنتاج الجي كود: "
-
-#: ../src/model_slice.cpp:920
-msgid " - total extruded: "
-msgstr " - إجمالي المبثوق: "
-
-#: ../src/model_slice.cpp:984
-msgid "Saving Files"
-msgstr "حفظ الملفات"
-
-#: ../src/objtree.h:41
+#: src/objtree.h:41
 msgid "Unnamed object"
 msgstr "جسم غير مُسمّى"
 
-#: ../src/objtree.cpp:65
+#: src/objtree.cpp:65
 msgid ""
 "Cannot add a 3-dimensional Shape to a 2-dimensional Model and vice versa"
 msgstr "لا يمكن إضافة شكل ثلاث الأبعاد إلى نموذج ثنائي الأبعاد والعكس"
 
-#: ../src/objtree.cpp:138
+#: src/objtree.cpp:138
 msgid "Unsaved file"
 msgstr "ملف غير محفوظ"
 
-#: ../src/render.cpp:72
-msgid "failed to init gl area\n"
-msgstr ""
-
-#: ../src/repsnapper.cpp:57 ../src/repsnapper.cpp:62
+#: src/repsnapper.cpp:57 src/repsnapper.cpp:62
 #, c-format
 msgid "Version: %s\n"
 msgstr "الإصدارة: %s\n"
 
-#: ../src/repsnapper.cpp:63
+#: src/repsnapper.cpp:63
 #, c-format
 msgid ""
 "Usage: repsnapper [OPTION]... [FILE]...\n"
@@ -241,1748 +123,1889 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../src/repsnapper.cpp:192
+#: src/repsnapper.cpp:187
 msgid "Couldn't create user config directory!"
 msgstr ""
 
-#: ../src/repsnapper.cpp:213 ../src/repsnapper.cpp:236
+#: src/repsnapper.cpp:204
 msgid "Couldn't find global configuration!"
 msgstr ""
 
-#: ../src/repsnapper.cpp:215 ../src/repsnapper.cpp:238
+#: src/repsnapper.cpp:206
 msgid "It is likely that repsnapper is not correctly installed."
 msgstr "على ما يبدوا أن رِب سنابر لم يتم تثبيته بشكل سليم."
 
 #. Fall back to global config
-#: ../src/repsnapper.cpp:230
+#: src/repsnapper.cpp:224
 msgid "Unable to create user config"
 msgstr ""
 
-#: ../src/repsnapper.cpp:232
+#: src/repsnapper.cpp:226
 msgid ""
 "\n"
 "Falling back to global config. Settings will not be saved."
 msgstr ""
 
-#: ../src/repsnapper.cpp:247
+#: src/repsnapper.cpp:233
 msgid "Failed to locate config"
 msgstr ""
 
-#: ../src/repsnapper.cpp:307
+#: src/repsnapper.cpp:296
 msgid "No output file given"
 msgstr ""
 
-#: ../src/settings.cpp:683 ../src/settings.cpp:1046
-msgid "corrupt setting type"
-msgstr "نوع إعدادات معطوب"
-
-#: ../src/settings.cpp:700
+#: src/settings.cpp:281
 msgid "Failed to load settings from file '"
 msgstr "فشل في تحميل الإعدادات من ملف '"
 
-#: ../src/settings.cpp:704
+#: src/settings.cpp:285 src/settings.cpp:586
 msgid "Exception "
 msgstr "استثناء "
 
-#: ../src/settings.cpp:704
+#: src/settings.cpp:285
 msgid " loading settings from file '"
 msgstr " تحميل الإعدادات من ملف '"
 
-#: ../src/settings.cpp:708
+#: src/settings.cpp:289
 msgid "Parsing config from '"
 msgstr ""
 
-#: ../src/settings.cpp:892 ../src/settings.cpp:987
-msgid "Missing boolean config item "
+#: src/settings.cpp:360
+msgid ""
+"\tThe config file has old speed settings (mm/min).\n"
+"\t Adjust them to mm/sec\n"
+"\t or use RepSnapper from 2.0 to 2.2 to convert them automatically."
 msgstr ""
 
-#: ../src/settings.cpp:903 ../src/settings.cpp:932 ../src/settings.cpp:1036
-#: ../src/settings.cpp:1366
+#: src/settings.cpp:402
 msgid "Missing user interface item "
 msgstr ""
 
-#: ../src/settings.cpp:941
-msgid "corrupt setting type\n"
-msgstr "نوع إعدادات معطوب\n"
+#: src/settings.cpp:514
+#, fuzzy
+msgid "Did not get setting from  "
+msgstr "فشل في تحميل الإعدادات من ملف '"
 
-#: ../src/settings.cpp:1000
-msgid "Missing GUI element "
-msgstr ""
+#: src/settings.cpp:586
+#, fuzzy
+msgid " loading setting\n"
+msgstr " تحميل الإعدادات من ملف '"
 
 #. PlaceOnPlatform();
-#: ../src/shape.cpp:59
+#: src/shape.cpp:53
 msgid "Shape has volume "
 msgstr "الشكل يحوز حجما قدره "
 
-#: ../src/shape.cpp:59
+#: src/shape.cpp:53
 msgid " mm^3 and "
 msgstr " مم^3 ويحتوي "
 
-#: ../src/shape.cpp:60
+#: src/shape.cpp:54
 msgid " triangles"
 msgstr " مثلثا(ت)"
 
-#: ../src/shape.cpp:107
+#: src/shape.cpp:101
 msgid "Split Shapes"
 msgstr "فصل الأشكال"
 
-#: ../src/shape.cpp:113
+#: src/shape.cpp:107
 msgid "Split: Sorting Triangles ..."
 msgstr "الفصل: ترتيب المثلثات ..."
 
-#: ../src/shape.cpp:147
+#: src/shape.cpp:141
 msgid "Split: Building shapes ..."
 msgstr "الفصل: بناء الأشكال ..."
 
-#: ../src/shape.cpp:158
+#: src/shape.cpp:152
 msgid "Shape "
 msgstr "شكل "
 
-#. copy
-#: ../src/gcode/command.cpp:336
-msgid " xy part"
-msgstr ""
-
-#. copy
-#: ../src/gcode/command.cpp:338
-msgid " z part"
-msgstr ""
-
-#: ../src/gcode/command.cpp:377
-msgid " Z-Change"
-msgstr ""
-
-#: ../src/gcode/command.cpp:388
-msgid " Move Only"
-msgstr " انتقال فقط"
-
-#: ../src/gcode/command.cpp:405
-msgid " Select Extruder"
-msgstr " اختيار الباثق"
-
-#: ../src/gcode/command.cpp:409
-msgid " Reset Extrusion"
-msgstr ""
-
-#: ../src/gcode/gcode.cpp:174
-msgid "Loading GCode"
-msgstr "تحميل الجي كود"
-
-#: ../src/gcode/gcode.cpp:648
-msgid "Collecting GCode"
-msgstr "تجميع الجي كود"
-
-#. pure extrusions
-#: ../src/gcode/gcodestate.cpp:215
-msgid "Extrusion only "
-msgstr ""
-
-#: ../src/gcode/gcodestate.cpp:220
-msgid "Absolute Extrusion"
-msgstr ""
-
-#: ../src/ui/connectview.cpp:39
+#: src/ui/connectview.cpp:39
 msgid "Disconnecting..."
 msgstr "يقطع الاتصال..."
 
-#: ../src/ui/connectview.cpp:45
+#: src/ui/connectview.cpp:45
 msgid "Connect"
 msgstr "اتصل"
 
-#: ../src/ui/connectview.cpp:51
+#: src/ui/connectview.cpp:51
 msgid "Connecting..."
 msgstr "يتصل..."
 
-#: ../src/ui/connectview.cpp:57
+#: src/ui/connectview.cpp:57
 msgid "Disconnect"
 msgstr "اقطع الاتصال"
 
-#: ../src/ui/connectview.cpp:111
+#: src/ui/connectview.cpp:114
 msgid "Port:"
 msgstr "المنفذ:"
 
-#. file patterns
-#: ../src/ui/filechooser.cpp:41
+#: src/ui/filechooser.cpp:42
 msgid "All Files"
 msgstr "كل الملفات"
 
-#: ../src/ui/filechooser.cpp:44
+#: src/ui/filechooser.cpp:46
 msgid "Models"
 msgstr "نماذج"
 
-#: ../src/ui/filechooser.cpp:54 ../src/ui/filechooser.cpp:101
-#: ../src/repsnapper.ui.h:124
+#: src/ui/filechooser.cpp:55 src/ui/filechooser.cpp:103 src/repsnapper.ui:6245
+#: src/repsnapper.ui:8231
 msgid "GCode"
 msgstr "جي كود"
 
-#: ../src/ui/filechooser.cpp:60 ../src/ui/filechooser.cpp:107
+#: src/ui/filechooser.cpp:62 src/ui/filechooser.cpp:109
 msgid "Settings"
 msgstr "الإعدادات"
 
-#: ../src/ui/filechooser.cpp:112
+#: src/ui/filechooser.cpp:114
 msgid "SVG"
 msgstr "SVG"
 
-#: ../src/ui/filechooser.cpp:118 ../src/repsnapper.ui.h:177
+#: src/ui/filechooser.cpp:120 src/repsnapper.ui:7779
 msgid "Model"
 msgstr "النموذج"
 
-#: ../src/ui/filechooser.cpp:133
+#: src/ui/filechooser.cpp:135
 msgid "Load"
 msgstr "تحميل"
 
-#: ../src/ui/filechooser.cpp:147
+#: src/ui/filechooser.cpp:149
 msgid "Save"
 msgstr "حفظ"
 
 #. seconds
-#: ../src/ui/progress.cpp:57 ../src/ui/progress.cpp:76
+#: src/ui/progress.cpp:57 src/ui/progress.cpp:76
 msgid " done in "
 msgstr " اكتمل في "
 
-#: ../src/ui/progress.cpp:57 ../src/ui/progress.cpp:76
+#: src/ui/progress.cpp:57 src/ui/progress.cpp:76
 msgid " seconds"
 msgstr " ثوان"
 
-#: ../src/ui/progress.cpp:90 ../src/ui/progress.cpp:91
+#: src/ui/progress.cpp:90 src/ui/progress.cpp:91
 msgid "h "
 msgstr "س "
 
-#: ../src/ui/progress.cpp:95
+#: src/ui/progress.cpp:95
 msgid "m "
 msgstr "د "
 
-#: ../src/ui/widgets.cpp:142
+#: src/ui/progress.cpp:97
+msgid "s"
+msgstr "ث"
+
+#: src/ui/widgets.cpp:127
 msgid "Nozzle:"
 msgstr "الفوهة:"
 
-#: ../src/ui/widgets.cpp:142
+#: src/ui/widgets.cpp:127
 msgid "Bed:"
 msgstr "المنصة:"
 
-#: ../src/ui/widgets.cpp:146
+#: src/ui/widgets.cpp:131
 msgid "-- °C"
 msgstr "-- °م"
 
-#. add(*manage (new Gtk::Label(_("°C"))));
-#: ../src/ui/widgets.cpp:150
+#: src/ui/widgets.cpp:134
 msgid "Target:"
 msgstr "الهدف:"
 
-#: ../src/ui/widgets.cpp:166 ../src/ui/widgets.cpp:187
+#: src/ui/widgets.cpp:150 src/ui/widgets.cpp:171
 msgid "Off"
 msgstr ""
 
-#: ../src/ui/widgets.cpp:185
+#: src/ui/widgets.cpp:169
 msgid "On"
 msgstr ""
 
-#: ../src/ui/widgets.cpp:265
+#: src/ui/widgets.cpp:249
 msgid "Home"
 msgstr ""
 
-#: ../src/ui/view.cpp:113
+#: src/ui/view.cpp:103
 msgid "Complete print before converting"
 msgstr "أكمل الطباعة قبل التحويل"
 
-#: ../src/ui/view.cpp:114
+#: src/ui/view.cpp:104
 msgid "Converting to GCode while printing will abort the print"
 msgstr "التحويل إلى جي كود أثناء الطباعة سيؤدي لإحباط عملية الطباعة الحالية"
 
-#: ../src/ui/view.cpp:185 ../src/ui/view.cpp:274
+#: src/ui/view.cpp:171 src/ui/view.cpp:270
 msgid "Complete print before reading"
 msgstr "أكمل الطباعة قبل القراءة"
 
-#: ../src/ui/view.cpp:186 ../src/ui/view.cpp:275
+#: src/ui/view.cpp:172 src/ui/view.cpp:271
 msgid "Reading GCode while printing will abort the print"
 msgstr "قراءة الجي كود أثناء الطباعة سيؤدي لإحباط عملية الطباعة الحالية"
 
-#: ../src/ui/view.cpp:209 ../src/ui/view.cpp:236 ../src/ui/view.cpp:255
-#: ../src/ui/view.cpp:653
+#: src/ui/view.cpp:197 src/ui/view.cpp:224 src/ui/view.cpp:239
+#: src/ui/view.cpp:607
 msgid "Overwrite File?"
 msgstr "الكتابة على الملف؟"
 
-#: ../src/ui/view.cpp:326
+#: src/ui/view.cpp:321
 msgid "Error reading UI description!!"
 msgstr "خطأ في قراءة وصف واجهة الاستخدام!!"
 
-#: ../src/ui/view.cpp:336
+#: src/ui/view.cpp:331
 msgid "Couldn't find UI description!"
 msgstr "تعذّر إيجاد وصف واجهة الاستخدام!"
 
-#: ../src/ui/view.cpp:338
+#: src/ui/view.cpp:333
 msgid "Check that repsnapper has been correctly installed."
 msgstr "تفقد ما إذا كان رِب سنابر قد تم تثبيته بشكل سليم."
 
-#: ../src/ui/view.cpp:349
+#: src/ui/view.cpp:344
 msgid "Error loading UI!"
 msgstr "خطأ في تحميل واجهة الاستخدام!"
 
-#: ../src/ui/view.cpp:946
-msgid "Reset Printer?"
-msgstr "إعادة إعداد الطابعة؟"
-
-#: ../src/ui/view.cpp:1370
-msgid "Output File: "
-msgstr "ملف المخرجات: "
-
-#: ../src/printer/printer.cpp:378 ../src/printer/printer.cpp:425
-#: ../src/printer/printer_iochannel.cpp:274
-#: ../src/printer/printer_libreprap.cpp:213
-msgid "Cannot disconnect"
-msgstr "لا يمكن قطع الاتصال"
-
-#: ../src/printer/printer.cpp:379 ../src/printer/printer.cpp:426
-#: ../src/printer/printer_iochannel.cpp:275
-#: ../src/printer/printer_libreprap.cpp:214
-msgid "printer is printing"
-msgstr "الطابعة قيد الطباعة حاليا"
-
-#: ../src/printer/printer.cpp:416 ../src/printer/printer_libreprap.cpp:204
-msgid "Failed to connect to device"
-msgstr "فشل في الاتصال بالجهاز"
-
-#: ../src/printer/printer.cpp:417 ../src/printer/printer_libreprap.cpp:205
-msgid "an error occured while connecting"
-msgstr "حدث خطأ أثناء الاتصال"
-
-#: ../src/printer/printer.cpp:485 ../src/printer/printer_iochannel.cpp:329
-#: ../src/printer/printer_libreprap.cpp:273
-msgid ""
-"Already printing.\n"
-"Cannot start printing"
-msgstr ""
-"الطابعة قيد الطباعة حاليا.\n"
-"لا يمكن البدء بالطباعة"
-
-#: ../src/printer/printer.cpp:501 ../src/printer/printer.cpp:507
-#: ../src/printer/printer_iochannel.cpp:339
-#: ../src/printer/printer_libreprap.cpp:284
-msgid ""
-"Not connected to printer.\n"
-"Cannot start printing"
-msgstr ""
-"غير متصل بالطابعة.\n"
-"لا يمكن البدء بالطباعة"
-
-#: ../src/printer/printer.cpp:623 ../src/printer/printer_libreprap.cpp:353
-msgid "Can't send command"
-msgstr "تعذّر إرسال الأمر"
-
-#: ../src/printer/printer.cpp:623 ../src/printer/printer_libreprap.cpp:353
-msgid "You must first connect to a device!"
-msgstr "ينبغي عليك الاتصال بالجهاز أولا!"
-
-#: ../src/printer/printer.cpp:644 ../src/printer/printer_libreprap.cpp:367
-msgid ""
-"Not connected to printer.\n"
-"Cannot stop printing"
-msgstr ""
-"غير متصل بالطابعة.\n"
-"لا يمكن إيقاف الطباعة"
-
-#: ../src/printer/printer.cpp:660 ../src/printer/printer_iochannel.cpp:450
-#: ../src/printer/printer_libreprap.cpp:382
+#: src/ui/view.cpp:363
 msgid "Printing"
 msgstr ""
 
-#: ../src/printer/printer.cpp:747 ../src/printer/printer_libreprap.cpp:433
-msgid "Error reading from device!"
-msgstr "خطأ في القراءة من الجهاز!"
+#: src/ui/view.cpp:879
+msgid "Reset Printer?"
+msgstr "إعادة إعداد الطابعة؟"
 
-#: ../src/printer/printer.cpp:753 ../src/printer/printer_libreprap.cpp:439
-msgid "Error writing to device!"
-msgstr "خطأ في الكتابة إلى الجهاز!"
+#: src/ui/view.cpp:1286
+msgid "Output File: "
+msgstr "ملف المخرجات: "
 
-#: ../src/printer/printer2.cpp:29
+#: src/printer/printer.cpp:95
+#, fuzzy
+msgid "Error: Unable to reset printer"
+msgstr "خطأ: تعذّر فتح ملف stl - "
+
+#: src/printer/printer.cpp:157
 msgid "Can't switch power while printing"
 msgstr ""
 
-#: ../src/printer/printer2.cpp:43
+#: src/printer/printer.cpp:170
 msgid "Can't go home while printing"
 msgstr ""
 
-#: ../src/printer/printer2.cpp:55
+#: src/printer/printer.cpp:180
 msgid "Home called with unknown axis"
 msgstr ""
 
-#: ../src/printer/printer2.cpp:65 ../src/printer/printer2.cpp:95
-msgid "Can't move manually while printing"
-msgstr ""
+#: src/printer/printer.cpp:190
+#, fuzzy
+msgid "Can't move while printing"
+msgstr "جي كود عند الطباعة"
 
-#: ../src/printer/printer2.cpp:85
+#: src/printer/printer.cpp:203
 msgid "Move called with unknown axis"
 msgstr ""
 
-#: ../src/printer/printer2.cpp:114
-msgid "Goto called with unknown axis"
+#: src/printer/printer.cpp:257
+msgid "Can't manually extrude while printing"
 msgstr ""
 
-#: ../src/printer/reprap_serial.cpp:172
-msgid "Already Connected to Printer"
+#: src/printer/printer_serial.cpp:166 src/printer/printer_serial.cpp:303
+#, c-format
+msgid "Error opening port %s"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:182 src/printer/printer_serial.cpp:320
+#, c-format
+msgid "Error getting port %s state"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:210
+#, c-format
+msgid "Error setting port %s state"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:225
+#, c-format
+msgid "Error getting port %s timeouts"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:244
+#, c-format
+msgid "Error setting port %s timeouts"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:341
+#, c-format
+msgid "Error enabling port %s raw mode\n"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:372
+#, c-format
+msgid "Error setting port %s baudrate to %d\n"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:385
+#, c-format
+msgid "Connected to port %s at %d baud\n"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:603 src/printer/printer_serial.cpp:604
+#: src/printer/printer_serial.cpp:616
+msgid "*** Error Writing to port ***\n"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:617
+#, c-format
+msgid "*** Error Writing to port: %s ***\n"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:653 src/printer/printer_serial.cpp:654
+#: src/printer/printer_serial.cpp:684 src/printer/printer_serial.cpp:685
+msgid "*** Error: Received line too long ***\n"
+msgstr ""
+
+#: src/printer/printer_serial.cpp:660 src/printer/printer_serial.cpp:661
+#, fuzzy
+msgid "*** Error Reading from port ***\n"
+msgstr "خطأ في القراءة من الجهاز!"
+
+#: src/printer/printer_serial.cpp:708
+#, fuzzy
+msgid "*** Error reading from port ***\n"
+msgstr "خطأ في القراءة من الجهاز!"
+
+#: src/printer/printer_serial.cpp:709
+#, fuzzy, c-format
+msgid "*** Error reading from port: %s ***\n"
+msgstr "خطأ في القراءة من الجهاز!"
+
+#: src/printer/threaded_printer_serial.cpp:42
+msgid ""
+"\n"
+"*** Log overflow ***\n"
+"\n"
+msgstr ""
+
+#: src/printer/threaded_printer_serial.cpp:43
+msgid ""
+"\n"
+"*** Error Log overflow ***\n"
+"\n"
+msgstr ""
+
+#: src/printer/threaded_printer_serial.cpp:100
+#, fuzzy
+msgid "Error connecting to printer"
 msgstr "متصل حاليا بالطابعة"
 
-#: ../src/printer/reprap_serial.cpp:451 ../src/printer/reprap_serial.cpp:458
-msgid "Printing error"
-msgstr "خطأ في الطباعة"
-
-#: ../src/printer/reprap_serial.cpp:451
-msgid "Not connected"
-msgstr "غير متصل"
-
-#: ../src/printer/reprap_serial.cpp:458
-msgid "Wrong line number"
+#: src/printer/threaded_printer_serial.cpp:101
+#: src/printer/threaded_printer_serial.cpp:160
+msgid "Error creating serial helper thread"
 msgstr ""
 
-#: ../src/printer/reprap_serial.cpp:570
-msgid "no reset on Windows"
+#: src/printer/threaded_printer_serial.cpp:159
+#, fuzzy
+msgid "Error reseting printer"
+msgstr "إعادة إعداد الطابعة"
+
+#: src/printer/threaded_printer_serial.cpp:181
+#, c-format
+msgid ""
+"Error: Cannot start print at line %lu since Gcode only contains %lu lines\n"
 msgstr ""
 
-#. these are available for user selection (order must be same as types):
-#: ../src/slicer/infill.h:37
-msgid "Parallel"
-msgstr "متوازي"
+#: src/printer/threaded_printer_serial.cpp:213
+#: src/printer/threaded_printer_serial.cpp:222
+#: src/printer/threaded_printer_serial.cpp:232
+#: src/printer/threaded_printer_serial.cpp:253
+#: src/printer/threaded_printer_serial.cpp:276
+#, fuzzy
+msgid "Error starting print"
+msgstr "الأخطاء/التحذيرات"
 
-#: ../src/slicer/infill.h:37
-msgid "Zigzag"
-msgstr "متعرج"
-
-#: ../src/slicer/infill.h:37
-msgid "Hexagons"
-msgstr "مسدسات"
-
-#: ../src/slicer/infill.h:37 ../src/repsnapper.ui.h:200
-msgid "Polygons"
-msgstr "مضلعات"
-
-#: ../src/slicer/infill.h:37
-msgid "Hilbert Curve"
-msgstr "منحنى هيلبرت"
-
-#: ../src/slicer/printlines.cpp:1665
-msgid "Making GCode"
-msgstr "إنتاج الجي كود"
-
-#: ../src/slicer/printlines.h:33
-msgid "Shell"
-msgstr "القشرة"
-
-#: ../src/slicer/printlines.h:33
-msgid "Skin"
+#: src/printer/threaded_printer_serial.cpp:213
+msgid "Printer connection not established"
 msgstr ""
 
-#: ../src/slicer/printlines.h:34 ../src/repsnapper.ui.h:250
-msgid "Skirt"
+#: src/printer/threaded_printer_serial.cpp:301
+#: src/printer/threaded_printer_serial.cpp:309
+#: src/printer/threaded_printer_serial.cpp:321
+msgid "Error stopping print"
 msgstr ""
 
-#: ../src/slicer/printlines.h:34
-msgid "Bridge"
+#: src/printer/threaded_printer_serial.cpp:337
+#: src/printer/threaded_printer_serial.cpp:345
+#: src/printer/threaded_printer_serial.cpp:358
+#: src/printer/threaded_printer_serial.cpp:376
+msgid "Error continuing print"
 msgstr ""
 
-#: ../src/slicer/printlines.h:34
-msgid "Command"
+#: src/printer/threaded_printer_serial.cpp:338
+#, fuzzy
+msgid "No stopped print to continue"
+msgstr "أكمل الطباعة قبل التحويل"
+
+#: src/printer/threaded_printer_serial.cpp:498
+msgid "**Internal Error\n"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:1
-msgid "     "
-msgstr "     "
-
-#: ../src/repsnapper.ui.h:2
-msgid " th Layer"
+#: src/printer/threaded_printer_serial.cpp:522
+msgid "**Connection closed\n"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:3
-msgid "(C) 2008-2012 its contributors "
+#: src/printer/threaded_printer_serial.cpp:573
+#, c-format
+msgid "*** Warning: Truncated long printer command at line %lu\n"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:4
-msgid "+"
-msgstr "+"
-
-#: ../src/repsnapper.ui.h:5
-msgid "-"
-msgstr "-"
-
-#: ../src/repsnapper.ui.h:6
-msgid "1"
-msgstr "1"
-
-#: ../src/repsnapper.ui.h:7
-msgid "2"
-msgstr "2"
-
-#: ../src/repsnapper.ui.h:8
-msgid "3"
-msgstr "3"
-
-#: ../src/repsnapper.ui.h:9
-msgid "4"
-msgstr "4"
-
-#: ../src/repsnapper.ui.h:10
-msgid "<b></b>"
-msgstr "<b></b>"
-
-#: ../src/repsnapper.ui.h:11
-msgid "<b>Acceleration</b>"
-msgstr "<b>التسريع</b>"
-
-#: ../src/repsnapper.ui.h:12
-msgid "<b>Antiooze Retract</b>"
+#: src/printer/threaded_printer_serial.cpp:591
+msgid "**Error sending line\n"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:13
-msgid "<b>Axis Moving Speeds (mm/sec)</b>"
-msgstr "<b>سرعات حركة المحور (مم/ث)</b>"
-
-#: ../src/repsnapper.ui.h:14
-msgid "<b>Base</b>"
-msgstr "<b>القاعدة</b>"
-
-#: ../src/repsnapper.ui.h:15
-msgid "<b>Comms Debug</b>"
+#: src/printer/threaded_printer_serial.cpp:600
+msgid "**Fatal Error\n"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:16
-msgid "<b>Cooling</b>"
-msgstr "<b>التبريد</b>"
+#: src/repsnapper.ui:6
+msgid "_About"
+msgstr "_عن التطبيق"
 
-#: ../src/repsnapper.ui.h:17
-msgid "<b>Custom Actions</b>"
-msgstr "<b>إجراءات مخصصة</b>"
+#: src/repsnapper.ui:12
+msgid "_Calibrate"
+msgstr "م_عايرة"
 
-#: ../src/repsnapper.ui.h:18
-msgid "<b>Debug GCode</b>"
-msgstr "<b>تنقيح الجي كود</b>"
+#: src/repsnapper.ui:41
+msgid "repsnapper Preferences"
+msgstr "تفضيلات رِب سنابر"
 
-#: ../src/repsnapper.ui.h:19
-msgid "<b>Debugging</b>"
-msgstr "<b>التنقيح</b>"
-
-#: ../src/repsnapper.ui.h:20
-msgid "<b>Extruder Settings</b>"
-msgstr "<b>إعدادات الباثق</b>"
-
-#: ../src/repsnapper.ui.h:21
-msgid "<b>First Layer(s)</b>"
-msgstr "<b>الطبقات الأولية</b>"
-
-#: ../src/repsnapper.ui.h:22
-msgid "<b>GCode Postprocessor</b>"
+#: src/repsnapper.ui:90
+msgid "Settings set"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:23
-msgid "<b>GCode Rendering</b>"
-msgstr "<b>تصيير الجي كود</b>"
-
-#: ../src/repsnapper.ui.h:24
-msgid "<b>General</b>"
-msgstr "<b>عام</b>"
-
-#: ../src/repsnapper.ui.h:25
-msgid "<b>Geometry</b>"
+#: src/repsnapper.ui:137
+msgid "Summary of Hardware Settings"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:26
-msgid "<b>Infill Debug</b>"
-msgstr "<b>تنقيح الملء</b>"
-
-#: ../src/repsnapper.ui.h:27
-msgid "<b>Infill</b>"
-msgstr "<b>ملء المناطق المصمتة</b>"
-
-#: ../src/repsnapper.ui.h:28
-msgid "<b>Interface</b>"
-msgstr "<b>الواجهة</b>"
-
-#: ../src/repsnapper.ui.h:29
-msgid "<b>Layer Debug</b>"
-msgstr "<b>تنقيح الطبقات</b>"
-
-#: ../src/repsnapper.ui.h:30
-msgid "<b>Lighting</b>"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:31
-msgid "<b>Object</b>"
-msgstr "<b>الجسم</b>"
-
-#: ../src/repsnapper.ui.h:32
-msgid "<b>Output</b>"
-msgstr "<b>المخرجات</b>"
-
-#: ../src/repsnapper.ui.h:33
-msgid "<b>Parameters</b>"
-msgstr "<b>المتغيرات</b>"
-
-#: ../src/repsnapper.ui.h:34
-msgid "<b>Printer</b>"
-msgstr "<b>الطابعة</b>"
-
-#: ../src/repsnapper.ui.h:35
-msgid "<b>Raft</b>"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:36
-msgid "<b>STL Rendering Colors</b>"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:37
-msgid "<b>Serial Communications</b>"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:38
-msgid "<b>Speeds (mm/sec)</b>"
-msgstr "<b>السرعات (مم/ث)</b>"
-
-#: ../src/repsnapper.ui.h:39
-msgid "<b>Temperature</b>"
-msgstr "<b>درجة الحرارة</b>"
-
-#: ../src/repsnapper.ui.h:40
-msgid "?"
-msgstr "؟"
-
-#: ../src/repsnapper.ui.h:41
-msgid "Acceleration Distance:"
-msgstr "مسافة التسريع:"
-
-#: ../src/repsnapper.ui.h:42
-msgid "Adjust Luminance to Indicate Speed"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:43
-msgid "All"
-msgstr "الكل"
-
-#: ../src/repsnapper.ui.h:44
-msgid "Alternate Infill Percent:"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:45
-msgid "Alternate Infill every "
-msgstr ""
-
-#: ../src/repsnapper.ui.h:46
-msgid "Always done when using Support"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:47
-msgid "Amount (mm)"
-msgstr "القيمة (مم)"
-
-#: ../src/repsnapper.ui.h:48
-msgid "Amount (mm):"
-msgstr "القيمة (مم):"
-
-#: ../src/repsnapper.ui.h:49
-msgid "Arcs GCode (G2,G3)"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:50
-msgid "Around All Objects"
-msgstr "حول كل الأجسام"
-
-#: ../src/repsnapper.ui.h:51
-msgid "Arrows"
-msgstr "الأسهم"
-
-#: ../src/repsnapper.ui.h:52
-msgid "Auto"
-msgstr "آلي"
-
-#: ../src/repsnapper.ui.h:53
-msgid "Axis Control"
-msgstr "التحكم في المحاور"
-
-#: ../src/repsnapper.ui.h:54
-msgid "Base Rotation (°):"
-msgstr "دوران القاعدة (°):"
-
-#: ../src/repsnapper.ui.h:55
-msgid "Border"
-msgstr "الحدود"
-
-#: ../src/repsnapper.ui.h:56
-msgid "Borders"
-msgstr "الحدود"
-
-#: ../src/repsnapper.ui.h:57
-msgid "Bounding Boxes"
-msgstr "صناديق التحويط"
-
-#: ../src/repsnapper.ui.h:58
-msgid "Bridges Extrusion Factor:"
-msgstr "معامل البثق للجسور:"
-
-#: ../src/repsnapper.ui.h:59
-msgid "Build Volume"
-msgstr "حجم البناء"
-
-#: ../src/repsnapper.ui.h:60
-msgid "Calibrate mm as input"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:61
+#: src/repsnapper.ui:161
 msgid "Change image"
 msgstr "تغيير الصورة"
 
-#: ../src/repsnapper.ui.h:62
-msgid "Choose Endpoints Colour"
-msgstr "اختر لون نقاط النهاية"
+#: src/repsnapper.ui:174 src/repsnapper.ui:6128 src/repsnapper.ui:6129
+msgid "Save Settings"
+msgstr "حفظ الإعدادات"
 
-#: ../src/repsnapper.ui.h:63
-msgid "Choose Extrusion Colour"
-msgstr "اختر لون البثق"
-
-#: ../src/repsnapper.ui.h:64
-msgid "Choose Head Movement Colour"
-msgstr "اختر لون حركة الرأس"
-
-#: ../src/repsnapper.ui.h:65
-msgid "Choose Normals Colour"
-msgstr "اختر لون المتعامدات"
-
-#: ../src/repsnapper.ui.h:66
-msgid "Choose Polygon Colour"
-msgstr "اختر لون المضلع"
-
-#: ../src/repsnapper.ui.h:67
-msgid "Choose Wireframe Colour"
-msgstr "اختر لون خيوط الاطار"
-
-#: ../src/repsnapper.ui.h:68
-msgid "Clear Now"
-msgstr "نظّف الآن"
-
-#: ../src/repsnapper.ui.h:69
-msgid "Clear on Print Start"
-msgstr "تنظيف عند بدء الطباعة"
-
-#: ../src/repsnapper.ui.h:70
+#: src/repsnapper.ui:187
 msgid "Clone Settings"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:71
-msgid "Colour"
-msgstr "اللون"
-
-#: ../src/repsnapper.ui.h:72
-msgid "Communication"
-msgstr "الاتصال"
-
-#: ../src/repsnapper.ui.h:73
-msgid "Copy"
-msgstr "نسخ"
-
-#: ../src/repsnapper.ui.h:74
-msgid "Custom Button"
-msgstr "زرّ مُخصص"
-
-#: ../src/repsnapper.ui.h:75
-msgid "D_uplicate"
-msgstr "ت_كرار"
-
-#: ../src/repsnapper.ui.h:76
-msgid "Debug"
-msgstr "التنقيح"
-
-#: ../src/repsnapper.ui.h:77
-msgid "Debug Arcs"
-msgstr "تنقيح الأقواس "
-
-#: ../src/repsnapper.ui.h:78
-msgid "Debug Infill"
-msgstr "تنقيح الملء"
-
-#: ../src/repsnapper.ui.h:79
-msgid "Decor"
-msgstr "التشطيب"
-
-#: ../src/repsnapper.ui.h:80
-msgid "Decor Layers:"
-msgstr "طبقات التشطيب:"
-
-#: ../src/repsnapper.ui.h:81
-msgid "Decoration:"
-msgstr "التشطيب:"
-
-#: ../src/repsnapper.ui.h:82
-msgid "Delete"
-msgstr "حذف"
-
-#: ../src/repsnapper.ui.h:83
-msgid "Dimensions"
-msgstr "الأبعاد"
-
-#: ../src/repsnapper.ui.h:84
-msgid "Disable Bridges"
-msgstr "تعطيل الجسور"
-
-#: ../src/repsnapper.ui.h:85
-msgid "Display"
-msgstr "عرض"
-
-#: ../src/repsnapper.ui.h:86
-msgid "Display Colour"
-msgstr "لون العرض"
-
-#: ../src/repsnapper.ui.h:87
-msgid "Display Settings"
-msgstr "إعدادات العرض"
-
-#: ../src/repsnapper.ui.h:88
-msgid "Distance"
-msgstr "المسافة"
-
-#: ../src/repsnapper.ui.h:89
-msgid "Distance (mm):"
-msgstr "المسافة (مم):"
-
-#: ../src/repsnapper.ui.h:90
-msgid "Distance Between Lines"
-msgstr "المسافة بين الخطوط"
-
-#: ../src/repsnapper.ui.h:91
-msgid "Divide"
-msgstr "تقسيم"
-
-#: ../src/repsnapper.ui.h:92
-msgid "Draw GCode"
-msgstr "رسم الجي كود"
-
-#: ../src/repsnapper.ui.h:93
-msgid "Draw Layers"
-msgstr "رسم الطبقات"
-
-#: ../src/repsnapper.ui.h:94
-msgid "Draw Line Numbers"
-msgstr "رسم أرقام الخطوط"
-
-#: ../src/repsnapper.ui.h:95
-msgid "Draw Polygon Numbers"
-msgstr "رسم أرقام المضلعات"
-
-#: ../src/repsnapper.ui.h:96
-msgid "Draw Vertex Numbers"
-msgstr "رسم أرقام الرؤوس"
-
-#: ../src/repsnapper.ui.h:97
-msgid "E max"
+#: src/repsnapper.ui:230
+msgid "Summary"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:98
-msgid "Echo"
+#: src/repsnapper.ui:290
+msgid "Border"
+msgstr "الحدود"
+
+#: src/repsnapper.ui:304
+msgid "Build Volume"
+msgstr "حجم البناء"
+
+#: src/repsnapper.ui:344 src/repsnapper.ui:436 src/repsnapper.ui:6805
+#: src/repsnapper.ui:7411
+msgid "X"
+msgstr "س"
+
+#: src/repsnapper.ui:357 src/repsnapper.ui:370 src/repsnapper.ui:1185
+#: src/repsnapper.ui:1276 src/repsnapper.ui:1391
+msgid "mm"
+msgstr "مم"
+
+#: src/repsnapper.ui:456 src/repsnapper.ui:478 src/repsnapper.ui:6035
+#: src/repsnapper.ui:7435
+msgid "Z"
+msgstr "ع"
+
+#: src/repsnapper.ui:498 src/repsnapper.ui:518 src/repsnapper.ui:7423
+msgid "Y"
+msgstr "ص"
+
+#: src/repsnapper.ui:540
+msgid "<b>Geometry</b>"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:99
-msgid "Edit"
-msgstr "تعديل"
+#: src/repsnapper.ui:576
+msgid "X/Y Axes:"
+msgstr "محاور س/ص:"
 
-#: ../src/repsnapper.ui.h:100
-msgid "Enable Acceleration"
-msgstr "تفعيل التسريع"
+#: src/repsnapper.ui:587
+msgid "Z Axis:"
+msgstr "محور ع:"
 
-#: ../src/repsnapper.ui.h:101
-msgid "Enable Antiooze Retract"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:102
-msgid "Enable Debug"
-msgstr "تفعيل التنقيح"
-
-#: ../src/repsnapper.ui.h:103
-msgid "Enable Lights"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:104
-msgid "Enable Raft"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:105
-msgid "End"
-msgstr "النهاية"
-
-#: ../src/repsnapper.ui.h:106
-msgid "Endpoints"
-msgstr "نقاط النهاية"
-
-#: ../src/repsnapper.ui.h:107
-msgid "Errors/Warnings"
-msgstr "الأخطاء/التحذيرات"
-
-#: ../src/repsnapper.ui.h:108
-msgid "Exit Repsnapper"
-msgstr "اخرج من رِب سنابر"
-
-#: ../src/repsnapper.ui.h:109
-msgid "Extruded Lines"
-msgstr "خطوط المبثوق"
-
-#: ../src/repsnapper.ui.h:110
-msgid "Extruders"
-msgstr "الباثقات"
-
-#: ../src/repsnapper.ui.h:111
-msgid "Extrusion Factor:"
-msgstr "مُعامل البثق:"
-
-#: ../src/repsnapper.ui.h:112
-msgid "Extrusion Multiplier"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:113
-msgid "Extrusion Ratio"
-msgstr "مُعدّل البثق"
-
-#: ../src/repsnapper.ui.h:114
-msgid "Extrusion Width/Height Ratio"
-msgstr "مُعدّل عرض/ارتفاع البثق"
-
-#: ../src/repsnapper.ui.h:115
-msgid "Fan Control"
-msgstr "تحكم المروحة"
-
-#: ../src/repsnapper.ui.h:116
-msgid "Fan Enabled"
-msgstr "تفعيل المروحة"
-
-#: ../src/repsnapper.ui.h:117
-msgid "Fan Level"
-msgstr "مستوى المروحة"
-
-#: ../src/repsnapper.ui.h:118
-msgid "Filament Diameter"
-msgstr "قُطر خيوط الطباعة"
-
-#: ../src/repsnapper.ui.h:119
-msgid "Files"
-msgstr "الملفات"
-
-#: ../src/repsnapper.ui.h:120
-msgid "Fill Layer Areas"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:121
-msgid "Fill Skirt Area"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:122
-msgid "From/Single:"
-msgstr "من/منفرد:"
-
-#: ../src/repsnapper.ui.h:123
-msgid "Fullscreen"
-msgstr "ملء الشاشة"
-
-#: ../src/repsnapper.ui.h:125
-msgid "GCode Letter"
-msgstr "حرف الجي كود"
-
-#: ../src/repsnapper.ui.h:126
-msgid "GCode when Printing"
-msgstr "جي كود عند الطباعة"
-
-#: ../src/repsnapper.ui.h:127
-msgid "Generate _GCode"
-msgstr "إنتاج ال_جي كود"
-
-#: ../src/repsnapper.ui.h:128
-msgid "Hardware Settings"
-msgstr "إعدادات العتاد"
-
-#: ../src/repsnapper.ui.h:129
-msgid "Height (mm):"
-msgstr "الارتفاع (مم):"
-
-#: ../src/repsnapper.ui.h:130
-msgid "Height:"
-msgstr "الارتفاع:"
-
-#: ../src/repsnapper.ui.h:131
-msgid "Highlight Strength"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:132
-msgid "Hollow"
-msgstr "تجويف"
-
-#: ../src/repsnapper.ui.h:133
-msgid "Home All"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:136
-#, no-c-format
-msgid "Infill %"
-msgstr "الملء %"
-
-#: ../src/repsnapper.ui.h:137
-msgid "Infill Distance:"
-msgstr "مسافة الملء:"
-
-#: ../src/repsnapper.ui.h:138
-msgid "Infill Overlap:"
-msgstr "تداخل الملء:"
-
-#: ../src/repsnapper.ui.h:139
-msgid "Invert Normals"
-msgstr "عكس المتعامدات"
-
-#: ../src/repsnapper.ui.h:140
-msgid "Kick"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:141
-msgid "LGPLv2+, GPLv2+, and other licenses, see licenses.txt"
-msgstr "LGPLv2+ و GPLv2+ وترخيصات أخرى، أنظر licenses.txt"
-
-#: ../src/repsnapper.ui.h:142
-msgid "Larger Than Object (mm)"
-msgstr "أكبر من الجسم (مم)"
-
-#: ../src/repsnapper.ui.h:143
-msgid "Layer Height:"
-msgstr "ارتفاع الطبقة:"
-
-#: ../src/repsnapper.ui.h:144
-msgid "Layer Preview"
-msgstr "استعراض الطبقة"
-
-#: ../src/repsnapper.ui.h:145
-msgid "Length"
-msgstr "الطول"
-
-#: ../src/repsnapper.ui.h:146
-msgid "Length (mm)"
-msgstr "الطول (مم)"
-
-#: ../src/repsnapper.ui.h:147
-msgid "Lift Z on all moves"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:148
-msgid "Load GCode"
-msgstr "تحميل الجي كود"
-
-#: ../src/repsnapper.ui.h:149
-msgid "Load Model"
-msgstr "تحميل نموذج"
-
-#: ../src/repsnapper.ui.h:150
-msgid "Load STL"
-msgstr "تحميل STL"
-
-#: ../src/repsnapper.ui.h:151
-msgid "Load Settings"
-msgstr "تحميل إعدادات"
-
-#: ../src/repsnapper.ui.h:152
-msgid "Load _GCode"
-msgstr "تحميل _جي كود"
-
-#: ../src/repsnapper.ui.h:153
-msgid "Load _STL"
-msgstr "تحميل _STL"
-
-#: ../src/repsnapper.ui.h:154
-msgid "Load a file of control codes"
-msgstr "تحميل ملف أكواد التحكم"
-
-#: ../src/repsnapper.ui.h:155
-msgid "Load an STL file"
-msgstr "تحميل ملف STL"
-
-#: ../src/repsnapper.ui.h:156
-msgid "Load application settings profile"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:157
-msgid "Logging"
-msgstr "تسجيل"
-
-#: ../src/repsnapper.ui.h:158
-msgid "Logs"
-msgstr "السجلات"
-
-#: ../src/repsnapper.ui.h:159
-msgid "Make enough solid layers to reach  minimum thickness (mm)"
-msgstr "صُنع طبقات كافية للوصول إلى أقل سماكة (مم)"
-
-#: ../src/repsnapper.ui.h:160
+#: src/repsnapper.ui:667 src/repsnapper.ui:679
 msgid "Max"
 msgstr "الأكبر"
 
-#: ../src/repsnapper.ui.h:161
-msgid "Max. Angles:"
-msgstr "أكبر زاوية:"
-
-#: ../src/repsnapper.ui.h:162
-msgid "Max. Overhang Speed (mm/sec):"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:163
-msgid "Max. Speed:"
-msgstr "أكبر سرعة:"
-
-#: ../src/repsnapper.ui.h:164
-msgid "Maximum Line Width (~Nozzle Diameter)"
-msgstr "أكبر عرض للخط (~قُطر الفوهة)"
-
-#: ../src/repsnapper.ui.h:165
-msgid "Merge"
-msgstr "دمج"
-
-#: ../src/repsnapper.ui.h:166
-msgid "Milling Settings"
-msgstr "إعدادات التفريز"
-
-#: ../src/repsnapper.ui.h:167
+#: src/repsnapper.ui:692 src/repsnapper.ui:703
 msgid "Min"
 msgstr "الأقل"
 
-#: ../src/repsnapper.ui.h:168
-msgid "Min. Angle:"
-msgstr "أقل زاوية:"
+#: src/repsnapper.ui:720
+msgid "<b>Axis Moving Speeds (mm/sec)</b>"
+msgstr "<b>سرعات حركة المحور (مم/ث)</b>"
 
-#: ../src/repsnapper.ui.h:169
-msgid "Min. Arc Length (mm):"
-msgstr "أقل طول للقوس (مم):"
+#: src/repsnapper.ui:774
+msgid "Serial Link Speed"
+msgstr ""
 
-#: ../src/repsnapper.ui.h:170
-msgid "Min. Speed:"
-msgstr "أقل سرعة:"
+#: src/repsnapper.ui:784
+msgid "Number of lines of output to retain for each scrollback buffer"
+msgstr ""
 
-#: ../src/repsnapper.ui.h:171
-msgid "Minimum Distance (mm):"
-msgstr "أقل مسافة (مم):"
+#: src/repsnapper.ui:803
+msgid "Scrollback"
+msgstr ""
 
-#: ../src/repsnapper.ui.h:172
-msgid "Minimum Infill Distance (line widths)"
-msgstr "أقل مسافة ملء (عروض الخط)"
+#: src/repsnapper.ui:816
+msgid "lines"
+msgstr ""
 
-#: ../src/repsnapper.ui.h:173
+#: src/repsnapper.ui:846
+msgid "<b>Serial Communications</b>"
+msgstr ""
+
+#: src/repsnapper.ui:859
+msgid "Send Speed on Every GCode Command"
+msgstr "إرسال السرعة عند كل أمر جي كود"
+
+#: src/repsnapper.ui:882
+msgid "Hardware Settings"
+msgstr "إعدادات العتاد"
+
+#: src/repsnapper.ui:921
+msgid "Relative Ecode"
+msgstr ""
+
+#: src/repsnapper.ui:932
+msgid "Use T Command to Change Extruder"
+msgstr ""
+
+#: src/repsnapper.ui:936
+msgid "Otherwise use different GCode Letters"
+msgstr ""
+
+#: src/repsnapper.ui:952 src/repsnapper.ui:3005
+msgid "<b>General</b>"
+msgstr "<b>عام</b>"
+
+#: src/repsnapper.ui:973
+msgid "Copy"
+msgstr "نسخ"
+
+#: src/repsnapper.ui:997 src/repsnapper.ui:9062
+msgid "Remove"
+msgstr "إزالة"
+
+#: src/repsnapper.ui:1043
+msgid "X Offset (mm)"
+msgstr "إزاحة س (مم)"
+
+#: src/repsnapper.ui:1072
+msgid "Y Offset (mm)"
+msgstr "إزاحة ص (مم)"
+
+#: src/repsnapper.ui:1110
+msgid "Use this Extruder for Support"
+msgstr "استخدام هذا الباثق لمادة التدعيم"
+
+#: src/repsnapper.ui:1154
+msgid "Extrusion Multiplier"
+msgstr ""
+
+#: src/repsnapper.ui:1215
 msgid "Minimum Line Width (~Nozzle Diameter)"
 msgstr "أصغر عرض للخط (~قُطر الفوهة)"
 
-#: ../src/repsnapper.ui.h:174
-msgid "Minimum Shell Time (s):"
-msgstr "أقل زمن للقشرة (بالثواني):"
+#: src/repsnapper.ui:1265
+msgid "Maximum Line Width (~Nozzle Diameter)"
+msgstr "أكبر عرض للخط (~قُطر الفوهة)"
 
-#: ../src/repsnapper.ui.h:175
-msgid "Minimum Time per Layer (s):"
-msgstr "أقل زمن لكل طبقة (بالثواني):"
+#: src/repsnapper.ui:1292
+msgid "GCode Letter"
+msgstr "حرف الجي كود"
 
-#: ../src/repsnapper.ui.h:176
-msgid "Mirror"
-msgstr "مرآة"
+#: src/repsnapper.ui:1344
+#, fuzzy
+msgid "Desired Line Width/Height Ratio"
+msgstr "مُعدّل عرض/ارتفاع البثق"
 
-#: ../src/repsnapper.ui.h:178
-msgid "Monitor Temperature"
-msgstr "مراقبة درجة الحرارة"
+#: src/repsnapper.ui:1357
+msgid "Display Colour"
+msgstr "لون العرض"
 
-#: ../src/repsnapper.ui.h:179
-msgid "Move Head Colour"
+#: src/repsnapper.ui:1380
+msgid "Calibrate mm as input"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:180
+#: src/repsnapper.ui:1408
+msgid "Filament Diameter"
+msgstr "قُطر خيوط الطباعة"
+
+#: src/repsnapper.ui:1453
+msgid "<b>Extruder Settings</b>"
+msgstr "<b>إعدادات الباثق</b>"
+
+#: src/repsnapper.ui:1504
+msgid "Extruded Lines"
+msgstr "خطوط المبثوق"
+
+#: src/repsnapper.ui:1528
+msgid "Shells"
+msgstr "القشور"
+
+#: src/repsnapper.ui:1556
+msgid "E max"
+msgstr ""
+
+#: src/repsnapper.ui:1588
+msgid "<b>Speeds (mm/sec)</b>"
+msgstr "<b>السرعات (مم/ث)</b>"
+
+#: src/repsnapper.ui:1623
+msgid "Enable Antiooze Retract"
+msgstr ""
+
+#: src/repsnapper.ui:1638
+msgid "Minimum Distance (mm):"
+msgstr "أقل مسافة (مم):"
+
+#: src/repsnapper.ui:1666
+msgid "Speed (mm/sec):"
+msgstr "السرعة (مم/ث):"
+
+#: src/repsnapper.ui:1696
+msgid "Amount (mm):"
+msgstr "القيمة (مم):"
+
+#: src/repsnapper.ui:1728
+msgid "Z lift on move (mm):"
+msgstr ""
+
+#: src/repsnapper.ui:1756
+msgid "Lift Z on all moves"
+msgstr ""
+
+#: src/repsnapper.ui:1784
+msgid "<b>Antiooze Retract (Experimental)</b>"
+msgstr ""
+
+#: src/repsnapper.ui:1825
+msgid "Extruders"
+msgstr "الباثقات"
+
+#: src/repsnapper.ui:1909
+msgid "Rotation per Layer (°):"
+msgstr "الدوران لكل طبقة (°):"
+
+#: src/repsnapper.ui:1933
+msgid "Normal Fill:"
+msgstr ""
+
+#: src/repsnapper.ui:1944
+msgid "Solid Fill:"
+msgstr ""
+
+#: src/repsnapper.ui:1979 src/repsnapper.ui:1993 src/repsnapper.ui:2068
+msgid "Extrusion Factor:"
+msgstr "مُعامل البثق:"
+
+#: src/repsnapper.ui:2045
+msgid "Support:"
+msgstr "التدعيم:"
+
+#: src/repsnapper.ui:2100
+msgid "Widen:"
+msgstr ""
+
+#: src/repsnapper.ui:2132
+msgid "Base Rotation (°):"
+msgstr "دوران القاعدة (°):"
+
+#: src/repsnapper.ui:2160
+msgid "Decoration:"
+msgstr "التشطيب:"
+
+#: src/repsnapper.ui:2183 src/repsnapper.ui:2561
+msgid "Infill Distance:"
+msgstr "مسافة الملء:"
+
+#: src/repsnapper.ui:2215
+msgid "Rotation:"
+msgstr "الدوران:"
+
+#: src/repsnapper.ui:2246
+msgid "Alternate Infill every "
+msgstr ""
+
+#: src/repsnapper.ui:2276
+msgid " th Layer"
+msgstr ""
+
+#: src/repsnapper.ui:2290
+msgid "Alternate Infill Percent:"
+msgstr ""
+
+#: src/repsnapper.ui:2321
+msgid "Bridges Extrusion Factor:"
+msgstr "معامل البثق للجسور:"
+
+#: src/repsnapper.ui:2353
+msgid "Infill Overlap:"
+msgstr "تداخل الملء:"
+
+#: src/repsnapper.ui:2380
+msgid "Disable Bridges"
+msgstr "تعطيل الجسور"
+
+#: src/repsnapper.ui:2395
+msgid "Make enough solid layers to reach  minimum thickness (mm)"
+msgstr "صُنع طبقات كافية للوصول إلى أقل سماكة (مم)"
+
+#: src/repsnapper.ui:2396
+msgid "Solid Thickness:"
+msgstr ""
+
+#: src/repsnapper.ui:2427
+msgid "Decor Layers:"
+msgstr "طبقات التشطيب:"
+
+#: src/repsnapper.ui:2457
+msgid "Min. Angle:"
+msgstr "أقل زاوية:"
+
+#: src/repsnapper.ui:2585
+msgid "<b>Infill</b>"
+msgstr "<b>ملء المناطق المصمتة</b>"
+
+#: src/repsnapper.ui:2612 src/repsnapper.ui:6572 src/repsnapper.ui:9400
+msgid "Infill"
+msgstr "الملء"
+
+#: src/repsnapper.ui:2690
+msgid "Offset Outer Shells by (mm):"
+msgstr "إزاحة القشور الخارجية بمقدار (مم):"
+
+#: src/repsnapper.ui:2715
+msgid "Variable Slicing"
+msgstr ""
+
+#: src/repsnapper.ui:2730
+msgid "Height (mm):"
+msgstr "الارتفاع (مم):"
+
+#: src/repsnapper.ui:2762
+msgid "Distance (mm):"
+msgstr "المسافة (مم):"
+
+#: src/repsnapper.ui:2792
+msgid "Arcs GCode (G2,G3)"
+msgstr ""
+
+#: src/repsnapper.ui:2796
+msgid "Experimental"
+msgstr ""
+
+#: src/repsnapper.ui:2808
+msgid "Max. Angles:"
+msgstr "أكبر زاوية:"
+
+#: src/repsnapper.ui:2837
+msgid "Round Corners"
+msgstr "تدوير الأركان"
+
+#: src/repsnapper.ui:2871
+msgid "Distance"
+msgstr "المسافة"
+
+#: src/repsnapper.ui:2903
+msgid "Min. Arc Length (mm):"
+msgstr "أقل طول للقوس (مم):"
+
+#: src/repsnapper.ui:2914
 msgid "Move between nearest points of polygons"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:181
-msgid "Moves"
-msgstr "الانتقالات"
+#: src/repsnapper.ui:2932
+msgid "Skirt"
+msgstr ""
 
-#: ../src/repsnapper.ui.h:182
+#: src/repsnapper.ui:2955
+msgid "Fill Skirt Area"
+msgstr ""
+
+#: src/repsnapper.ui:2976
+msgid "Around All Objects"
+msgstr "حول كل الأجسام"
+
+#: src/repsnapper.ui:2980
+msgid "Always done when using Support"
+msgstr ""
+
+#: src/repsnapper.ui:3057
+msgid "Minimum Time per Layer (s):"
+msgstr "أقل زمن لكل طبقة (بالثواني):"
+
+#: src/repsnapper.ui:3084
+msgid "Fan Control"
+msgstr "تحكم المروحة"
+
+#: src/repsnapper.ui:3100
+msgid "Min. Speed:"
+msgstr "أقل سرعة:"
+
+#: src/repsnapper.ui:3132
+msgid "Max. Speed:"
+msgstr "أكبر سرعة:"
+
+#: src/repsnapper.ui:3167
+msgid "Max. Overhang Speed (mm/sec):"
+msgstr ""
+
+#: src/repsnapper.ui:3198
+msgid "Minimum Shell Time (s):"
+msgstr "أقل زمن للقشرة (بالثواني):"
+
+#: src/repsnapper.ui:3227
+msgid "Move to Farthest Point on Layer Start"
+msgstr ""
+
+#: src/repsnapper.ui:3257
+msgid "<b>Cooling</b>"
+msgstr "<b>التبريد</b>"
+
+#: src/repsnapper.ui:3292
+msgid "Number of first Layers:"
+msgstr "عدد الطبقات الأولى:"
+
+#: src/repsnapper.ui:3321
+msgid "Speed Ratio:"
+msgstr "مُعدّل السرعة:"
+
+#: src/repsnapper.ui:3362
+msgid "Minimum Infill Distance (line widths)"
+msgstr "أقل مسافة ملء (عروض الخط)"
+
+#: src/repsnapper.ui:3406
+msgid "Very First Layer Height Ratio"
+msgstr ""
+
+#: src/repsnapper.ui:3450
+msgid "<b>First Layer(s)</b>"
+msgstr "<b>الطبقات الأولية</b>"
+
+#: src/repsnapper.ui:3478
+msgid "Enable Acceleration"
+msgstr "تفعيل التسريع"
+
+#: src/repsnapper.ui:3496
+msgid "Acceleration Distance:"
+msgstr "مسافة التسريع:"
+
+#: src/repsnapper.ui:3531
+msgid "<b>Acceleration</b>"
+msgstr "<b>التسريع</b>"
+
+#: src/repsnapper.ui:3597
+msgid "<b>GCode Postprocessor</b>"
+msgstr ""
+
+#: src/repsnapper.ui:3617
+msgid "Optimization"
+msgstr "التحسين"
+
+#: src/repsnapper.ui:3650
+msgid "Enable Raft"
+msgstr ""
+
+#: src/repsnapper.ui:3667
+msgid "Larger Than Object (mm)"
+msgstr "أكبر من الجسم (مم)"
+
+#: src/repsnapper.ui:3727
+msgid "Rotation per Layer"
+msgstr "الدوران لكل طبقة"
+
+#: src/repsnapper.ui:3850
+msgid "Temperature Ratio"
+msgstr "مُعدّل درجة الحرارة"
+
+#: src/repsnapper.ui:3861
+msgid "Thickness Ratio"
+msgstr "مُعدّل السماكة"
+
+#: src/repsnapper.ui:3872
+msgid "Distance Between Lines"
+msgstr "المسافة بين الخطوط"
+
+#: src/repsnapper.ui:3883
+msgid "Rotation"
+msgstr "الدوران"
+
+#: src/repsnapper.ui:3894
+msgid "Extrusion Ratio"
+msgstr "مُعدّل البثق"
+
+#: src/repsnapper.ui:3905
+msgid "Number of Layers"
+msgstr "عدد الطبقات"
+
+#: src/repsnapper.ui:4046
+msgid "<b>Base</b>"
+msgstr "<b>القاعدة</b>"
+
+#: src/repsnapper.ui:4058
+msgid "<b>Interface</b>"
+msgstr "<b>الواجهة</b>"
+
+#: src/repsnapper.ui:4102
+msgid "<b>Raft</b>"
+msgstr ""
+
+#: src/repsnapper.ui:4122
+msgid "Raft"
+msgstr ""
+
+#: src/repsnapper.ui:4290
+msgid "Tool Diameter"
+msgstr "قطر الأداة"
+
+#: src/repsnapper.ui:4323
+msgid "<b></b>"
+msgstr "<b></b>"
+
+#: src/repsnapper.ui:4352
+msgid "Milling Settings"
+msgstr "إعدادات التفريز"
+
+#: src/repsnapper.ui:4402 src/repsnapper.ui:4444 src/repsnapper.ui:4486
+#: src/repsnapper.ui:4527
+msgid "Colour"
+msgstr "اللون"
+
+#: src/repsnapper.ui:4415
+msgid "Choose Wireframe Colour"
+msgstr "اختر لون خيوط الاطار"
+
+#: src/repsnapper.ui:4457
+msgid "Choose Normals Colour"
+msgstr "اختر لون المتعامدات"
+
+#: src/repsnapper.ui:4499
+msgid "Choose Endpoints Colour"
+msgstr "اختر لون نقاط النهاية"
+
+#: src/repsnapper.ui:4540
+msgid "Choose Polygon Colour"
+msgstr "اختر لون المضلع"
+
+#: src/repsnapper.ui:4567
+msgid "Highlight Strength"
+msgstr ""
+
+#: src/repsnapper.ui:4612
+msgid "Length"
+msgstr "الطول"
+
+#: src/repsnapper.ui:4659
+msgid "Size"
+msgstr "الحجم"
+
+#: src/repsnapper.ui:4697
+msgid "Shade Wireframe"
+msgstr ""
+
+#: src/repsnapper.ui:4720
+msgid "Polygons"
+msgstr "مضلعات"
+
+#: src/repsnapper.ui:4733 src/repsnapper.ui:7685
+msgid "Wireframe"
+msgstr "خطوط الإطار"
+
+#: src/repsnapper.ui:4746
+msgid "Normals"
+msgstr "المتعامدات"
+
+#: src/repsnapper.ui:4757 src/repsnapper.ui:7713
+msgid "Endpoints"
+msgstr "نقاط النهاية"
+
+#: src/repsnapper.ui:4772
+msgid "<b>STL Rendering Colors</b>"
+msgstr ""
+
+#: src/repsnapper.ui:4840
+msgid "Adjust Luminance to Indicate Speed"
+msgstr ""
+
+#: src/repsnapper.ui:4864
+msgid "Move Head Colour"
+msgstr ""
+
+#: src/repsnapper.ui:4877
+msgid "Choose Head Movement Colour"
+msgstr "اختر لون حركة الرأس"
+
+#: src/repsnapper.ui:4902
+msgid "GCode when Printing"
+msgstr "جي كود عند الطباعة"
+
+#: src/repsnapper.ui:4903
+msgid "Preview/Live Extrude Color"
+msgstr ""
+
+#: src/repsnapper.ui:4916
+msgid "Choose Extrusion Colour"
+msgstr "اختر لون البثق"
+
+#: src/repsnapper.ui:4941
+msgid "<b>GCode Rendering</b>"
+msgstr "<b>تصيير الجي كود</b>"
+
+#: src/repsnapper.ui:4974
+msgid "Enable Lights"
+msgstr ""
+
+#: src/repsnapper.ui:4984
+msgid "1"
+msgstr "1"
+
+#: src/repsnapper.ui:4998
+msgid "2"
+msgstr "2"
+
+#: src/repsnapper.ui:5012
+msgid "3"
+msgstr "3"
+
+#: src/repsnapper.ui:5026
+msgid "4"
+msgstr "4"
+
+#: src/repsnapper.ui:5046
+msgid "<b>Lighting</b>"
+msgstr ""
+
+#: src/repsnapper.ui:5068
+msgid "Display Settings"
+msgstr "إعدادات العرض"
+
+#: src/repsnapper.ui:5106
+msgid "Enable Debug"
+msgstr "تفعيل التنقيح"
+
+#: src/repsnapper.ui:5120
+msgid "Speeds are handled as mm/sec"
+msgstr "يتم التعامل مع السرعات بوحدات مم/ث (ملي متر لكل ثانية)"
+
+#: src/repsnapper.ui:5141
+msgid "<b>Debugging</b>"
+msgstr "<b>التنقيح</b>"
+
+#: src/repsnapper.ui:5174 src/repsnapper.ui:5329
+msgid "Draw Polygon Numbers"
+msgstr "رسم أرقام المضلعات"
+
+#: src/repsnapper.ui:5188 src/repsnapper.ui:5354
+msgid "Draw Line Numbers"
+msgstr "رسم أرقام الخطوط"
+
+#: src/repsnapper.ui:5202 src/repsnapper.ui:5368
+msgid "Draw Vertex Numbers"
+msgstr "رسم أرقام الرؤوس"
+
+#: src/repsnapper.ui:5227
+msgid "Show Layer Overhang Areas"
+msgstr ""
+
+#: src/repsnapper.ui:5241
+msgid "Randomize Lines"
+msgstr ""
+
+#: src/repsnapper.ui:5255
+msgid "Fill Layer Areas"
+msgstr ""
+
+#: src/repsnapper.ui:5282
+msgid "<b>Layer Debug</b>"
+msgstr "<b>تنقيح الطبقات</b>"
+
+#: src/repsnapper.ui:5315
+msgid "Debug Infill"
+msgstr "تنقيح الملء"
+
+#: src/repsnapper.ui:5395
+msgid "<b>Infill Debug</b>"
+msgstr "<b>تنقيح الملء</b>"
+
+#: src/repsnapper.ui:5423
+msgid "Debug Arcs"
+msgstr "تنقيح الأقواس "
+
+#: src/repsnapper.ui:5437
+msgid "Show Extruder Number on GCode"
+msgstr "عرض رقم الباثق في الجي كود"
+
+#: src/repsnapper.ui:5451
+msgid "Show GCode with Extruder Offset"
+msgstr ""
+
+#: src/repsnapper.ui:5466
+msgid "Show only GCode with Z Change"
+msgstr ""
+
+#: src/repsnapper.ui:5486
+msgid "<b>Debug GCode</b>"
+msgstr "<b>تنقيح الجي كود</b>"
+
+#: src/repsnapper.ui:5514
+msgid "Serial comms debug"
+msgstr ""
+
+#: src/repsnapper.ui:5534
+msgid "<b>Comms Debug</b>"
+msgstr ""
+
+#: src/repsnapper.ui:5558
+msgid "Output Progress to Terminal"
+msgstr ""
+
+#: src/repsnapper.ui:5571
+msgid "<b>Output</b>"
+msgstr "<b>المخرجات</b>"
+
+#: src/repsnapper.ui:5593
+msgid "Debug"
+msgstr "التنقيح"
+
+#: src/repsnapper.ui:5622 src/repsnapper.ui:6507
+msgid "Fullscreen"
+msgstr "ملء الشاشة"
+
+#: src/repsnapper.ui:5626 src/repsnapper.ui:5627
+msgid "Load Settings"
+msgstr "تحميل إعدادات"
+
+#: src/repsnapper.ui:5628
+msgid "Load application settings profile"
+msgstr ""
+
+#: src/repsnapper.ui:5631
+msgid "Load _GCode"
+msgstr "تحميل _جي كود"
+
+#: src/repsnapper.ui:5632
+msgid "Load GCode"
+msgstr "تحميل الجي كود"
+
+#: src/repsnapper.ui:5633
+msgid "Load a file of control codes"
+msgstr "تحميل ملف أكواد التحكم"
+
+#: src/repsnapper.ui:5637
+msgid "Load _STL"
+msgstr "تحميل _STL"
+
+#: src/repsnapper.ui:5638
+msgid "Load STL"
+msgstr "تحميل STL"
+
+#: src/repsnapper.ui:5639
+msgid "Load an STL file"
+msgstr "تحميل ملف STL"
+
+#: src/repsnapper.ui:5643
+msgid "_Preferences"
+msgstr "الت_فضيلات"
+
+#: src/repsnapper.ui:5644
+msgid "Preferences"
+msgstr "التفضيلات"
+
+#: src/repsnapper.ui:5645
+msgid "Open the Preferences Dialog"
+msgstr "فتح نافذة التفضيلات"
+
+#: src/repsnapper.ui:5680
+msgid "Y +0.1 mm"
+msgstr "ص +0.1 مم"
+
+#: src/repsnapper.ui:5703
+msgid "Y +1 mm"
+msgstr "ص +1 مم"
+
+#: src/repsnapper.ui:5722
+msgid "Y +10 mm"
+msgstr "ص +10 مم"
+
+#: src/repsnapper.ui:5747
+msgid "X -0.1 mm"
+msgstr "س -0.1 مم"
+
+#: src/repsnapper.ui:5770
+msgid "X -1 mm"
+msgstr "س -1 مم"
+
+#: src/repsnapper.ui:5793
+msgid "X -10 mm"
+msgstr "س -10 مم"
+
+#: src/repsnapper.ui:5813
+msgid "X +0.1 mm"
+msgstr "س +0.1 مم"
+
+#: src/repsnapper.ui:5835
+msgid "X +1 mm"
+msgstr "س +1 مم"
+
+#: src/repsnapper.ui:5857
+msgid "X +10 mm"
+msgstr "س +10 مم"
+
+#: src/repsnapper.ui:5878
+msgid "Y -0.1 mm"
+msgstr "ص -0.1 مم"
+
+#: src/repsnapper.ui:5901
+msgid "Y -1 mm"
+msgstr "ص -1 مم"
+
+#: src/repsnapper.ui:5924
+msgid "Y -10 mm"
+msgstr "ص -10 مم"
+
+#: src/repsnapper.ui:5960
+msgid "Z +10 mm"
+msgstr "ع +10 مم"
+
+#: src/repsnapper.ui:5980
+msgid "Z +1 mm"
+msgstr "ع +1 مم"
+
+#: src/repsnapper.ui:6000
+msgid "Z +0.1 mm"
+msgstr "ع +0.1 مم"
+
+#: src/repsnapper.ui:6060
+msgid "Z -0.1 mm"
+msgstr "ع -0.1 مم"
+
+#: src/repsnapper.ui:6080
+msgid "Z -1 mm"
+msgstr "ع -1 مم"
+
+#: src/repsnapper.ui:6100
+msgid "Z -10 mm"
+msgstr "ع -10 مم"
+
+#: src/repsnapper.ui:6122
+msgid "_Quit"
+msgstr "م_غادرة"
+
+#: src/repsnapper.ui:6123
+msgid "Quit"
+msgstr "مغادرة"
+
+#: src/repsnapper.ui:6124
+msgid "Exit Repsnapper"
+msgstr "اخرج من رِب سنابر"
+
+#: src/repsnapper.ui:6130
+msgid "Save application settings profile"
+msgstr ""
+
+#: src/repsnapper.ui:6133 src/repsnapper.ui:6134
+msgid "Save Settings As"
+msgstr "حفظ الإعدادات كـ"
+
+#: src/repsnapper.ui:6135
+msgid "Save settings in a custom file"
+msgstr "حفظ الإعدادات في ملف مخصص"
+
+#: src/repsnapper.ui:6142
+msgid "(C) 2008-2013 its contributors "
+msgstr ""
+
+#: src/repsnapper.ui:6144
+msgid "Website"
+msgstr "موقع الويب"
+
+#: src/repsnapper.ui:6145
+msgid "LGPLv2+, GPLv2+, and other licenses, see licenses.txt"
+msgstr "LGPLv2+ و GPLv2+ وترخيصات أخرى، أنظر licenses.txt"
+
+#: src/repsnapper.ui:6184
+msgid "Custom Button"
+msgstr "زرّ مُخصص"
+
+#: src/repsnapper.ui:6284
+msgid "Name"
+msgstr "الاسم"
+
+#: src/repsnapper.ui:6395
+msgid "_File"
+msgstr "_ملف"
+
+#: src/repsnapper.ui:6486
+msgid "_Edit"
+msgstr "ت_حرير"
+
+#: src/repsnapper.ui:6529
+msgid "_Help"
+msgstr "م_ساعدة"
+
+#: src/repsnapper.ui:6586
+msgid "_Support"
+msgstr "الت_دعيم"
+
+#: src/repsnapper.ui:6601
+msgid "No Covers"
+msgstr ""
+
+#: src/repsnapper.ui:6615
+msgid "Decor"
+msgstr "التشطيب"
+
+#: src/repsnapper.ui:6629
+msgid "Selected Only"
+msgstr "المُختار فقط"
+
+#: src/repsnapper.ui:6643
+msgid "Serial _Build"
+msgstr ""
+
+#: src/repsnapper.ui:6730
+msgid "Save GCode and Close"
+msgstr "احفظ الجي كود وأغلق"
+
+#: src/repsnapper.ui:6745
+msgid "label"
+msgstr ""
+
+#: src/repsnapper.ui:6782
+msgid "Progress"
+msgstr ""
+
+#: src/repsnapper.ui:6840
+msgid "Generate _GCode"
+msgstr "إنتاج ال_جي كود"
+
+#: src/repsnapper.ui:6863
+msgid "?"
+msgstr "؟"
+
+#: src/repsnapper.ui:6891
+msgid "Preview"
+msgstr "استعراض"
+
+#: src/repsnapper.ui:6925
+msgid "Single Layer SVGs"
+msgstr ""
+
+#: src/repsnapper.ui:6939
+msgid "Save STL as Single Object"
+msgstr "حفظ STL كجسم منفرد"
+
+#: src/repsnapper.ui:6943
 msgid ""
 "Multiple Objects are combined and saved binary..\n"
 "Otherwise the STL will contain separate Objects and it will be in ASCII mode "
 "(some programs won't be able to read them)"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:184
-msgid "Name"
-msgstr "الاسم"
-
-#: ../src/repsnapper.ui.h:185
-msgid "New"
-msgstr "جديد"
-
-#: ../src/repsnapper.ui.h:186
-msgid "Next Layer"
-msgstr "الطبقة التالية"
-
-#: ../src/repsnapper.ui.h:187
-msgid "No Covers"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:188
-msgid "Normal Fill:"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:189
-msgid "Normals"
-msgstr "المتعامدات"
-
-#: ../src/repsnapper.ui.h:190
-msgid "Number of Layers"
-msgstr "عدد الطبقات"
-
-#: ../src/repsnapper.ui.h:191
-msgid "Number of first Layers:"
-msgstr "عدد الطبقات الأولى:"
-
-#: ../src/repsnapper.ui.h:192
-msgid "Number of lines of output to retain for each scrollback buffer"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:193
-msgid "Offset Outer Shells by (mm):"
-msgstr "إزاحة القشور الخارجية بمقدار (مم):"
-
-#: ../src/repsnapper.ui.h:194
-msgid "On Platform"
-msgstr "على المنصة"
-
-#: ../src/repsnapper.ui.h:195
-msgid "Open the Preferences Dialog"
-msgstr "فتح نافذة التفضيلات"
-
-#: ../src/repsnapper.ui.h:196
-msgid "Optimization"
-msgstr "التحسين"
-
-#: ../src/repsnapper.ui.h:197
-msgid "Otherwise use different GCode Letters"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:198
-msgid "Output Progress to Terminal"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:199
-msgid "Pause"
-msgstr "إلباث"
-
-#: ../src/repsnapper.ui.h:201
-msgid "Power On"
-msgstr "تشغيل"
-
-#: ../src/repsnapper.ui.h:202
-msgid "Preferences"
-msgstr "التفضيلات"
-
-#: ../src/repsnapper.ui.h:203
-msgid "Preview"
-msgstr "استعراض"
-
-#: ../src/repsnapper.ui.h:204
-msgid "Preview/Live Extrude Color"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:205
-msgid "Print"
-msgstr "طباعة"
-
-#: ../src/repsnapper.ui.h:206
-msgid "Printer"
-msgstr "الطابعة"
-
-#: ../src/repsnapper.ui.h:207
-msgid "Printer Buffer Size (Lines of GCode)"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:208
-msgid "Progress"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:209
-msgid "Purge"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:210
-msgid "Quit"
-msgstr "مغادرة"
-
-#: ../src/repsnapper.ui.h:211
-msgid "Raft"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:212
-msgid "Randomize Lines"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:213
-msgid "Recommended value for FiveD is 4"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:214
-msgid "Relative Ecode"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:215
-msgid "Remove"
-msgstr "إزالة"
-
-#: ../src/repsnapper.ui.h:216
-msgid "Reset"
-msgstr "إعادة الإعداد"
-
-#: ../src/repsnapper.ui.h:217
-msgid "Reset Printer"
-msgstr "إعادة إعداد الطابعة"
-
-#: ../src/repsnapper.ui.h:218
-msgid "Result"
-msgstr "النتيجة"
-
-#: ../src/repsnapper.ui.h:219
-msgid "Rotate:"
-msgstr "تدوير:"
-
-#: ../src/repsnapper.ui.h:220
-msgid "Rotation"
-msgstr "الدوران"
-
-#: ../src/repsnapper.ui.h:221
-msgid "Rotation per Layer"
-msgstr "الدوران لكل طبقة"
-
-#: ../src/repsnapper.ui.h:222
-msgid "Rotation per Layer (°):"
-msgstr "الدوران لكل طبقة (°):"
-
-#: ../src/repsnapper.ui.h:223
-msgid "Rotation:"
-msgstr "الدوران:"
-
-#: ../src/repsnapper.ui.h:224
-msgid "Round Corners"
-msgstr "تدوير الأركان"
-
-#: ../src/repsnapper.ui.h:225
-msgid "Save GCode and Close"
-msgstr "احفظ الجي كود وأغلق"
-
-#: ../src/repsnapper.ui.h:226
-msgid "Save STL as Single Object"
-msgstr "حفظ STL كجسم منفرد"
-
-#: ../src/repsnapper.ui.h:227
-msgid "Save Settings"
-msgstr "حفظ الإعدادات"
-
-#: ../src/repsnapper.ui.h:228
-msgid "Save Settings As"
-msgstr "حفظ الإعدادات كـ"
-
-#: ../src/repsnapper.ui.h:229
-msgid "Save application settings profile"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:230
-msgid "Save as STL/AMF"
-msgstr "حفظ كـ STL/AMF"
-
-#: ../src/repsnapper.ui.h:231
-msgid "Save settings in a custom file"
-msgstr "حفظ الإعدادات في ملف مخصص"
-
-#: ../src/repsnapper.ui.h:232
-msgid "Scale:"
-msgstr "تحجيم:"
-
-#: ../src/repsnapper.ui.h:233
-msgid "Scrollback"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:234
-msgid "Selected Only"
-msgstr "المُختار فقط"
-
-#: ../src/repsnapper.ui.h:235
-msgid "Send GCode"
-msgstr "ارسل الجي كود"
-
-#: ../src/repsnapper.ui.h:236
-msgid "Send Speed on Every GCode Command"
-msgstr "إرسال السرعة عند كل أمر جي كود"
-
-#: ../src/repsnapper.ui.h:237
-msgid "Serial Link Speed"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:238
-msgid "Serial _Build"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:239
-msgid "Serial comms debug"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:240
-msgid "Settings set"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:241
-msgid "Shade Wireframe"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:243
-msgid "Shells:"
-msgstr "القشور:"
-
-#: ../src/repsnapper.ui.h:244
-msgid "Show Extruder Number on GCode"
-msgstr "عرض رقم الباثق في الجي كود"
-
-#: ../src/repsnapper.ui.h:245
-msgid "Show GCode with Extruder Offset"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:246
-msgid "Show Layer Overhang Areas"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:247
-msgid "Single Layer SVGs"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:248
-msgid "Size"
-msgstr "الحجم"
-
-#: ../src/repsnapper.ui.h:249
-msgid "Skins:"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:251
-msgid "Slice to S_VG"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:252
-msgid "Solid Fill:"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:253
-msgid "Solid Thickness:"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:254
-msgid "Speed (mm/s)"
-msgstr "السرعة (مم/ث)"
-
-#: ../src/repsnapper.ui.h:255
-msgid "Speed (mm/sec):"
-msgstr "السرعة (مم/ث):"
-
-#: ../src/repsnapper.ui.h:256
-msgid "Speed Ratio:"
-msgstr "مُعدّل السرعة:"
-
-#: ../src/repsnapper.ui.h:257
-msgid "Speeds are handled as mm/sec"
-msgstr "يتم التعامل مع السرعات بوحدات مم/ث (ملي متر لكل ثانية)"
-
-#: ../src/repsnapper.ui.h:258
-msgid "Split"
-msgstr "فصل"
-
-#: ../src/repsnapper.ui.h:259
-msgid "Start"
-msgstr "البداية"
-
-#: ../src/repsnapper.ui.h:260
-msgid "Summary"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:261
-msgid "Summary of Hardware Settings"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:262
-msgid "Support:"
-msgstr "التدعيم:"
-
-#: ../src/repsnapper.ui.h:263
-msgid "Surface"
-msgstr "السطح"
-
-#: ../src/repsnapper.ui.h:264
-msgid "Surface Normals"
-msgstr "المتعامدات على السطح"
-
-#: ../src/repsnapper.ui.h:265
-msgid "Temperature Ratio"
-msgstr "مُعدّل درجة الحرارة"
-
-#: ../src/repsnapper.ui.h:266
-msgid "Thickness Ratio"
-msgstr "مُعدّل السماكة"
-
-#: ../src/repsnapper.ui.h:267
-msgid "To Platform"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:268
-msgid "To:"
-msgstr "إلى:"
-
-#: ../src/repsnapper.ui.h:269
-msgid "Tool Diameter"
-msgstr "قطر الأداة"
-
-#: ../src/repsnapper.ui.h:270
-msgid "Translate:"
-msgstr "إزاحة:"
-
-#: ../src/repsnapper.ui.h:271
-msgid "Twist:"
-msgstr "الالتواء:"
-
-#: ../src/repsnapper.ui.h:272
-msgid "Update Interval (sec)"
-msgstr "فترة التحديث (بالثواني)"
-
-#: ../src/repsnapper.ui.h:273
-msgid "Use Extruder:"
-msgstr "استخدام الباثق:"
-
-#: ../src/repsnapper.ui.h:274
-msgid "Use T Command to Change Extruder"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:275
-msgid "Use this Extruder for Support"
-msgstr "استخدام هذا الباثق لمادة التدعيم"
-
-#: ../src/repsnapper.ui.h:276
-msgid "Validate Connection"
-msgstr "التحقق من الاتصال"
-
-#: ../src/repsnapper.ui.h:277
-msgid "Variable Slicing"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:278
-msgid "Very First Layer Height Ratio"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:279
-msgid "Website"
-msgstr "موقع الويب"
-
-#: ../src/repsnapper.ui.h:280
-msgid "Widen:"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:281
-msgid "Wireframe"
-msgstr "خطوط الإطار"
-
-#: ../src/repsnapper.ui.h:282
-msgid "X"
-msgstr "س"
-
-#: ../src/repsnapper.ui.h:283
-msgid "X +0.1 mm"
-msgstr "س +0.1 مم"
-
-#: ../src/repsnapper.ui.h:284
-msgid "X +1 mm"
-msgstr "س +1 مم"
-
-#: ../src/repsnapper.ui.h:285
-msgid "X +10 mm"
-msgstr "س +10 مم"
-
-#: ../src/repsnapper.ui.h:286
-msgid "X -0.1 mm"
-msgstr "س -0.1 مم"
-
-#: ../src/repsnapper.ui.h:287
-msgid "X -1 mm"
-msgstr "س -1 مم"
-
-#: ../src/repsnapper.ui.h:288
-msgid "X -10 mm"
-msgstr "س -10 مم"
-
-#: ../src/repsnapper.ui.h:289
-msgid "X Offset (mm)"
-msgstr "إزاحة س (مم)"
-
-#: ../src/repsnapper.ui.h:290
-msgid "X+"
-msgstr "س+"
-
-#: ../src/repsnapper.ui.h:291
-msgid "X-"
-msgstr "س-"
-
-#: ../src/repsnapper.ui.h:292
-msgid "X/Y Axes:"
-msgstr "محاور س/ص:"
-
-#: ../src/repsnapper.ui.h:293
-msgid "X:"
-msgstr "س:"
-
-#: ../src/repsnapper.ui.h:294
-msgid "Y"
-msgstr "ص"
-
-#: ../src/repsnapper.ui.h:295
-msgid "Y +0.1 mm"
-msgstr "ص +0.1 مم"
-
-#: ../src/repsnapper.ui.h:296
-msgid "Y +1 mm"
-msgstr "ص +1 مم"
-
-#: ../src/repsnapper.ui.h:297
-msgid "Y +10 mm"
-msgstr "ص +10 مم"
-
-#: ../src/repsnapper.ui.h:298
-msgid "Y -0.1 mm"
-msgstr "ص -0.1 مم"
-
-#: ../src/repsnapper.ui.h:299
-msgid "Y -1 mm"
-msgstr "ص -1 مم"
-
-#: ../src/repsnapper.ui.h:300
-msgid "Y -10 mm"
-msgstr "ص -10 مم"
-
-#: ../src/repsnapper.ui.h:301
-msgid "Y Offset (mm)"
-msgstr "إزاحة ص (مم)"
-
-#: ../src/repsnapper.ui.h:302
-msgid "Y+"
-msgstr "ص+"
-
-#: ../src/repsnapper.ui.h:303
-msgid "Y-"
-msgstr "ص-"
-
-#: ../src/repsnapper.ui.h:304
-msgid "Y:"
-msgstr "ص:"
-
-#: ../src/repsnapper.ui.h:305
-msgid "Z"
-msgstr "ع"
-
-#: ../src/repsnapper.ui.h:306
-msgid "Z +0.1 mm"
-msgstr "ع +0.1 مم"
-
-#: ../src/repsnapper.ui.h:307
-msgid "Z +1 mm"
-msgstr "ع +1 مم"
-
-#: ../src/repsnapper.ui.h:308
-msgid "Z +10 mm"
-msgstr "ع +10 مم"
-
-#: ../src/repsnapper.ui.h:309
-msgid "Z -0.1 mm"
-msgstr "ع -0.1 مم"
-
-#: ../src/repsnapper.ui.h:310
-msgid "Z -1 mm"
-msgstr "ع -1 مم"
-
-#: ../src/repsnapper.ui.h:311
-msgid "Z -10 mm"
-msgstr "ع -10 مم"
-
-#: ../src/repsnapper.ui.h:312
-msgid "Z Axis:"
-msgstr "محور ع:"
-
-#: ../src/repsnapper.ui.h:313
-msgid "Z Down"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:314
-msgid "Z Up"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:315
-msgid "Z lift on move (mm):"
-msgstr ""
-
-#: ../src/repsnapper.ui.h:316
-msgid "Z+"
-msgstr "ع+"
-
-#: ../src/repsnapper.ui.h:317
-msgid "Z-"
-msgstr "ع-"
-
-#: ../src/repsnapper.ui.h:318
-msgid "Z:"
-msgstr "ع:"
-
-#: ../src/repsnapper.ui.h:319
-msgid "_About"
-msgstr "_عن التطبيق"
-
-#: ../src/repsnapper.ui.h:320
+#: src/repsnapper.ui:6973
+msgid "Files"
+msgstr "الملفات"
+
+#: src/repsnapper.ui:6994
+msgid "Load Model"
+msgstr "تحميل نموذج"
+
+#: src/repsnapper.ui:7021
 msgid "_Autoplace"
 msgstr "_وضع آلي"
 
-#: ../src/repsnapper.ui.h:321
-msgid "_Calibrate"
-msgstr "م_عايرة"
+#: src/repsnapper.ui:7071
+msgid "Save as STL/AMF"
+msgstr "حفظ كـ STL/AMF"
 
-#: ../src/repsnapper.ui.h:322
-msgid "_Edit"
-msgstr "ت_حرير"
+#: src/repsnapper.ui:7084
+msgid "Slice to S_VG"
+msgstr ""
 
-#: ../src/repsnapper.ui.h:323
-msgid "_File"
-msgstr "_ملف"
+#: src/repsnapper.ui:7124
+msgid "Delete"
+msgstr "حذف"
 
-#: ../src/repsnapper.ui.h:324
-msgid "_Help"
-msgstr "م_ساعدة"
+#: src/repsnapper.ui:7137
+msgid "D_uplicate"
+msgstr "ت_كرار"
 
-#: ../src/repsnapper.ui.h:325
+#: src/repsnapper.ui:7151
+msgid "Split"
+msgstr "فصل"
+
+#: src/repsnapper.ui:7164
+msgid "Merge"
+msgstr "دمج"
+
+#: src/repsnapper.ui:7177
+msgid "Divide"
+msgstr "تقسيم"
+
+#: src/repsnapper.ui:7209
+msgid "Rotate:"
+msgstr "تدوير:"
+
+#: src/repsnapper.ui:7221
+msgid "Translate:"
+msgstr "إزاحة:"
+
+#: src/repsnapper.ui:7233
+msgid "Scale:"
+msgstr "تحجيم:"
+
+#: src/repsnapper.ui:7392
+msgid "Auto"
+msgstr "آلي"
+
+#: src/repsnapper.ui:7547
+msgid "On Platform"
+msgstr "على المنصة"
+
+#: src/repsnapper.ui:7560
+msgid "Mirror"
+msgstr "مرآة"
+
+#: src/repsnapper.ui:7573
+msgid "Hollow"
+msgstr "تجويف"
+
+#: src/repsnapper.ui:7597
+msgid "Invert Normals"
+msgstr "عكس المتعامدات"
+
+#: src/repsnapper.ui:7612
+msgid "Twist:"
+msgstr "الالتواء:"
+
+#: src/repsnapper.ui:7623
+msgid "-"
+msgstr "-"
+
+#: src/repsnapper.ui:7636
+msgid "+"
+msgstr "+"
+
+#: src/repsnapper.ui:7662
+msgid "<b>Object</b>"
+msgstr "<b>الجسم</b>"
+
+#: src/repsnapper.ui:7699
+msgid "Surface Normals"
+msgstr "المتعامدات على السطح"
+
+#: src/repsnapper.ui:7727
+msgid "Bounding Boxes"
+msgstr "صناديق التحويط"
+
+#: src/repsnapper.ui:7743
+msgid "Surface"
+msgstr "السطح"
+
+#: src/repsnapper.ui:7757
+msgid "Display"
+msgstr "عرض"
+
+#: src/repsnapper.ui:7838
+msgid "Material:"
+msgstr ""
+
+#: src/repsnapper.ui:7883
+msgid "Shells:"
+msgstr "القشور:"
+
+#: src/repsnapper.ui:7914
+msgid "Skins:"
+msgstr ""
+
+#: src/repsnapper.ui:7948
+msgid "Infill %"
+msgstr "الملء %"
+
+#: src/repsnapper.ui:8012
+msgid "<b>Parameters</b>"
+msgstr "<b>المتغيرات</b>"
+
+#: src/repsnapper.ui:8036
 msgid "_Load GCode"
 msgstr "ت_حميل جي كود"
 
-#: ../src/repsnapper.ui.h:326
-msgid "_Preferences"
-msgstr "الت_فضيلات"
+#: src/repsnapper.ui:8050
+msgid "To Platform"
+msgstr ""
 
-#: ../src/repsnapper.ui.h:327
-msgid "_Quit"
-msgstr "م_غادرة"
-
-#: ../src/repsnapper.ui.h:328
+#: src/repsnapper.ui:8063
 msgid "_Save GCode"
 msgstr "_حفظ الجي كود"
 
-#: ../src/repsnapper.ui.h:329
-msgid "_Support"
-msgstr "الت_دعيم"
+#: src/repsnapper.ui:8128
+msgid "Start"
+msgstr "البداية"
 
-#: ../src/repsnapper.ui.h:330
-msgid "label"
+#: src/repsnapper.ui:8154
+msgid "Next Layer"
+msgstr "الطبقة التالية"
+
+#: src/repsnapper.ui:8181
+msgid "End"
+msgstr "النهاية"
+
+#: src/repsnapper.ui:8208
+msgid "Result"
+msgstr "النتيجة"
+
+#: src/repsnapper.ui:8288 src/repsnapper.ui:8289
+msgid "Print"
+msgstr "طباعة"
+
+#: src/repsnapper.ui:8302 src/repsnapper.ui:8303
+msgid "Pause"
+msgstr "إلباث"
+
+#: src/repsnapper.ui:8316 src/repsnapper.ui:8317
+msgid "Home All"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:331
-msgid "lines"
+#: src/repsnapper.ui:8330
+msgid "Reset Printer"
+msgstr "إعادة إعداد الطابعة"
+
+#: src/repsnapper.ui:8331
+msgid "Reset"
+msgstr "إعادة الإعداد"
+
+#: src/repsnapper.ui:8344 src/repsnapper.ui:8345
+msgid "Power On"
+msgstr "تشغيل"
+
+#: src/repsnapper.ui:8369
+msgid "<b>Printer</b>"
+msgstr "<b>الطابعة</b>"
+
+#: src/repsnapper.ui:8410
+msgid "X:"
+msgstr "س:"
+
+#: src/repsnapper.ui:8423 src/repsnapper.ui:8424
+msgid "X-"
+msgstr "س-"
+
+#: src/repsnapper.ui:8437 src/repsnapper.ui:8438
+msgid "X+"
+msgstr "س+"
+
+#: src/repsnapper.ui:8455
+msgid "Y:"
+msgstr "ص:"
+
+#: src/repsnapper.ui:8468 src/repsnapper.ui:8469
+msgid "Y-"
+msgstr "ص-"
+
+#: src/repsnapper.ui:8482 src/repsnapper.ui:8483
+msgid "Y+"
+msgstr "ص+"
+
+#: src/repsnapper.ui:8500
+msgid "Z:"
+msgstr "ع:"
+
+#: src/repsnapper.ui:8513
+msgid "Z Down"
 msgstr ""
 
-#: ../src/repsnapper.ui.h:332
-msgid "mm"
-msgstr "مم"
+#: src/repsnapper.ui:8514
+msgid "Z-"
+msgstr "ع-"
 
-#: ../src/repsnapper.ui.h:333
-msgid "repsnapper Preferences"
-msgstr "تفضيلات رِب سنابر"
+#: src/repsnapper.ui:8527
+msgid "Z Up"
+msgstr ""
+
+#: src/repsnapper.ui:8528
+msgid "Z+"
+msgstr "ع+"
+
+#: src/repsnapper.ui:8561
+msgid "Amount (mm)"
+msgstr "القيمة (مم)"
+
+#: src/repsnapper.ui:8583
+msgid "Axis Control"
+msgstr "التحكم في المحاور"
+
+#: src/repsnapper.ui:8604
+msgid "Use Extruder:"
+msgstr "استخدام الباثق:"
+
+#: src/repsnapper.ui:8797
+msgid "Update Interval (sec)"
+msgstr "فترة التحديث (بالثواني)"
+
+#: src/repsnapper.ui:8823
+msgid "Monitor Temperature"
+msgstr "مراقبة درجة الحرارة"
+
+#: src/repsnapper.ui:8833
+msgid "Fan Enabled"
+msgstr "تفعيل المروحة"
+
+#: src/repsnapper.ui:8850
+msgid "Fan Level"
+msgstr "مستوى المروحة"
+
+#: src/repsnapper.ui:8896
+msgid "<b>Temperature</b>"
+msgstr "<b>درجة الحرارة</b>"
+
+#: src/repsnapper.ui:8915
+msgid "Length (mm)"
+msgstr "الطول (مم)"
+
+#: src/repsnapper.ui:8945
+msgid "Speed (mm/s)"
+msgstr "السرعة (مم/ث)"
+
+#: src/repsnapper.ui:8973
+msgid "Purge"
+msgstr ""
+
+#: src/repsnapper.ui:9036
+msgid "New"
+msgstr "جديد"
+
+#: src/repsnapper.ui:9049
+msgid "Edit"
+msgstr "تعديل"
+
+#: src/repsnapper.ui:9088
+msgid "<b>Custom Actions</b>"
+msgstr "<b>إجراءات مخصصة</b>"
+
+#: src/repsnapper.ui:9122
+msgid "Send GCode"
+msgstr "ارسل الجي كود"
+
+#: src/repsnapper.ui:9149
+msgid "Printer"
+msgstr "الطابعة"
+
+#: src/repsnapper.ui:9202
+msgid "Logging"
+msgstr "تسجيل"
+
+#: src/repsnapper.ui:9217
+msgid "Clear on Print Start"
+msgstr "تنظيف عند بدء الطباعة"
+
+#: src/repsnapper.ui:9232
+msgid "Clear Now"
+msgstr "نظّف الآن"
+
+#: src/repsnapper.ui:9256
+msgid "Communication"
+msgstr "الاتصال"
+
+#: src/repsnapper.ui:9283
+msgid "Errors/Warnings"
+msgstr "الأخطاء/التحذيرات"
+
+#: src/repsnapper.ui:9313
+msgid "Echo"
+msgstr ""
+
+#: src/repsnapper.ui:9343
+msgid "Logs"
+msgstr "السجلات"
+
+#: src/repsnapper.ui:9384
+msgid "Draw Layers"
+msgstr "رسم الطبقات"
+
+#: src/repsnapper.ui:9416
+msgid "All"
+msgstr "الكل"
+
+#: src/repsnapper.ui:9432
+msgid "Dimensions"
+msgstr "الأبعاد"
+
+#: src/repsnapper.ui:9449
+msgid "Height:"
+msgstr "الارتفاع:"
+
+#: src/repsnapper.ui:9477
+msgid "     "
+msgstr "     "
+
+#: src/repsnapper.ui:9498
+msgid "Draw GCode"
+msgstr "رسم الجي كود"
+
+#: src/repsnapper.ui:9514
+msgid "Moves"
+msgstr "الانتقالات"
+
+#: src/repsnapper.ui:9528
+msgid "Arrows"
+msgstr "الأسهم"
+
+#: src/repsnapper.ui:9543
+msgid "Borders"
+msgstr "الحدود"
+
+#: src/repsnapper.ui:9566
+msgid "From/Single:"
+msgstr "من/منفرد:"
+
+#: src/repsnapper.ui:9590
+msgid "To:"
+msgstr "إلى:"
+
+#: src/repsnapper.ui:9634
+msgid "Layer Preview"
+msgstr "استعراض الطبقة"
+
+#~ msgid "Controls your 3D plastic printer"
+#~ msgstr "للتحكم بطابعة البلاستيك ثلاثية الأبعاد"
+
+#~ msgid "RepRap control software"
+#~ msgstr "برنامج التحكم برِب راب"
+
+#~ msgid "Split Polygons"
+#~ msgstr "فصل المضلعات"
+
+#~ msgid "_upper"
+#~ msgstr "_العلوي"
+
+#~ msgid "_lower"
+#~ msgstr "_السفلي"
+
+#~ msgid "Support"
+#~ msgstr "التدعيم"
+
+#~ msgid "Making Lines"
+#~ msgstr "إنشاء الخطوط"
+
+#~ msgid "Millimeters"
+#~ msgstr "مليمترات"
+
+#~ msgid "Time Estimation: "
+#~ msgstr "الوقت المُقدّر: "
+
+#~ msgid "h"
+#~ msgstr "س"
+
+#~ msgid "m"
+#~ msgstr "د"
+
+#~ msgid " / GCode Estimation: "
+#~ msgstr " / الوقت المُقدّر لإنتاج الجي كود: "
+
+#~ msgid " - total extruded: "
+#~ msgstr " - إجمالي المبثوق: "
+
+#~ msgid "Saving Files"
+#~ msgstr "حفظ الملفات"
+
+#~ msgid "corrupt setting type"
+#~ msgstr "نوع إعدادات معطوب"
+
+#~ msgid "corrupt setting type\n"
+#~ msgstr "نوع إعدادات معطوب\n"
+
+#~ msgid " Move Only"
+#~ msgstr " انتقال فقط"
+
+#~ msgid " Select Extruder"
+#~ msgstr " اختيار الباثق"
+
+#~ msgid "Loading GCode"
+#~ msgstr "تحميل الجي كود"
+
+#~ msgid "Collecting GCode"
+#~ msgstr "تجميع الجي كود"
+
+#~ msgid "Cannot disconnect"
+#~ msgstr "لا يمكن قطع الاتصال"
+
+#~ msgid "printer is printing"
+#~ msgstr "الطابعة قيد الطباعة حاليا"
+
+#~ msgid "Failed to connect to device"
+#~ msgstr "فشل في الاتصال بالجهاز"
+
+#~ msgid "an error occured while connecting"
+#~ msgstr "حدث خطأ أثناء الاتصال"
+
+#~ msgid ""
+#~ "Already printing.\n"
+#~ "Cannot start printing"
+#~ msgstr ""
+#~ "الطابعة قيد الطباعة حاليا.\n"
+#~ "لا يمكن البدء بالطباعة"
+
+#~ msgid ""
+#~ "Not connected to printer.\n"
+#~ "Cannot start printing"
+#~ msgstr ""
+#~ "غير متصل بالطابعة.\n"
+#~ "لا يمكن البدء بالطباعة"
+
+#~ msgid "Can't send command"
+#~ msgstr "تعذّر إرسال الأمر"
+
+#~ msgid "You must first connect to a device!"
+#~ msgstr "ينبغي عليك الاتصال بالجهاز أولا!"
+
+#~ msgid ""
+#~ "Not connected to printer.\n"
+#~ "Cannot stop printing"
+#~ msgstr ""
+#~ "غير متصل بالطابعة.\n"
+#~ "لا يمكن إيقاف الطباعة"
+
+#~ msgid "Error writing to device!"
+#~ msgstr "خطأ في الكتابة إلى الجهاز!"
+
+#~ msgid "Printing error"
+#~ msgstr "خطأ في الطباعة"
+
+#~ msgid "Not connected"
+#~ msgstr "غير متصل"
+
+#~ msgid "Parallel"
+#~ msgstr "متوازي"
+
+#~ msgid "Zigzag"
+#~ msgstr "متعرج"
+
+#~ msgid "Hexagons"
+#~ msgstr "مسدسات"
+
+#~ msgid "Hilbert Curve"
+#~ msgstr "منحنى هيلبرت"
+
+#~ msgid "Making GCode"
+#~ msgstr "إنتاج الجي كود"
+
+#~ msgid "Shell"
+#~ msgstr "القشرة"
+
+#~ msgid "Layer Height:"
+#~ msgstr "ارتفاع الطبقة:"
+
+#~ msgid "Validate Connection"
+#~ msgstr "التحقق من الاتصال"

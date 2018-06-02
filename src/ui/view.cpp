@@ -582,7 +582,7 @@ void View::save_settings()
   std::vector<std::string> user_config_bits(3);
   user_config_bits[0] = Glib::get_user_config_dir();
   user_config_bits[1] = "repsnapper";
-  user_config_bits[2] = "repsnapper.conf";
+  user_config_bits[2] = "repsnapper3.conf";
 
   std::string user_config_file = Glib::build_filename (user_config_bits);
   Glib::RefPtr<Gio::File> conffile = Gio::File::create_for_path(user_config_file);

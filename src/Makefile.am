@@ -70,7 +70,7 @@ repsnapperdatadir = $(datadir)/@PACKAGE@
 dist_repsnapperdata_DATA = src/repsnapper.ui src/repsnapper.svg
 
 repsnapperconfdir = $(sysconfdir)/xdg/@PACKAGE@
-dist_repsnapperconf_DATA = src/repsnapper.conf
+dist_repsnapperconf_DATA = src/repsnapper3.conf
 
 repsnappericondir = $(datadir)/icons/hicolor/scalable/apps/
 dist_repsnappericon_DATA = src/repsnapper.svg

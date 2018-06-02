@@ -52,7 +52,7 @@ public:
 
 	void SimpleAdvancedToggle();
 	void SaveConfig(Glib::RefPtr<Gio::File> file);
-	void LoadConfig() { LoadConfig(Gio::File::create_for_path("repsnapper.conf")); }
+	void LoadConfig() { LoadConfig(Gio::File::create_for_path("repsnapper3.conf")); }
 	void LoadConfig(Glib::RefPtr<Gio::File> file);
 
 	// STL Functions

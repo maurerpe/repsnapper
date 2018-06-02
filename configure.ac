@@ -5,6 +5,8 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/repsnapper.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
+AC_USE_SYSTEM_EXTENSIONS
+
 AC_CHECK_HEADERS([fcntl.h float.h limits.h memory.h stdlib.h string.h sys/ioctl.h sys/time.h termios.h unistd.h asm/termbits.h])
 
 AM_INIT_AUTOMAKE
@@ -17,11 +19,11 @@ AC_PROG_CXX
 LT_PREREQ([2.2.6])
 LT_INIT([disable-static])
 
+AM_GNU_GETTEXT_VERSION([0.19.7])
 GETTEXT_PACKAGE=repsnapper
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",[The prefix for our gettext translation domains.])
-IT_PROG_INTLTOOL(0.26)
-AM_GLIB_GNU_GETTEXT
+AM_GNU_GETTEXT
 
 PKG_PROG_PKG_CONFIG([0.22])
 
@@ -74,5 +76,8 @@ AC_CONFIG_FILES([
   Makefile
   libraries/Makefile
   po/Makefile.in
+  intl/Makefile
+  repsnapper.desktop
+  repsnapper.appdata.xml
   win32/repsnapper.nsi])
 AC_OUTPUT

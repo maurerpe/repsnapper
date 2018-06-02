@@ -120,7 +120,6 @@ system ("$aclocal $aclocal_flags") && die "Failed to run aclocal";
 unlink ("configure");
 system ("autoreconf -i -f") && die "Failed to run autoconf";
 die "failed to generate configure" if (! -x "configure");
-system ("intltoolize --copy --force --automake") && die "Failed to intltoolize";
 
 if (defined $ENV{NOCONFIGURE}) {
     print "Skipping configure process.";

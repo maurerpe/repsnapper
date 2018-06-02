@@ -2,11 +2,9 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 #
-[encoding: UTF-8]
+
 repsnapper.desktop.in
-src/arcball.cpp
 src/files.cpp
-src/flatshape.cpp
 src/model.cpp
 src/model_slice.cpp
 src/objtree.h
@@ -18,9 +16,6 @@ src/settings.cpp
 src/settings.h
 src/shape.cpp
 src/triangle.cpp
-src/gcode/command.cpp
-src/gcode/gcode.cpp
-src/gcode/gcodestate.cpp
 src/ui/connectview.cpp
 src/ui/filechooser.cpp
 src/ui/progress.cpp
@@ -30,13 +25,5 @@ src/printer/printer.cpp
 src/printer/printer_serial.cpp
 src/printer/thread_buffer.cpp
 src/printer/threaded_printer_serial.cpp
-src/slicer/clipping.cpp
-src/slicer/infill.cpp
-src/slicer/infill.h
-src/slicer/layer.cpp
-src/slicer/poly.cpp
-src/slicer/printlines.cpp
-src/slicer/printlines.h
-src/slicer/printlines_antiooze.cpp
 
-[type: gettext/glade]src/repsnapper.ui
+src/repsnapper.ui
