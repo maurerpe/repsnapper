@@ -160,12 +160,21 @@ void Render::on_realize() {
 
   cout << "Initializing render" << endl;
   make_current();
-  init_buffers();
-  init_shaders();
+  try {
+    throw_if_error();
+    init_buffers();
+    init_shaders();
+    
+    set_hexpand(true);
+    set_vexpand(true);
+    set_auto_render(true);
+
+    realized = true;
+  } catch (const Gdk::GLError& gle) {
+    cerr << "An error occured making the context current during realize:" << endl;
+    cerr << gle.domain() << "-" << gle.code() << "-" << gle.what() << endl;
+  }
   
-  set_hexpand(true);
-  set_vexpand(true);
-  set_auto_render(true);
   cout << "Render Initialized" << endl;
   
   /* FIXME: Find fonts */
@@ -192,6 +201,9 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   // cout << "Transform:" << endl;
   // cout << m_transform;
   // cout << "Zoom: " << m_zoom << endl;
+  
+  if (!realized)
+    return Gtk::GLArea::on_draw(cr);
   
   /*glClearColor(0.5, 0.5, 0.5, 1.0);*/
   make_current();

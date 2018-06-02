@@ -47,6 +47,7 @@ class RenderVert {
 
 class Render : public Gtk::GLArea {
  private:
+  bool realized;
   Matrix4d m_transform;
   Matrix4d m_full_transform;  
   View *m_view;
