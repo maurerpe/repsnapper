@@ -158,7 +158,7 @@ void Render::selection_changed() {
 void Render::on_realize() {
   Gtk::GLArea::on_realize();
 
-  cout << "Initalizing render" << endl;
+  cout << "Initializing render" << endl;
   make_current();
   init_buffers();
   init_shaders();
