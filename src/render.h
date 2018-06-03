@@ -72,7 +72,7 @@ class Render : public Gtk::GLArea {
 
   float m_zoom;
   void CenterView();
-  void selection_changed();
+  void selection_changed() {queue_draw();};
   guint find_object_at(gdouble x, gdouble y);
   Vector3d mouse_on_plane(Vector2d scaled) const;
   Vector2d get_scaled(double x, double y);
@@ -83,8 +83,6 @@ class Render : public Gtk::GLArea {
   ~Render();
 
   GtkWidget *get_widget();
-  void set_model (Model *model);
-  void set_zoom (float zoom) {m_zoom=zoom;};
 
   void set_model_transform(const Matrix4d &trans);
   void set_default_transform(void);

@@ -33,6 +33,8 @@
 GLuint Render::fontlistbase = 0;
 int Render::fontheight = 0;
 
+const double z_center = -750;
+
 inline GtkWidget *Render::get_widget() {
   return GTK_WIDGET(gobj());
 }
@@ -54,15 +56,22 @@ Render::Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
 	      Gdk::SCROLL_MASK
 	      );
 
-  set_can_focus (true);
+  set_can_focus(true);
 
   Transform3D trans;
   /* FIXME: Set initial transform from settings */
-  trans.rotate_to(Vector3d(0, 0, 0), -1.3, 0, 0);
-  trans.move(Vector3d(-150, -150, -500));
+  double bedw = 300;
+  double bedd = 220;
+  double bedh = 300;
+  trans.move(Vector3d(-bedw/2, -bedd/2, 0));
   m_transform = trans.getTransform();
+
+  trans.identity();
+  trans.rotate_to(Vector3d(0, 0, 0), -1.3, 0, 0);
+  trans.move(Vector3d(0, 0, z_center));
+  m_transform = trans.getTransform() * m_transform;
   
-  m_zoom = 10.0;
+  m_zoom = atan(max(max(bedw, bedh), bedd) / 2 / fabs(z_center)) * 180 / M_PI;
 
   m_selection->signal_changed().connect (sigc::mem_fun(*this, &Render::selection_changed));
 }
@@ -141,18 +150,6 @@ void Render::init_shaders() {
 }
 
 Render::~Render() {
-}
-
-void Render::set_model(Model *model) {
-  if (!model)
-    return;
-  
-  // m_zoom = model->settings.getPrintVolume().find_max();
-  queue_draw();
-}
-
-void Render::selection_changed() {
-  queue_draw();
 }
 
 void Render::on_realize() {
@@ -371,7 +368,7 @@ bool Render::on_scroll_event(GdkEventScroll* event) {
   else
     m_zoom *= factor;
   
-  if (m_zoom < 0.2)
+  if (m_zoom < 0.1)
     m_zoom = 0.2;
   else if (m_zoom > 30)
     m_zoom = 30;
@@ -459,10 +456,12 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
     Transform3D trans;
     if (event->state & GDK_BUTTON1_MASK) {
       // Translate view
-      trans.move(Vector3d(100 * delta.x(), 100 * delta.y()));
+      double scale = 2 * fabs(z_center) * tan(m_zoom * M_PI / 180.0);
+      trans.move(Vector3d(scale * delta.x(), scale * delta.y()));
     } else {
       // Rotate view
-      trans.rotate_to(Vector3d(0, 0, 0), delta.y(), -delta.x(), 0);
+      trans.rotate(Vector3d(0, 0, z_center), Vector3d(1, 0, 0), -delta.y());
+      trans.rotate(Vector3d(0, 0, z_center), Vector3d(0, 1, 0), delta.x());
     }
     m_transform = trans.getTransform() * m_down_trans;
     queue_draw();

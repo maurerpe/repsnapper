@@ -1333,8 +1333,6 @@ void View::setModel(Model *model)
 {
   m_model = model;
 
-  m_renderer->set_model (m_model);
-
   m_model->settings.m_signal_visual_settings_changed.connect
     (sigc::mem_fun(*this, &View::handle_ui_settings_changed));
   m_model->settings.m_signal_update_settings_gui.connect
@@ -1428,6 +1426,7 @@ void View::setModel(Model *model)
   m_printer->setModel(m_model);
 
   showAllWidgets();
+  m_renderer->queue_draw();
 }
 
 void View::on_gcodebuffer_cursor_set(const Gtk::TextIter &iter,
