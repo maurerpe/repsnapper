@@ -646,21 +646,20 @@ void Shape::drawBBox(Render &render) const
   float color[4] = {1, 0.2, 0.2, 1};
   render.draw_lines(color, vert, 1.0);
 
-  glColor3f(1,0.6,0.6);
   ostringstream val;
   val.precision(1);
   Vector3d pos;
   val << fixed << (Max.x()-Min.x());
   pos = Vector3d((Max.x()+Min.x())/2.,Min.y(),Max.z());
-  render.draw_string(pos,val.str());
+  render.draw_string(color, pos, val.str(), 12);
   val.str("");
   val << fixed << (Max.y()-Min.y());
   pos = Vector3d(Min.x(),(Max.y()+Min.y())/2.,Max.z());
-  render.draw_string(pos,val.str());
+  render.draw_string(color, pos, val.str(), 12);
   val.str("");
   val << fixed << (Max.z()-minz);
   pos = Vector3d(Min.x(),Min.y(),(Max.z()+minz)/2.);
-  render.draw_string(pos,val.str());
+  render.draw_string(color, pos, val.str(), 12);
 }
 
 void Shape::draw_geometry(Render &render, uint max_triangles)

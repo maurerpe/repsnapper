@@ -30,10 +30,14 @@
 
 #define TRYFONTS "helvetica,arial,dejavu sans,sans,courier"
 #define FONTSIZE 8
-GLuint Render::fontlistbase = 0;
-int Render::fontheight = 0;
 
 const double z_center = -750;
+
+static inline Vector3d hom(Vector4d v) {
+  Vector3d ret = {v[0]/v[3], v[1]/v[3], v[2]/v[3]};
+  
+  return ret;
+}
 
 inline GtkWidget *Render::get_widget() {
   return GTK_WIDGET(gobj());
@@ -230,11 +234,15 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
 
   // cout << "on_draw: m_full_transform" << endl << m_full_transform << endl;
 
-  SetTrans(m_full_transform);
+  set_default_transform();
   
   vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
   m_view->Draw(selpath);
 
+  // set_default_transform();
+  // float color[4] = {0, 1, 1, 1};
+  // draw_string(color, Vector3d(150, 110, 300), string("01234.56789"), 70);
+  
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glUseProgram(0);
   
@@ -246,17 +254,108 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
 }
 
 void Render::set_model_transform(const Matrix4d &trans) {
-  Matrix4d comb = m_full_transform * trans;
-  SetTrans(comb);
+  m_comb_transform = m_full_transform * trans;
+  SetTrans(m_comb_transform);
 }
 
 void Render::set_default_transform(void) {
+  m_comb_transform = m_full_transform;
   SetTrans(m_full_transform);
 }
 
-void Render::draw_string(const Vector3d &pos, const string s) {
-  if (fontheight == 0) return;
-  /* FIXME: Draw string */
+static void AddPolyLines(RenderVert &vert, const double *pts, double x_offset) {
+  while (!isnan(*pts)) {
+    pts += 2;
+    while (!isnan(*pts)) {
+      vert.add(x_offset + pts[-2], pts[-1], 0);
+      vert.add(x_offset + pts[ 0], pts[ 1], 0);
+      pts += 2;
+    }
+    pts++;
+  }
+}
+
+static const double char_0[] = {0.4,1, 0.8,0.5, 0.8,-0.5, 0.4,-1, -0.4,-1, -0.8,-0.5, -0.8,0.5, -0.4,1, 0.4,1, NAN, NAN};
+static const double char_1[] = {-0.4,0.5, 0,1, 0,-1, NAN, NAN};
+static const double char_2[] = {-0.8,0.5, -0.4,1, 0.4,1, 0.8,0.5, 0.8,0.2, -0.8,-1, 0.8,-1, NAN, NAN};
+static const double char_3[] = {-0.8,0.67, -0.4,1, 0.4,1, 0.8,0.67, 0.8,0.33, 0.4,0, -0.4,0, NAN,
+				0.4,0, 0.8,-0.33, 0.8,-0.67, 0.4,-1, -0.4,-1, -0.8,-0.67, NAN, NAN};
+static const double char_4[] = {-0.8,1, -0.8,0, 0.8,0, NAN, 0.8,1,0.8,-1, NAN, NAN};
+static const double char_5[] = {0.8,1, -0.8,1, -0.8,0, 0.4,0, 0.8,-0.33, 0.8,-0.67, 0.4,-1, -0.4,-1, -0.8,-0.67, NAN, NAN};
+static const double char_6[] = {-0.8,-0.33, -0.4,0, 0.4,0, 0.8,-0.33, 0.8,-0.67, 0.4,-1, -0.4,-1, -0.8,-0.67, NAN,
+				-0.8,-0.67, -0.8,0.67, -0.4,1, 0.4,1, 0.8,0.67, NAN, NAN};
+static const double char_7[] = {-0.8,1, 0.8,1, -0.4,-1, NAN, NAN};
+static const double char_8[] = {-0.4,0, -0.8,0.33, -0.8,0.67, -0.4,1, 0.4,1, 0.8,0.67, 0.8,0.33, 0.4,0, -0.4,0, NAN,
+				0.4,0, 0.8,-0.33, 0.8,-0.67, 0.4,-1, -0.4,-1, -0.8,-0.67, -0.8,-0.33, -0.4,0, NAN, NAN};
+static const double char_9[] = {0.8,0.33, 0.4,0, -0.4,0, -0.8,0.33, -0.8,0.67, -0.4,1, 0.4,1, 0.8,0.67, NAN,
+				0.8,0.67, 0.8,-0.67, 0.4,-1, -0.4,-1, -0.8,-0.67, NAN, NAN};
+static const double period[] = {0.2,-1, -0.2,-1, -0.2,-0.7, 0.2,-0.7, 0.2,-1, NAN, NAN};
+static const double comma[]  = {0.2,-1 -0.2,-1, -0.2,-0.7, 0.2,-0.7, 0.2,-1.2, NAN, NAN};
+static const double hyphen[] = {-0.8,0, 0.8,0, NAN, NAN};
+static const double char_x[] = {-0.8,1,  0.8,-1, NAN,
+				-0.8,-1, 0.8,1,  NAN, NAN};
+
+static void AddChar(RenderVert &vert, char ch, double x_offset) {
+  const double *lines;
+  
+  switch (ch) {
+  case '0': lines = char_0; break;
+  case '1': lines = char_1; break;
+  case '2': lines = char_2; break;
+  case '3': lines = char_3; break;
+  case '4': lines = char_4; break;
+  case '5': lines = char_5; break;
+  case '6': lines = char_6; break;
+  case '7': lines = char_7; break;
+  case '8': lines = char_8; break;
+  case '9': lines = char_9; break;
+  case '.': lines = period; break;
+  case ',': lines = comma;  break;
+  case '-': lines = hyphen; break;
+  default:  lines = char_x; break;
+  }
+
+  AddPolyLines(vert, lines, x_offset);
+}
+
+void Render::draw_string(const float color[4], const Vector3d &pos, const string s, double fontheight) {
+  if (fontheight <= 0) return;
+
+  size_t len = s.size();
+  double char_height = fontheight / get_height();
+  double char_width  = fontheight * 5.0 / 8.0 / get_width();
+  
+  Vector4d pos4 = {pos.x(), pos.y(), pos.z(), 1};
+  Vector3d tpos = hom(m_comb_transform * pos4);
+  double x = tpos.x() - char_width * len;
+  double y = tpos.y();
+
+  // cout << "String: " << s << " @ " << tpos << endl;
+  
+  Transform3D trans;
+  trans.move(Vector3d(x, y, 1));
+  trans.scale_x(char_width);
+  trans.scale_y(char_height);
+  SetTrans(trans.getTransform());
+
+  float bg_color[4] = {0, 0, 0, 1};
+  RenderVert vert;
+  vert.add(-1.2, -1.2, 0);
+  vert.add(-1.2,  1.2, 0);
+  vert.add(2.0 * len - 0.8, -1.2, 0);
+
+  vert.add(2.0 * len - 0.8, -1.2, 0);
+  vert.add(2.0 * len - 0.8,  1.2, 0);
+  vert.add(-1.2,  1.2, 0);
+  draw_triangles(bg_color, vert);
+  
+  vert.clear();
+  for (size_t count = 0; count < len; count++)
+    AddChar(vert, s[count], 2.0 * count);
+
+  draw_lines(color, vert, 1.0);
+  
+  SetTrans(m_comb_transform);
 }
 
 void Render::draw_triangles(const float color[4], const RenderVert &vert) {
@@ -476,12 +575,6 @@ guint Render::find_object_at(gdouble x, gdouble y) {
   /* FIXME */
   
   return 0;
-}
-
-static inline Vector3d hom(Vector4d v) {
-  Vector3d ret = {v[0]/v[3], v[1]/v[3], v[2]/v[3]};
-  
-  return ret;
 }
 
 Vector3d Render::mouse_on_plane(Vector2d scaled) const {

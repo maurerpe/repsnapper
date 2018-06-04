@@ -50,6 +50,7 @@ class Render : public Gtk::GLArea {
   bool realized;
   Matrix4d m_transform;
   Matrix4d m_full_transform;  
+  Matrix4d m_comb_transform;  
   View *m_view;
   Model *get_model() const;
   Glib::RefPtr<Gtk::TreeSelection> m_selection;
@@ -66,10 +67,6 @@ class Render : public Gtk::GLArea {
   GLuint m_buffer;
   GLuint m_program;
   
-  // font rendering:
-  static GLuint fontlistbase;
-  static int fontheight;
-
   float m_zoom;
   void CenterView();
   void selection_changed() {queue_draw();};
@@ -77,7 +74,7 @@ class Render : public Gtk::GLArea {
   Vector3d mouse_on_plane(Vector2d scaled) const;
   Vector2d get_scaled(double x, double y);
   void SetTrans(const Matrix4d &trans);
-
+  
  public:
   Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection);
   ~Render();
@@ -87,7 +84,7 @@ class Render : public Gtk::GLArea {
   void set_model_transform(const Matrix4d &trans);
   void set_default_transform(void);
   
-  void draw_string(const Vector3d &pos, const string s);
+  void draw_string(const float color[4], const Vector3d &pos, const string s, double fontheight);
   void draw_triangles(const float color[4], const RenderVert &vert);
   void draw_lines(const float color[4], const RenderVert &vert, float line_width);
 
