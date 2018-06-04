@@ -28,8 +28,7 @@
 #include "geometry.h"
 #include "transform3d.h"
 
-#define TRYFONTS "helvetica,arial,dejavu sans,sans,courier"
-#define FONTSIZE 8
+//#define TRYFONTS "helvetica,arial,dejavu sans,sans,courier"
 
 const double z_center = -750;
 
@@ -178,8 +177,6 @@ void Render::on_realize() {
   
   cout << "Render Initialized" << endl;
   
-  /* FIXME: Find fonts */
-
   queue_draw();
 }
 
@@ -275,25 +272,25 @@ static void AddPolyLines(RenderVert &vert, const double *pts, double x_offset) {
   }
 }
 
-static const double char_0[] = {0.4,1, 0.8,0.5, 0.8,-0.5, 0.4,-1, -0.4,-1, -0.8,-0.5, -0.8,0.5, -0.4,1, 0.4,1, NAN, NAN};
-static const double char_1[] = {-0.4,0.5, 0,1, 0,-1, NAN, NAN};
-static const double char_2[] = {-0.8,0.5, -0.4,1, 0.4,1, 0.8,0.5, 0.8,0.2, -0.8,-1, 0.8,-1, NAN, NAN};
-static const double char_3[] = {-0.8,0.67, -0.4,1, 0.4,1, 0.8,0.67, 0.8,0.33, 0.4,0, -0.4,0, NAN,
-				0.4,0, 0.8,-0.33, 0.8,-0.67, 0.4,-1, -0.4,-1, -0.8,-0.67, NAN, NAN};
-static const double char_4[] = {-0.8,1, -0.8,0, 0.8,0, NAN, 0.8,1,0.8,-1, NAN, NAN};
-static const double char_5[] = {0.8,1, -0.8,1, -0.8,0, 0.4,0, 0.8,-0.33, 0.8,-0.67, 0.4,-1, -0.4,-1, -0.8,-0.67, NAN, NAN};
-static const double char_6[] = {-0.8,-0.33, -0.4,0, 0.4,0, 0.8,-0.33, 0.8,-0.67, 0.4,-1, -0.4,-1, -0.8,-0.67, NAN,
-				-0.8,-0.67, -0.8,0.67, -0.4,1, 0.4,1, 0.8,0.67, NAN, NAN};
-static const double char_7[] = {-0.8,1, 0.8,1, -0.4,-1, NAN, NAN};
-static const double char_8[] = {-0.4,0, -0.8,0.33, -0.8,0.67, -0.4,1, 0.4,1, 0.8,0.67, 0.8,0.33, 0.4,0, -0.4,0, NAN,
-				0.4,0, 0.8,-0.33, 0.8,-0.67, 0.4,-1, -0.4,-1, -0.8,-0.67, -0.8,-0.33, -0.4,0, NAN, NAN};
-static const double char_9[] = {0.8,0.33, 0.4,0, -0.4,0, -0.8,0.33, -0.8,0.67, -0.4,1, 0.4,1, 0.8,0.67, NAN,
-				0.8,0.67, 0.8,-0.67, 0.4,-1, -0.4,-1, -0.8,-0.67, NAN, NAN};
+static const double char_0[] = {0.35,1, 0.7,0.5, 0.7,-0.5, 0.35,-1, -0.35,-1, -0.7,-0.5, -0.7,0.5, -0.35,1, 0.35,1, NAN, NAN};
+static const double char_1[] = {-0.35,0.5, 0,1, 0,-1, NAN, NAN};
+static const double char_2[] = {-0.7,0.5, -0.35,1, 0.35,1, 0.7,0.5, 0.7,0.2, -0.7,-1, 0.7,-1, NAN, NAN};
+static const double char_3[] = {-0.7,0.67, -0.35,1, 0.35,1, 0.7,0.67, 0.7,0.33, 0.35,0, -0.35,0, NAN,
+				0.35,0, 0.7,-0.33, 0.7,-0.67, 0.35,-1, -0.35,-1, -0.7,-0.67, NAN, NAN};
+static const double char_4[] = {-0.7,1, -0.7,0, 0.7,0, NAN, 0.7,1,0.7,-1, NAN, NAN};
+static const double char_5[] = {0.7,1, -0.7,1, -0.7,0, 0.35,0, 0.7,-0.33, 0.7,-0.67, 0.35,-1, -0.35,-1, -0.7,-0.67, NAN, NAN};
+static const double char_6[] = {-0.7,-0.33, -0.35,0, 0.35,0, 0.7,-0.33, 0.7,-0.67, 0.35,-1, -0.35,-1, -0.7,-0.67, NAN,
+				-0.7,-0.67, -0.7,0.67, -0.35,1, 0.35,1, 0.7,0.67, NAN, NAN};
+static const double char_7[] = {-0.7,1, 0.7,1, -0.35,-1, NAN, NAN};
+static const double char_8[] = {-0.35,0, -0.7,0.33, -0.7,0.67, -0.35,1, 0.35,1, 0.7,0.67, 0.7,0.33, 0.35,0, -0.35,0, NAN,
+				0.35,0, 0.7,-0.33, 0.7,-0.67, 0.35,-1, -0.35,-1, -0.7,-0.67, -0.7,-0.33, -0.35,0, NAN, NAN};
+static const double char_9[] = {0.7,0.33, 0.35,0, -0.35,0, -0.7,0.33, -0.7,0.67, -0.35,1, 0.35,1, 0.7,0.67, NAN,
+				0.7,0.67, 0.7,-0.67, 0.35,-1, -0.35,-1, -0.7,-0.67, NAN, NAN};
 static const double period[] = {0.2,-1, -0.2,-1, -0.2,-0.7, 0.2,-0.7, 0.2,-1, NAN, NAN};
 static const double comma[]  = {0.2,-1 -0.2,-1, -0.2,-0.7, 0.2,-0.7, 0.2,-1.2, NAN, NAN};
-static const double hyphen[] = {-0.8,0, 0.8,0, NAN, NAN};
-static const double char_x[] = {-0.8,1,  0.8,-1, NAN,
-				-0.8,-1, 0.8,1,  NAN, NAN};
+static const double hyphen[] = {-0.7,0, 0.7,0, NAN, NAN};
+static const double char_x[] = {-0.7,1,  0.7,-1, NAN,
+				-0.7,-1, 0.7,1,  NAN, NAN};
 
 static void AddChar(RenderVert &vert, char ch, double x_offset) {
   const double *lines;
@@ -393,21 +390,25 @@ bool Render::on_key_press_event(GdkEventKey* event) {
 
   bool ret = false;
   switch (event->keyval) {
-  case GDK_KEY_Up: case GDK_KEY_KP_Up:
+  case GDK_KEY_Up:
+  case GDK_KEY_KP_Up:
     if (rotate)     ret = m_view->rotate_selection(Vector3d(1.,0.,0.), tendeg);
     else if (moveZ) ret = m_view->move_selection( 0.0,  0.0, 1.0 );
     else            ret = m_view->move_selection( 0.0,  1.0 );
     break;
-  case GDK_KEY_Down: case GDK_KEY_KP_Down:
+  case GDK_KEY_Down:
+  case GDK_KEY_KP_Down:
     if (rotate)     ret = m_view->rotate_selection(Vector3d(1.,0.,0.), -tendeg);
     else if (moveZ) ret = m_view->move_selection( 0.0,  0.0, -1.0 );
     else            ret = m_view->move_selection( 0.0, -1.0 );
     break;
-  case GDK_KEY_Left: case GDK_KEY_KP_Left:
+  case GDK_KEY_Left:
+  case GDK_KEY_KP_Left:
     if (rotate)     ret = m_view->rotate_selection(Vector3d(0.,0.,1.), tendeg);
     else            ret = m_view->move_selection( -1.0, 0.0 );
     break;
-  case GDK_KEY_Right: case GDK_KEY_KP_Right:
+  case GDK_KEY_Right:
+  case GDK_KEY_KP_Right:
     if (rotate)     ret = m_view->rotate_selection(Vector3d(0.,0.,1.), -tendeg);
     else            ret = m_view->move_selection(  1.0, 0.0 );
     break;
