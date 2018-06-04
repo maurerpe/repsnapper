@@ -364,14 +364,30 @@ bool Render::on_button_release_event(GdkEventButton* event) {
 bool Render::on_scroll_event(GdkEventScroll* event) {
   double factor = 1.05;
   if (event->direction == GDK_SCROLL_UP)
-    m_zoom /= factor;
-  else
-    m_zoom *= factor;
+    factor = 1.0/factor;
   
-  if (m_zoom < 0.1)
-    m_zoom = 0.2;
-  else if (m_zoom > 30)
-    m_zoom = 30;
+  if (event->state & GDK_SHIFT_MASK) {
+    // Scale selection
+    vector<Shape*> shapes;
+    vector<TreeObject*>objects;
+    if (!m_view->get_selected_objects(objects, shapes))
+      return true;
+    
+    if (shapes.size()>0) {
+      for (uint s=0; s<shapes.size(); s++)
+	shapes[s]->Scale(shapes[s]->getScaleFactor()*factor, true);
+      m_view->update_scale_value();
+      queue_draw();
+    }
+  } else {
+    // Zoom view
+    m_zoom *= factor;
+    
+    if (m_zoom < 0.1)
+      m_zoom = 0.2;
+    else if (m_zoom > 30)
+      m_zoom = 30;
+  }
   
   // cout << "Render::on_scroll_event: " << m_zoom << endl;
 
@@ -385,11 +401,6 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
   
   if (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) {
     // Action on shape
-    vector<Shape*> shapes;
-    vector<TreeObject*>objects;
-    if (!m_view->get_selected_objects(objects, shapes))
-      return true;
-    
     if (event->state & GDK_BUTTON1_MASK) {
       // Shape Movement
       Vector3d movevec;
@@ -403,44 +414,30 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
 			   0);
       } else {
 	// Shape Z Movement
-	/* FIXME: Proper z movement scale via projection */
-	movevec = Vector3d(0, 0, delta.y()*get_height()*0.3);
+	double scale = 2 * fabs(z_center) * tan(m_zoom * M_PI / 180.0);
+	movevec = Vector3d(0, 0, scale * delta.y());
       }
-
-      if (shapes.size()>0) {
-	for (uint s=0; s<shapes.size(); s++)
-	  shapes[s]->transform3D.move(movevec);
-	queue_draw();
-      } else {
-	for (uint o=0; o<objects.size(); o++)
-	  objects[o]->transform3D.move(movevec);
-	queue_draw();
-      }
-    } else if (event->state & GDK_BUTTON2_MASK) {
-      if (event->state & GDK_SHIFT_MASK) {
-	// Scale shape
-	/* FIXME: Proper scaling via projection */
-	double factor = 1.0 + 2 * (delta.y() - delta.x());
-	
-	if (shapes.size()>0) {
-	  for (uint s=0; s<shapes.size(); s++)
-	    shapes[s]->Scale(shapes[s]->getScaleFactor()/factor, false);
-	  m_view->update_scale_value();
-	  queue_draw();
-	}
-      }
+      
+      m_view->move_selection(movevec.x(), movevec.y(), movevec.z());
+      queue_draw();
     } else if (event->state & GDK_BUTTON3_MASK) {
       if (event->state & GDK_SHIFT_MASK) {
+	vector<Shape*> shapes;
+	vector<TreeObject*>objects;
+	if (!m_view->get_selected_objects(objects, shapes))
+	  return true;
+    
 	// Rotate shape about Z
 	Vector3d mouse_down = mouse_on_plane(m_down_point);
 	Vector3d mouse_plat = mouse_on_plane(mouse);
-	Vector3d axis = {0, 0, delta.x()};
+	Vector3d axis = {0, 0, 1};
 	if (shapes.size() > 0) {
-	  Vector3d center = shapes[0]->t_Center();
+	  Vector3d center = shapes[0]->Center;
 	  Vector3d start = mouse_down - center;
 	  Vector3d stop = mouse_plat - center;
-	  double angle = atan2(stop.y() - start.y(),
-			       stop.x() - start.x());
+	  double angle = atan2(stop.y(), stop.x()) - atan2(start.y(), start.x());
+	  // cout << "Center: " << center << endl;
+	  // cout << "Angle: " << angle << endl;
 	  m_view->rotate_selection(axis, angle);
 	  queue_draw();
 	}

@@ -124,8 +124,8 @@ void View::preview_file (Glib::RefPtr< Gio::File > file)
     Vector3d pMin = Vector3d(G_MAXDOUBLE, G_MAXDOUBLE, G_MAXDOUBLE);
     for (uint i = 0; i < m_model->preview_shapes.size(); i++) {
       m_model->preview_shapes[i]->PlaceOnPlatform();
-      Vector3d stlMin = m_model->preview_shapes[i]->t_Min();
-      Vector3d stlMax = m_model->preview_shapes[i]->t_Max();
+      Vector3d stlMin = m_model->preview_shapes[i]->Min;
+      Vector3d stlMax = m_model->preview_shapes[i]->Max;
       for (uint k = 0; k < 3; k++) {
 	pMin[k] = min(stlMin[k], pMin[k]);
 	pMax[k] = max(stlMax[k], pMax[k]);
@@ -669,7 +669,7 @@ void View::rot_object_from_spinbutton()
   queue_draw();
 }
 
-bool View::rotate_selection (Vector3d axis, double angle)
+bool View::rotate_selection(Vector3d axis, double angle)
 {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
@@ -1724,75 +1724,8 @@ void View::DrawGrid()
   }
   m_renderer->draw_lines(color, vert, 1.0);
   
-  // glEnable (GL_LIGHTING);
-  // glEnable (GL_CULL_FACE);
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-  // Draw print margin in faint red
-  Vector3d pM = m_model->settings.getPrintMargin();
-
-  // float no_mat[] = {0.0f, 0.0f, 0.0f, 0.5f};
-  // float mat_diffuse[] = {1.0f, 0.1f, 0.1f, 0.2f};
-  // float mat_specular[] = {0.025f, 0.025f, 0.025f, 0.3f};
-
-  // glMaterialfv(GL_FRONT, GL_AMBIENT, no_mat);
-  // glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-  // glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-  // glMaterialf(GL_FRONT, GL_SHININESS, 0.5f);
-  // glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
-
-  // // bottom
-  // glBegin(GL_TRIANGLE_STRIP);
-  // glNormal3f (0.0f, 0.0f, 1.0f);
-  // glVertex3f (pM.x(), pM.y(), 0.0f);
-  // glVertex3f (0.0f, 0.0f, 0.0f);
-  // glVertex3f (volume.x() - pM.x(), pM.y(), 0.0f);
-  // glVertex3f (volume.x(), 0.0f, 0.0f);
-  // glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), 0.0f);
-  // glVertex3f (volume.x(), volume.y(), 0.0f);
-  // glVertex3f (pM.x(), volume.y() - pM.y(), 0.0f);
-  // glVertex3f (0.0f, volume.y(), 0.0f);
-  // glVertex3f (pM.x(), pM.y(), 0.0f);
-  // glVertex3f (0.0f, 0.0f, 0.0f);
-  // glEnd();
-
-  // glDisable (GL_DEPTH_TEST);
-  // // top
-  // glBegin(GL_TRIANGLE_STRIP);
-  // glNormal3f (0.0f, 0.0f, 1.0f);
-  // glVertex3f (pM.x(), pM.y(), volume.z());
-  // glVertex3f (0.0f, 0.0f, volume.z());
-  // glVertex3f (volume.x() - pM.x(), pM.y(), volume.z());
-  // glVertex3f (volume.x(), 0.0f, volume.z());
-  // glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), volume.z());
-  // glVertex3f (volume.x(), volume.y(), volume.z());
-  // glVertex3f (pM.x(), volume.y() - pM.y(), volume.z());
-  // glVertex3f (0.0f, volume.y(), volume.z());
-  // glVertex3f (pM.x(), pM.y(), volume.z());
-  // glVertex3f (0.0f, 0.0f, volume.z());
-  // glEnd();
-
-  // mark front left
-  // glBegin(GL_TRIANGLES);
-  // glNormal3f (0.0f, 0.0f, 1.0f);
-  // glVertex3f (pM.x(), pM.y(), 0.0f);
-  // glVertex3f (pM.x()+10.0f, pM.y(), 0.0f);
-  // glVertex3f (pM.x(), pM.y()+10.0f, 0.0f);
-  // glEnd();
-
-  glEnable (GL_DEPTH_TEST);
-  // Draw print surface
-  float mat_diffuse_white[] = {0.2f, 0.2f, 0.2f, 0.2f};
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse_white);
-
-  glBegin(GL_QUADS);
-  glVertex3f (pM.x(), pM.y(), 0.0f);
-  glVertex3f (volume.x() - pM.x(), pM.y(), 0.0f);
-  glVertex3f (volume.x() - pM.x(), volume.y() - pM.y(), 0.0f);
-  glVertex3f (pM.x(), volume.y() - pM.y(), 0.0f);
-  glEnd();
-
-  glDisable (GL_LIGHTING);
+  // FIXME: Draw print margin in faint red
+  // Vector3d pM = m_model->settings.getPrintMargin();  
 }
 
 // called from Render::on_draw

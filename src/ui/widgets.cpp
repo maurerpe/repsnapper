@@ -38,6 +38,7 @@ void View::TranslationSpinRow::spin_value_changed (int axis)
     if (shapes.size()==0 && objects.size()==0)
       return;
 
+    /* FIXME: don't modify tranform3D.tranform directly */
     double val = m_xyz[axis]->get_value();
     Matrix4d *mat;
     if (shapes.size()!=0)
@@ -76,6 +77,7 @@ void View::TranslationSpinRow::selection_changed ()
     if (shapes.size()==0 && objects.size()==0)
       return;
 
+    /* FIXME: don't modify tranform3D.tranform directly */
     Matrix4d *mat;
     if (shapes.size()==0) {
       if (objects.size()==0) {

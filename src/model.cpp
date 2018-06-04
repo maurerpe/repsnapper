@@ -186,7 +186,7 @@ Shape Model::GetCombinedShape() const
   for (uint o = 0; o<objtree.Objects.size(); o++) {
     for (uint s = 0; s<objtree.Objects[o]->shapes.size(); s++) {
       vector<Triangle> tr =
-	objtree.Objects[o]->shapes[s]->getTriangles(objtree.Objects[o]->transform3D.transform);
+	objtree.Objects[o]->shapes[s]->getTriangles(objtree.Objects[o]->transform3D.getTransform());
       shape.addTriangles(tr);
     }
   }
@@ -671,7 +671,7 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter)
       Vector3d v_center = GetViewCenter() - offset;
       glTranslated( v_center.x(), v_center.y(), v_center.z());
       for (uint i = 0; i < preview_shapes.size(); i++) {
-	offset = preview_shapes[i]->t_Center();
+	offset = preview_shapes[i]->Center;
 	glTranslated(offset.x(), offset.y(), offset.z());
 	preview_shapes[i]->draw(render, settings, false, 2000000);
 	preview_shapes[i]->drawBBox(render);

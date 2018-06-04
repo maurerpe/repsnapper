@@ -57,7 +57,7 @@ void Shape::setTriangles(const vector<Triangle> &triangles_) {
 
 int Shape::saveBinarySTL(Glib::ustring filename) const
 {
-  if (!File::saveBinarySTL(filename, triangles, transform3D.transform))
+  if (!File::saveBinarySTL(filename, triangles, transform3D.getTransform()))
     return -1;
   return 0;
 
@@ -243,7 +243,7 @@ double Shape::volume() const
 {
   double vol=0;
   for (uint i = 0; i < triangles.size(); i++)
-    vol+=triangles[i].projectedvolume(transform3D.transform);
+    vol+=triangles[i].projectedvolume(transform3D.getTransform());
   return vol;
 }
 
@@ -252,7 +252,7 @@ string Shape::getSTLsolid() const
   stringstream sstr;
   sstr << "solid " << filename <<endl;
   for (uint i = 0; i < triangles.size(); i++)
-    sstr << triangles[i].getSTLfacet(transform3D.transform);
+    sstr << triangles[i].getSTLfacet(transform3D.getTransform());
   sstr << "endsolid " << filename <<endl;
   return sstr.str();
 }
@@ -267,7 +267,7 @@ vector<Triangle> Shape::getTriangles(const Matrix4d &T) const
 {
   vector<Triangle> tr(triangles.size());
   for (uint i = 0; i < triangles.size(); i++) {
-    tr[i] = triangles[i].transformed(T*transform3D.transform);
+    tr[i] = triangles[i].transformed(T*transform3D.getTransform());
   }
   return tr;
 }
@@ -278,7 +278,7 @@ vector<Triangle> Shape::trianglesSteeperThan(double angle) const
   vector<Triangle> tr;
   for (uint i = 0; i < triangles.size(); i++) {
     // negative angles are triangles facing downwards
-    const double tangle = -triangles[i].slopeAngle(transform3D.transform);
+    const double tangle = -triangles[i].slopeAngle(transform3D.getTransform());
     if (tangle >= angle)
       tr.push_back(triangles[i]);
   }
@@ -322,7 +322,7 @@ void Shape::CalcBBox()
   Min.set(INFTY,INFTY,INFTY);
   Max.set(-INFTY,-INFTY,-INFTY);
   for(size_t i = 0; i < triangles.size(); i++) {
-    triangles[i].AccumulateMinMax (Min, Max, transform3D.transform);
+    triangles[i].AccumulateMinMax (Min, Max, transform3D.getTransform());
   }
   Center = (Max + Min) / 2;
 }
@@ -355,7 +355,7 @@ vector<Vector3d> Shape::getMostUsedNormals() const
 #endif
       for (int n = 0; n < numnorm; n++) {
 	if ( (normals[n].normal -
-	      triangles[i].transformed(transform3D.transform).Normal)
+	      triangles[i].transformed(transform3D.getTransform()).Normal)
 	     .squared_length() < 0.000001) {
 	  havenormal = true;
 	  normals[n].area += triangles[i].area();
@@ -364,7 +364,7 @@ vector<Vector3d> Shape::getMostUsedNormals() const
       }
       if (!havenormal){
 	SNorm n;
-	n.normal = triangles[i].transformed(transform3D.transform).Normal;
+	n.normal = triangles[i].transformed(transform3D.getTransform()).Normal;
 	n.area = triangles[i].area();
 	normals.push_back(n);
 	done[i] = true;
@@ -409,11 +409,11 @@ void Shape::PlaceOnPlatform()
   transform3D.move(Vector3d(0,0,-Min.z()));
 }
 
-// Rotate and adjust for the user - not a pure rotation by any means
+// Rotate shape about center
 void Shape::Rotate(const Vector3d & axis, const double & angle)
 {
   transform3D.rotate(Center, axis, angle);
-  return;
+  CalcBBox();
 }
 
 // this is primitive, it just rotates triangle vertices
@@ -519,7 +519,7 @@ vector<Segment> Shape::getCutlines(const Matrix4d &T, double z,
   Vector2d lineEnd;
   vector<Segment> lines;
   // we know our own tranform:
-  Matrix4d transform = T * transform3D.transform ;
+  Matrix4d transform = T * transform3D.getTransform();
 
   int count = (int)triangles.size();
 // #ifdef _OPENMP
@@ -590,8 +590,12 @@ vector<Segment> Shape::getCutlines(const Matrix4d &T, double z,
 void Shape::draw(Render &render, const Settings &settings, bool highlight, uint max_triangles) {
   //cerr << "Shape::draw" <<  endl;
 
-  if(settings.get_boolean("Display","DisplayPolygons")) {
+  if (settings.get_boolean("Display","DisplayPolygons")) {
     draw_geometry(render, max_triangles);
+  }
+  
+  if (settings.get_boolean("Display","DisplayBBox")) {
+    drawBBox(render);
   }
 }
 
@@ -638,7 +642,7 @@ void Shape::drawBBox(Render &render) const
   vert.add(Max.x(), Min.y(), minz);
   vert.add(Max.x(), Min.y(), Max.z());
   
-  RenderModelTrans mt(render, transform3D.getTransform());
+  //RenderModelTrans mt(render, transform3D.getTransform());
   float color[4] = {1, 0.2, 0.2, 1};
   render.draw_lines(color, vert, 1.0);
 

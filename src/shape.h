@@ -81,7 +81,7 @@ public:
     virtual void Rotate(const Vector3d & axis, const double &angle);
 	void Twist(double angle);
 
-	virtual void move(Vector3d delta){ transform3D.move(delta); };
+	virtual void move(Vector3d delta){ transform3D.move(delta); CalcBBox();};
 
 	void Scale(double scale_factor, bool calcbbox = true);
 	void ScaleX(double scale_factor);
@@ -98,11 +98,6 @@ public:
     void PlaceOnPlatform();
 
     Vector3d Min, Max, Center;
-
-
-    Vector3d t_Min() const {return transform3D.transform * Min;}
-    Vector3d t_Max() const {return transform3D.transform * Max;}
-    Vector3d t_Center() const {return transform3D.transform * Center;}
 
     Vector3d scaledCenter() const;
 

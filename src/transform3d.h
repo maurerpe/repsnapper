@@ -21,38 +21,34 @@
 
 #include "stdafx.h"
 
+class Transform3D {
+  Matrix4d m_transform;
+  Vector3d xyz_scale;
+  double scale_all;
+  void update_transform();
+ public:
+  Matrix4d transform;
 
-class Transform3D
-{
-	Matrix4d m_transform;
-	Vector3d xyz_scale;
-	double scale_all;
-	void update_transform();
-public:
   Transform3D();
-	Matrix4d transform;
-
-	void identity();
-	Matrix4d getTransform() const {return transform;};
-	Matrix4f getFloatTransform() const;
-	Vector3d getTranslation() const;
-	Matrix4d getInverse() const;
-	void setTransform(const Matrix4f &matrf);
-	void scale(double x);
-	void scale_x(double x);
-	void scale_y(double x);
-	void scale_z(double x);
-	void move(const Vector3d &delta);
-	void rotate_to(const Vector3d &center, double x, double y, double z);
-	void rotate(const Vector3d &axis, double angle);
-	void rotate(const Vector3d &center, const Vector3d &axis, double angle);
-	void rotate_to(const Vector3d &center, const Vector3d &axis, double angle);
-	double getRotX() const;
-	double getRotY() const;
-	double getRotZ() const;
-	double get_scale()   const {return 1/transform(3,3);};
-	double get_scale_x() const {return xyz_scale(0);};
-	double get_scale_y() const {return xyz_scale(1);};
-	double get_scale_z() const {return xyz_scale(2);};
+  
+  void identity();
+  Matrix4d getTransform() const {return transform;};
+  Vector3d getTranslation() const;
+  Matrix4d getInverse() const;
+  void scale(double x);
+  void scale_x(double x);
+  void scale_y(double x);
+  void scale_z(double x);
+  void move(const Vector3d &delta);
+  void rotate_to(const Vector3d &center, double x, double y, double z);
+  void rotate(const Vector3d &axis, double angle);
+  void rotate(const Vector3d &center, const Vector3d &axis, double angle);
+  void rotate_to(const Vector3d &center, const Vector3d &axis, double angle);
+  double getRotX() const;
+  double getRotY() const;
+  double getRotZ() const;
+  double get_scale()   const {return scale_all;};
+  double get_scale_x() const {return xyz_scale(0);};
+  double get_scale_y() const {return xyz_scale(1);};
+  double get_scale_z() const {return xyz_scale(2);};
 };
-

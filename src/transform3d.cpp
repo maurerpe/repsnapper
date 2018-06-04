@@ -20,78 +20,61 @@
 
 #include "transform3d.h"
 
-
-
-Transform3D::Transform3D()
-{
+Transform3D::Transform3D() {
   identity();
 }
 
 void Transform3D::update_transform() {
-  transform = m_transform;
+  Matrix4d scale = Matrix4d::IDENTITY;
   
   for (uint i = 0; i < 3; i++)
-    transform(i,i) *= xyz_scale(i) * scale_all;
-
+    scale(i,i) = xyz_scale(i) * scale_all;
+  
+  transform = m_transform * scale;
+  
   //cout << "Transform is: " << endl << transform << endl;
 }
 
-void Transform3D::identity()
-{
+void Transform3D::identity() {
   m_transform = Matrix4d::IDENTITY;
   xyz_scale = Vector3d(1,1,1);
   scale_all = 1;
   update_transform();
 }
 
-Matrix4f Transform3D::getFloatTransform() const
-{
-  return (Matrix4f) transform;
-}
-void Transform3D::setTransform(const Matrix4f &matr)
-{
-  m_transform = (Matrix4d) matr;
-  update_transform();
-}
-
-Vector3d Transform3D::getTranslation() const
-{
+Vector3d Transform3D::getTranslation() const {
   Vector3d p;
   m_transform.get_translation(p);
   return p;
 }
 
-void Transform3D::move(const Vector3d &delta)
-{
+void Transform3D::move(const Vector3d &delta) {
   Vector3d trans = getTranslation();
   m_transform.set_translation(trans + delta * transform(3,3)); // unscale delta
   update_transform();
 }
 
-void Transform3D::scale(double x)
-{
+void Transform3D::scale(double x) {
   scale_all = x;
   update_transform();
 }
 
-void Transform3D::scale_x(double x)
-{
+void Transform3D::scale_x(double x) {
   xyz_scale(0) = x;
   update_transform();
 }
-void Transform3D::scale_y(double x)
-{
+
+void Transform3D::scale_y(double x) {
   xyz_scale(1) = x;
   update_transform();
 }
-void Transform3D::scale_z(double x)
-{
+
+void Transform3D::scale_z(double x) {
   xyz_scale(2) = x;
   update_transform();
 }
 
-void Transform3D::rotate_to(const Vector3d &center, const Vector3d &axis, double angle)
-{
+void Transform3D::rotate_to(const Vector3d &center, const Vector3d &axis, double angle) {
   // save translation & scale
   const Vector3d trans = getTranslation();
   const double scale = m_transform(3,3);
@@ -105,12 +88,11 @@ void Transform3D::rotate_to(const Vector3d &center, const Vector3d &axis, double
   update_transform();
  }
 
-void Transform3D::rotate(const Vector3d &axis, double angle)
-{
+void Transform3D::rotate(const Vector3d &axis, double angle) {
   rotate(Vector3d::ZERO, axis, angle);
 }
-void Transform3D::rotate(const Vector3d &center, const Vector3d &axis, double angle)
-{
+
+void Transform3D::rotate(const Vector3d &center, const Vector3d &axis, double angle) {
   // save translation
   const Vector3d trans = getTranslation();
   // rotate only
@@ -127,8 +109,7 @@ void Transform3D::rotate(const Vector3d &center, const Vector3d &axis, double an
 }
 
 
-void Transform3D::rotate_to(const Vector3d &center, double x, double y, double z)
-{
+void Transform3D::rotate_to(const Vector3d &center, double x, double y, double z) {
   const Vector3d trans = getTranslation();
   rotate_to (center, Vector3d(1.,0.,0.), x);
   rotate    (center, Vector3d(0.,1.,0.), y);
@@ -137,24 +118,20 @@ void Transform3D::rotate_to(const Vector3d &center, double x, double y, double z
   update_transform();
 }
 
-double Transform3D::getRotX() const
-{
+double Transform3D::getRotX() const {
   return atan2(m_transform(2,1), m_transform(2,2));
 }
-double Transform3D::getRotY() const
-{
+
+double Transform3D::getRotY() const {
   return -asin(m_transform(2,0));
 }
-double Transform3D::getRotZ() const
-{
+
+double Transform3D::getRotZ() const {
   return atan2(m_transform(1,0), m_transform(0,0));
 }
 
-
-Matrix4d Transform3D::getInverse() const
-{
+Matrix4d Transform3D::getInverse() const {
   Matrix4d im;
   m_transform.inverse(im);
   return im;
 }
-

@@ -195,14 +195,12 @@ void ObjectsTree::update_shapenames(Gtk::TreeModel::Children children)
 
 Matrix4d ObjectsTree::getTransformationMatrix(int object, int shape) const
 {
-  Matrix4d result = transform3D.transform;
-//	Vector3f translation = result.getTranslation();
-//	result.setTranslation(translation+PrintMargin);
+  Matrix4d result = transform3D.getTransform();
 
   if(object >= 0)
-    result *= Objects[object]->transform3D.transform;
+    result *= Objects[object]->transform3D.getTransform();
   if(shape >= 0)
-    result *= Objects[object]->shapes[shape]->transform3D.transform;
+    result *= Objects[object]->shapes[shape]->transform3D.getTransform();
   return result;
 }
 
@@ -248,14 +246,14 @@ void ObjectsTree::get_selected_shapes(const vector<Gtk::TreeModel::Path> &path,
     }
     if (!parent_obj_selected){
       allshapes.push_back(sel_shapes[s]);
-      transforms.push_back(transform3D.transform
-			   * getParent(sel_shapes[s])->transform3D.transform);
+      transforms.push_back(transform3D.getTransform()
+			   * getParent(sel_shapes[s])->transform3D.getTransform());
     }
   }
   // add all shapes of selected objects
   for (uint o = 0; o < sel_objects.size(); o++) {
     Matrix4d otrans =
-      transform3D.transform * sel_objects[o]->transform3D.transform;
+      transform3D.getTransform() * sel_objects[o]->transform3D.getTransform();
     allshapes.insert(allshapes.begin(),
 		     sel_objects[o]->shapes.begin(), sel_objects[o]->shapes.end());
     for (uint s = 0; s < sel_objects[o]->shapes.size(); s++) {
@@ -271,7 +269,7 @@ void ObjectsTree::get_all_shapes(vector<Shape*>   &allshapes,
   transforms.clear();
   for (uint o = 0; o < Objects.size(); o++) {
     Matrix4d otrans =
-      transform3D.transform * Objects[o]->transform3D.transform;
+      transform3D.getTransform() * Objects[o]->transform3D.getTransform();
     allshapes.insert(allshapes.begin(),
 		     Objects[o]->shapes.begin(), Objects[o]->shapes.end());
     for (uint s = 0; s < Objects[o]->shapes.size(); s++) {
