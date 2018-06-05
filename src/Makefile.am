@@ -44,7 +44,6 @@ SHARED_SRC= \
 SHARED_INC= \
 	src/geometry.h \
 	src/transform3d.h \
-	src/miniball.h \
 	src/model.h \
 	src/objtree.h \
 	src/shape.h \

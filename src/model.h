@@ -1,6 +1,7 @@
 /*
     This file is a part of the RepSnapper project.
     Copyright (C) 2010  Kulitorum
+    Copyright (C) 2018  Paul Maurer
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,8 +39,7 @@
 #endif
 
 
-class Model
-{
+class Model {
 	ViewProgress *m_progress;
 
 public:
@@ -50,7 +50,6 @@ public:
 	Model();
 	~Model();
 
-	void SimpleAdvancedToggle();
 	void SaveConfig(Glib::RefPtr<Gio::File> file);
 	void LoadConfig() { LoadConfig(Gio::File::create_for_path("repsnapper3.conf")); }
 	void LoadConfig(Glib::RefPtr<Gio::File> file);
@@ -134,8 +133,6 @@ public:
 	Glib::RefPtr<Gtk::TextBuffer> errlog, echolog;
 
 	int draw(Render &render, vector<Gtk::TreeModel::Path> &selected);
-	void setMeasuresPoint(const Vector3d &point);
-	Vector2d measuresPoint;
 
 	sigc::signal< void, Gtk::MessageType, const char *, const char * > signal_alert;
 	void alert (const char *message);

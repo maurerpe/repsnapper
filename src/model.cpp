@@ -1,6 +1,7 @@
 /*
     This file is a part of the RepSnapper project.
     Copyright (C) 2011 Michael Meeks
+    Copyright (C) 2018 Paul Maurer
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -40,62 +41,47 @@ Model::Model() :
   errlog (Gtk::TextBuffer::create()),
   echolog (Gtk::TextBuffer::create()),
   is_calculating(false),
-  is_printing(false)
-{
+  is_printing(false) {
   // Variable defaults
   Center.set(100.,100.,0.);
   preview_shapes.clear();
 }
 
-Model::~Model()
-{
+Model::~Model() {
   ClearGCode();
   preview_shapes.clear();
 }
 
-void Model::alert (const char *message)
-{
-  signal_alert.emit (Gtk::MESSAGE_INFO, message, NULL);
+void Model::alert (const char *message) {
+  signal_alert.emit(Gtk::MESSAGE_INFO, message, NULL);
 }
 
-void Model::error (const char *message, const char *secondary)
-{
-  signal_alert.emit (Gtk::MESSAGE_ERROR, message, secondary);
+void Model::error (const char *message, const char *secondary) {
+  signal_alert.emit(Gtk::MESSAGE_ERROR, message, secondary);
 }
 
-void Model::SaveConfig(Glib::RefPtr<Gio::File> file)
-{
+void Model::SaveConfig(Glib::RefPtr<Gio::File> file) {
   settings.save_settings(file);
 }
 
-void Model::LoadConfig(Glib::RefPtr<Gio::File> file)
-{
+void Model::LoadConfig(Glib::RefPtr<Gio::File> file) {
   settings.load_settings(file);
   ModelChanged();
 }
 
-void Model::SimpleAdvancedToggle()
-{
-  cout << _("not yet implemented\n");
-}
-
-void Model::SetViewProgress (ViewProgress *progress)
-{
+void Model::SetViewProgress (ViewProgress *progress) {
   m_progress = progress;
 }
 
-void Model::ClearGCode()
-{
+void Model::ClearGCode() {
   gcode.clear();
 }
 
-Glib::RefPtr<Gtk::TextBuffer> Model::GetGCodeBuffer()
-{
+Glib::RefPtr<Gtk::TextBuffer> Model::GetGCodeBuffer() {
   return gcode.get_buffer();
 }
 
-void Model::GlDrawGCode(Render &render, int layerno)
-{
+void Model::GlDrawGCode(Render &render, int layerno) {
   if (settings.get_boolean("Display","DisplayGCode"))  {
     gcode.draw(render, settings, layerno, false);
   }
@@ -111,26 +97,24 @@ void Model::GlDrawGCode(Render &render, int layerno)
   }
 }
 
-void Model::GlDrawGCode(Render &render, double layerz)
-{
+void Model::GlDrawGCode(Render &render, double layerz) {
   if (!settings.get_boolean("Display","DisplayGCode")) return;
   int layer = gcode.getLayerNo(layerz);
   if (layer>=0)
     GlDrawGCode(render, layer);
 }
 
-void Model::init() {}
+void Model::init() {
+}
 
-void Model::WriteGCode(Glib::RefPtr<Gio::File> file)
-{
+void Model::WriteGCode(Glib::RefPtr<Gio::File> file) {
   Glib::ustring contents = gcode.get_text();
   Glib::file_set_contents (file->get_path(), contents);
   settings.GCodePath = file->get_parent()->get_path();
 }
 
 vector<Shape*> Model::ReadShapes(Glib::RefPtr<Gio::File> file,
-				 uint max_triangles)
-{
+				 uint max_triangles) {
   vector<Shape*> shapes;
   if (!file) return shapes;
   File sfile(file);
@@ -150,8 +134,7 @@ vector<Shape*> Model::ReadShapes(Glib::RefPtr<Gio::File> file,
 }
 
 
-void Model::ReadStl(Glib::RefPtr<Gio::File> file)
-{
+void Model::ReadStl(Glib::RefPtr<Gio::File> file) {
   bool autoplace = settings.get_boolean("Misc","ShapeAutoplace");
   vector<Shape*> shapes = ReadShapes(file, 0);
   // do not autoplace in multishape files
@@ -163,8 +146,7 @@ void Model::ReadStl(Glib::RefPtr<Gio::File> file)
   ModelChanged();
 }
 
-void Model::SaveStl(Glib::RefPtr<Gio::File> file)
-{
+void Model::SaveStl(Glib::RefPtr<Gio::File> file) {
   vector<Shape*> shapes;
   vector<Matrix4d> transforms;
   objtree.get_all_shapes(shapes,transforms);
@@ -180,8 +162,7 @@ void Model::SaveStl(Glib::RefPtr<Gio::File> file)
 }
 
 // everything in one shape
-Shape Model::GetCombinedShape() const
-{
+Shape Model::GetCombinedShape() const {
   Shape shape;
   for (uint o = 0; o<objtree.Objects.size(); o++) {
     for (uint s = 0; s<objtree.Objects[o]->shapes.size(); s++) {
@@ -193,8 +174,7 @@ Shape Model::GetCombinedShape() const
   return shape;
 }
 
-void Model::Read(Glib::RefPtr<Gio::File> file)
-{
+void Model::Read(Glib::RefPtr<Gio::File> file) {
   std::string basename = file->get_basename();
   size_t pos = basename.rfind('.');
   cerr << "reading " << basename<< endl;
@@ -218,8 +198,7 @@ void Model::Read(Glib::RefPtr<Gio::File> file)
   settings.STLPath = directory_path;
 }
 
-void Model::ReadGCode(Glib::RefPtr<Gio::File> file)
-{
+void Model::ReadGCode(Glib::RefPtr<Gio::File> file) {
   if (is_calculating) return;
   if (is_printing) return;
   is_calculating=true;
@@ -231,8 +210,7 @@ void Model::ReadGCode(Glib::RefPtr<Gio::File> file)
 }
 
 
-void Model::ModelChanged()
-{
+void Model::ModelChanged() {
   if (m_inhibit_modelchange) return;
   if (objtree.empty()) return;
   //printer.update_temp_poll_interval(); // necessary?
@@ -244,8 +222,7 @@ void Model::ModelChanged()
 }
 
 // rearrange unselected shapes in random sequence
-bool Model::AutoArrange(vector<Gtk::TreeModel::Path> &path)
-{
+bool Model::AutoArrange(vector<Gtk::TreeModel::Path> &path) {
   // all shapes
   vector<Shape*>   allshapes;
   vector<Matrix4d> transforms;
@@ -361,8 +338,7 @@ Vector3d Model::FindEmptyLocation(const vector<Shape*> &shapes,
   return offset;
 }
 
-bool Model::FindEmptyLocation(Vector3d &result, const Shape *shape)
-{
+bool Model::FindEmptyLocation(Vector3d &result, const Shape *shape) {
   // Get all object positions
   std::vector<Vector3d> maxpos;
   std::vector<Vector3d> minpos;
@@ -374,8 +350,7 @@ bool Model::FindEmptyLocation(Vector3d &result, const Shape *shape)
   return true;
 }
 
-int Model::AddShape(TreeObject *parent, Shape *shape, string filename, bool autoplace)
-{
+int Model::AddShape(TreeObject *parent, Shape *shape, string filename, bool autoplace) {
   //Shape *retshape;
   bool found_location=false;
 
@@ -410,8 +385,7 @@ int Model::AddShape(TreeObject *parent, Shape *shape, string filename, bool auto
   return 0;
 }
 
-int Model::SplitShape(TreeObject *parent, Shape *shape, string filename)
-{
+int Model::SplitShape(TreeObject *parent, Shape *shape, string filename) {
   vector<Shape*> splitshapes;
   shape->splitshapes(splitshapes, m_progress);
   if (splitshapes.size()<2) return splitshapes.size();
@@ -423,8 +397,7 @@ int Model::SplitShape(TreeObject *parent, Shape *shape, string filename)
   return splitshapes.size();
 }
 
-int Model::MergeShapes(TreeObject *parent, const vector<Shape*> shapes)
-{
+int Model::MergeShapes(TreeObject *parent, const vector<Shape*> shapes) {
   Shape * shape = new Shape();
   for (uint s = 0; s <  shapes.size(); s++) {
     vector<Triangle> str = shapes[s]->getTriangles();
@@ -434,14 +407,12 @@ int Model::MergeShapes(TreeObject *parent, const vector<Shape*> shapes)
   return 1;
 }
 
-void Model::newObject()
-{
+void Model::newObject() {
   objtree.newObject();
 }
 
 /* Scales the object on changes of the scale slider */
-void Model::ScaleObject(Shape *shape, TreeObject *object, double scale)
-{
+void Model::ScaleObject(Shape *shape, TreeObject *object, double scale) {
   if (shape)
     shape->Scale(scale);
   else if(object)
@@ -452,8 +423,8 @@ void Model::ScaleObject(Shape *shape, TreeObject *object, double scale)
   else return;
   ModelChanged();
 }
-void Model::ScaleObjectX(Shape *shape, TreeObject *object, double scale)
-{
+
+void Model::ScaleObjectX(Shape *shape, TreeObject *object, double scale) {
   if (shape)
     shape->ScaleX(scale);
   else if(object)
@@ -464,8 +435,8 @@ void Model::ScaleObjectX(Shape *shape, TreeObject *object, double scale)
   else return;
   ModelChanged();
 }
-void Model::ScaleObjectY(Shape *shape, TreeObject *object, double scale)
-{
+
+void Model::ScaleObjectY(Shape *shape, TreeObject *object, double scale) {
   if (shape)
     shape->ScaleY(scale);
   else if(object)
@@ -476,8 +447,8 @@ void Model::ScaleObjectY(Shape *shape, TreeObject *object, double scale)
   else return;
   ModelChanged();
 }
-void Model::ScaleObjectZ(Shape *shape, TreeObject *object, double scale)
-{
+
+void Model::ScaleObjectZ(Shape *shape, TreeObject *object, double scale) {
   if (shape)
     shape->ScaleZ(scale);
   else if(object)
@@ -489,8 +460,7 @@ void Model::ScaleObjectZ(Shape *shape, TreeObject *object, double scale)
   ModelChanged();
 }
 
-void Model::RotateObject(Shape* shape, TreeObject* object, Vector4d rotate)
-{
+void Model::RotateObject(Shape* shape, TreeObject* object, Vector4d rotate) {
   if (!shape)
     return;
   Vector3d rot(rotate.x(), rotate.y(), rotate.z());
@@ -498,32 +468,29 @@ void Model::RotateObject(Shape* shape, TreeObject* object, Vector4d rotate)
   ModelChanged();
 }
 
-void Model::TwistObject(Shape *shape, TreeObject *object, double angle)
-{
+void Model::TwistObject(Shape *shape, TreeObject *object, double angle) {
   if (!shape)
     return;
   shape->Twist(angle);
   ModelChanged();
 }
 
-void Model::OptimizeRotation(Shape *shape, TreeObject *object)
-{
+void Model::OptimizeRotation(Shape *shape, TreeObject *object) {
   if (!shape)
     return; // FIXME: rotate entire Objects ...
   shape->OptimizeRotation();
   ModelChanged();
 }
 
-void Model::InvertNormals(Shape *shape, TreeObject *object)
-{
+void Model::InvertNormals(Shape *shape, TreeObject *object) {
   if (shape)
     shape->invertNormals();
   else // if (object) object->invertNormals();
     return;
   ModelChanged();
 }
-void Model::Mirror(Shape *shape, TreeObject *object)
-{
+
+void Model::Mirror(Shape *shape, TreeObject *object) {
   if (shape)
     shape->mirror();
   else // if (object) object->mirror();
@@ -531,8 +498,7 @@ void Model::Mirror(Shape *shape, TreeObject *object)
   ModelChanged();
 }
 
-void Model::PlaceOnPlatform(Shape *shape, TreeObject *object)
-{
+void Model::PlaceOnPlatform(Shape *shape, TreeObject *object) {
   if (shape)
     shape->PlaceOnPlatform();
   else if(object) {
@@ -546,22 +512,19 @@ void Model::PlaceOnPlatform(Shape *shape, TreeObject *object)
   ModelChanged();
 }
 
-void Model::DeleteObjTree(vector<Gtk::TreeModel::Path> &iter)
-{
+void Model::DeleteObjTree(vector<Gtk::TreeModel::Path> &iter) {
   objtree.DeleteSelected (iter);
   ClearGCode();
   ModelChanged();
 }
 
 
-void Model::ClearLogs()
-{
+void Model::ClearLogs() {
   errlog->set_text("");
   echolog->set_text("");
 }
 
-void Model::CalcBoundingBoxAndCenter(bool selected_only)
-{
+void Model::CalcBoundingBoxAndCenter(bool selected_only) {
   Vector3d newMax = Vector3d(G_MINDOUBLE, G_MINDOUBLE, G_MINDOUBLE);
   Vector3d newMin = Vector3d(G_MAXDOUBLE, G_MAXDOUBLE, G_MAXDOUBLE);
 
@@ -582,19 +545,6 @@ void Model::CalcBoundingBoxAndCenter(bool selected_only)
     }
   }
 
-  // for (uint i = 0 ; i < objtree.Objects.size(); i++) {
-  //   Matrix4d M = objtree.getTransformationMatrix (i);
-  //   for (uint j = 0; j < objtree.Objects[i]->shapes.size(); j++) {
-  //     objtree.Objects[i]->shapes[j]->CalcBBox();
-  //     Vector3d stlMin = M * objtree.Objects[i]->shapes[j]->Min;
-  //     Vector3d stlMax = M * objtree.Objects[i]->shapes[j]->Max;
-  //     for (uint k = 0; k < 3; k++) {
-  // 	newMin[k] = MIN(stlMin[k], newMin[k]);
-  // 	newMax[k] = MAX(stlMax[k], newMax[k]);
-  //     }
-  //   }
-  // }
-
   if (newMin.x() > newMax.x()) {
     // Show the whole platform if there's no objects
     Min = Vector3d(0,0,0);
@@ -608,11 +558,9 @@ void Model::CalcBoundingBoxAndCenter(bool selected_only)
   }
 
   Center = (Max + Min) / 2.0;
-  //m_signal_zoom.emit();
 }
 
-Vector3d Model::GetViewCenter()
-{
+Vector3d Model::GetViewCenter() {
   Vector3d printOffset = settings.getPrintMargin();
   if(settings.get_boolean("Raft","Enable")){
     const double rsize = settings.get_double("Raft","Size");
@@ -622,8 +570,7 @@ Vector3d Model::GetViewCenter()
 }
 
 // called from View::Draw
-int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter)
-{
+int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter) {
   vector<Shape*> sel_shapes;
   vector<Matrix4d> transforms;
   objtree.get_selected_shapes(iter, sel_shapes, transforms);
@@ -670,9 +617,4 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter)
   }
   
   return -1;
-}
-
-void Model::setMeasuresPoint(const Vector3d &point)
-{
-  measuresPoint = Vector2d(point.x(), point.y()) ;
 }

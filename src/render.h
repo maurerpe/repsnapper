@@ -1,6 +1,7 @@
 /*
     This file is a part of the RepSnapper project.
     Copyright (C) 2010 Michael Meeks
+    Copyright (C) 2018 Paul Maurer
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
