@@ -323,8 +323,9 @@ void Shape::CalcBBox()
 {
   Min.set(INFTY,INFTY,INFTY);
   Max.set(-INFTY,-INFTY,-INFTY);
+  Matrix4d trans = transform3D.getTransform();
   for(size_t i = 0; i < triangles.size(); i++) {
-    triangles[i].AccumulateMinMax (Min, Max, transform3D.getTransform());
+    triangles[i].AccumulateMinMax (Min, Max, trans);
   }
   Center = (Max + Min) / 2;
 }

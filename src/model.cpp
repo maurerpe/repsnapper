@@ -243,11 +243,6 @@ void Model::ModelChanged()
   }
 }
 
-static bool ClosestToOrigin (Vector3d a, Vector3d b)
-{
-  return (a.squared_length()) < (b.squared_length());
-}
-
 // rearrange unselected shapes in random sequence
 bool Model::AutoArrange(vector<Gtk::TreeModel::Path> &path)
 {
@@ -302,91 +297,66 @@ bool Model::AutoArrange(vector<Gtk::TreeModel::Path> &path)
 
 Vector3d Model::FindEmptyLocation(const vector<Shape*> &shapes,
 				  const vector<Matrix4d> &transforms,
-				  const Shape *shape)
-{
-  Vector3d offset = {settings.get_double("Hardware", "Volume.X") / 2,
-		     settings.get_double("Hardware", "Volume.Y") / 2,
-		     0};
+				  const Shape *shape) {
+  // Offset that puts object in center of bed, on platform
+  double d = 5.0; // Minimum spacing between objects
+  double bedx = settings.get_double("Hardware", "Volume.X");
+  double bedy = settings.get_double("Hardware", "Volume.Y");
+  Vector3d offset = {bedx / 2 - shape->Center.x(),
+		     bedy / 2 - shape->Center.y(),
+		     -shape->Min.z()};
+  Vector3d smin = shape->Min - d;
+  Vector3d smax = shape->Max + d;
   
-  // Get all object positions
-  std::vector<Vector3d> maxpos;
-  std::vector<Vector3d> minpos;
-  for(uint s=0; s<shapes.size(); s++) {
-    Vector3d p;
-    Matrix4d strans = transforms[s];
-    Vector3d min = strans * shapes[s]->Min;
-    Vector3d max = strans * shapes[s]->Max;
-    minpos.push_back(Vector3d(min.x(), min.y(), 0) - offset);
-    maxpos.push_back(Vector3d(max.x(), max.y(), 0) - offset);
+  // Get all object bounding boxes
+  vector<Vector3d> maxpos;
+  vector<Vector3d> minpos;
+  for (size_t s = 0; s < shapes.size(); s++) {
+    minpos.push_back(shapes[s]->Min);
+    maxpos.push_back(shapes[s]->Max);
   }
-
-  double d = 5.0; // 5mm spacing between objects
-  Vector3d StlDelta = (shape->Max - shape->Min);
-  vector<Vector3d> candidates;
-
-  candidates.push_back(Vector3d(0.0, 0.0, 0.0));
-
-  for (uint j=0; j<maxpos.size(); j++)
-  {
-    candidates.push_back(Vector3d(maxpos[j].x() + d, minpos[j].y(), 0) - offset);
-    candidates.push_back(Vector3d(minpos[j].x(), maxpos[j].y() + d, 0) - offset);
-    candidates.push_back(maxpos[j] + Vector3d(d,d,0) - offset);
-  }
-
-  // Prefer positions closest to offset
-  sort(candidates.begin(), candidates.end(), ClosestToOrigin);
-
+  
+  // Search for empty spot
+  double grid = d/5;
+  double max_x = max(fabs(smin.x()), fabs(smax.x()));
+  double max_y = max(fabs(smin.y()), fabs(smax.y()));
+  double max_r = max(bedx / 2 + max_x, bedy / 2 + max_y) + d;
   Vector3d result;
-  // Check all candidates for collisions with existing objects
-  for (uint c=0; c<candidates.size(); c++)
-  {
-    bool ok = true;
+  
+  for (double radius = 0; radius < max_r; radius += grid) {
+    double num = ceil(2 * M_PI * radius / grid + 1e-6);
 
-    for (uint k=0; k<maxpos.size(); k++)
-    {
-      if (
-          // check x
-          ( ( ( minpos[k].x()     <= candidates[c].x() &&
-		candidates[c].x() <= maxpos[k].x() ) ||
-	      ( candidates[c].x() <= minpos[k].x() &&
-		maxpos[k].x() <= candidates[c].x()+StlDelta.x()+d ) ) ||
-	    ( ( minpos[k].x() <= candidates[c].x()+StlDelta.x()+d &&
-		candidates[c].x()+StlDelta.x()+d <= maxpos[k].x() ) ) )
-          &&
-          // check y
-          ( ( ( minpos[k].y() <= candidates[c].y() &&
-		candidates[c].y() <= maxpos[k].y() ) ||
-	      ( candidates[c].y() <= minpos[k].y() &&
-		maxpos[k].y() <= candidates[c].y()+StlDelta.y()+d ) ) ||
-	    ( ( minpos[k].y() <= candidates[c].y()+StlDelta.y()+d &&
-		candidates[c].y()+StlDelta.y()+d <= maxpos[k].y() ) ) )
-	  )
-	{
-	  ok = false;
-	  break;
-	}
+    for (double count = 0; count < num; count++) {
+      result.set(radius * cos(2 * M_PI * count / num) + offset.x(),
+		 radius * sin(2 * M_PI * count / num) + offset.y(),
+		 offset.z());
+      Vector3d ssmin = smin + result;
+      Vector3d ssmax = smax + result;
 
-      // volume boundary
-      if (candidates[c].x()+StlDelta.x() >
-	  (settings.getPrintVolume().x() - 2*settings.getPrintMargin().x())
-	  || candidates[c].y()+StlDelta.y() >
-	  (settings.getPrintVolume().y() - 2*settings.getPrintMargin().y()))
-	{
-	  ok = false;
-	  break;
-	}
-    }
-    if (ok) {
-      result.x() = candidates[c].x() + offset.x();
-      result.y() = candidates[c].y() + offset.y();
-      result.z() = candidates[c].z() + offset.z();
-      // keep z
-      result.x() -= shape->Min.x();
-      result.y() -= shape->Min.y();
-      return result;
+      // Check if on bed
+      if (ssmin.x() < 0 || ssmax.x() > bedx ||
+	  ssmin.y() < 0 || ssmax.y() > bedy)
+	continue;
+      
+      // Check if contacts shapes
+      bool valid = true;
+      for (size_t s = 0; s < minpos.size(); s++) {
+	Vector3d *pmin = &minpos[s];
+	Vector3d *pmax = &maxpos[s];
+	
+	if (ssmin.x() > pmax->x() || ssmax.x() < pmin->x() ||
+	    ssmin.y() > pmax->y() || ssmax.y() < pmin->y())
+	  continue;
+	
+	valid = false;
+	break;
+      }
+      
+      if (valid)
+	return result;
     }
   }
-
+  
   // no empty spots
   return offset;
 }
