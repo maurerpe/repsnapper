@@ -23,6 +23,7 @@
 #include "ui/progress.h"
 #include "settings.h"
 #include "render.h"
+#include "geometry.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -32,8 +33,6 @@
 Shape::Shape() {
   Min.set(0,0,0);
   Max.set(200,200,200);
-  /* FIXME: Use center of bed */
-  transform3D.move(Vector3d(150,110,0));
   CalcBBox();
 }
 
@@ -671,9 +670,15 @@ void Shape::draw_geometry(Render &render, uint max_triangles)
   float color[4] = {1.0, 1.0, 1.0, 0.5};
   
   for(size_t i = 0; i < triangles.size(); i++) {
-    vert.add(triangles[i].A);
-    vert.add(triangles[i].B);
-    vert.add(triangles[i].C);
+    Triangle *tri = &triangles[i];
+    //Vector3d norm = normalized((tri->C - tri->A).cross(tri->B - tri->A));
+    Vector3d norm = tri->Normal;
+    vert.add(tri->A);
+    vert.add(norm);
+    vert.add(tri->B);
+    vert.add(norm);
+    vert.add(tri->C);
+    vert.add(norm);
   }
 
   RenderModelTrans mt(render, transform3D.getTransform());

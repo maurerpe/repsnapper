@@ -51,7 +51,8 @@ class Render : public Gtk::GLArea {
   bool realized;
   Matrix4d m_transform;
   Matrix4d m_full_transform;  
-  Matrix4d m_comb_transform;  
+  Matrix4d m_comb_transform;
+  Matrix4d m_inv_model;
   View *m_view;
   Model *get_model() const;
   Glib::RefPtr<Gtk::TreeSelection> m_selection;
@@ -61,12 +62,19 @@ class Render : public Gtk::GLArea {
   
   void init_buffers();
   void init_shaders();
-
-  GLuint m_trans;
-  GLuint m_color;
+  
   GLuint m_vao;
   GLuint m_buffer;
-  GLuint m_program;
+  
+  GLuint m_line_trans;
+  GLuint m_line_color;
+  GLuint m_line_program;
+
+  GLuint m_tri_vertex;
+  GLuint m_tri_trans;
+  GLuint m_tri_light;
+  GLuint m_tri_color;
+  GLuint m_tri_program;
   
   float m_zoom;
   void CenterView();
@@ -74,7 +82,6 @@ class Render : public Gtk::GLArea {
   guint find_object_at(gdouble x, gdouble y);
   Vector3d mouse_on_plane(Vector2d scaled) const;
   Vector2d get_scaled(double x, double y);
-  void SetTrans(const Matrix4d &trans);
   
  public:
   Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection);

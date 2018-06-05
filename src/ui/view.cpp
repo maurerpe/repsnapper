@@ -117,13 +117,17 @@ void View::preview_file (Glib::RefPtr< Gio::File > file)
   if (!m_model->settings.get_boolean("Display","PreviewLoad")) return;
   if (!file)    return;
   //cerr << "view " <<file->get_path() << endl;
-  m_model->preview_shapes  = m_model->ReadShapes(file,10000);
+  m_model->preview_shapes  = m_model->ReadShapes(file,2000000);
   bool display_poly = m_model->settings.get_boolean("Display","DisplayPolygons");
   m_model->settings.set_boolean("Display","DisplayPolygons", true);
   if (m_model->preview_shapes.size()>0) {
     Vector3d pMax = Vector3d(G_MINDOUBLE, G_MINDOUBLE, G_MINDOUBLE);
     Vector3d pMin = Vector3d(G_MAXDOUBLE, G_MAXDOUBLE, G_MAXDOUBLE);
+    double bedx = m_model->settings.get_double("Hardware", "Volume.X");
+    double bedy = m_model->settings.get_double("Hardware", "Volume.Y");
+    Vector3d trans = {bedx/2, bedy/2, 0};
     for (uint i = 0; i < m_model->preview_shapes.size(); i++) {
+      m_model->preview_shapes[i]->move(trans);
       m_model->preview_shapes[i]->PlaceOnPlatform();
       Vector3d stlMin = m_model->preview_shapes[i]->Min;
       Vector3d stlMax = m_model->preview_shapes[i]->Max;

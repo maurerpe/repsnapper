@@ -31,12 +31,16 @@
 
 //#define TRYFONTS "helvetica,arial,dejavu sans,sans,courier"
 
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+
+const Vector4d light_dir = {1, -1, 2, 0};
 const double z_center = -750;
 
-static inline Vector3d hom(Vector4d v) {
-  Vector3d ret = {v[0]/v[3], v[1]/v[3], v[2]/v[3]};
+static Vector3d hom(Vector4d v) {
+  if (v[3] == 0)
+    return Vector3d(v[0], v[1], v[2]);
   
-  return ret;
+  return Vector3d(v[0]/v[3], v[1]/v[3], v[2]/v[3]);
 }
 
 inline GtkWidget *Render::get_widget() {
@@ -46,19 +50,18 @@ inline GtkWidget *Render::get_widget() {
 inline Model *Render::get_model() const { return m_view->get_model(); }
 
 Render::Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
-  m_view (view), m_selection(selection) {
+  m_view(view), m_selection(selection) {
 
-  set_events (Gdk::POINTER_MOTION_MASK |
-	      Gdk::BUTTON_MOTION_MASK |
-	      Gdk::BUTTON_PRESS_MASK |
-	      Gdk::BUTTON_RELEASE_MASK |
-	      Gdk::BUTTON1_MOTION_MASK |
-	      Gdk::BUTTON2_MOTION_MASK |
-	      Gdk::BUTTON3_MOTION_MASK |
-	      Gdk::KEY_PRESS_MASK |
-	      Gdk::KEY_RELEASE_MASK |
-	      Gdk::SCROLL_MASK
-	      );
+  set_events(Gdk::POINTER_MOTION_MASK |
+	     Gdk::BUTTON_MOTION_MASK |
+	     Gdk::BUTTON_PRESS_MASK |
+	     Gdk::BUTTON_RELEASE_MASK |
+	     Gdk::BUTTON1_MOTION_MASK |
+	     Gdk::BUTTON2_MOTION_MASK |
+	     Gdk::BUTTON3_MOTION_MASK |
+	     Gdk::KEY_PRESS_MASK |
+	     Gdk::KEY_RELEASE_MASK |
+	     Gdk::SCROLL_MASK);
 
   set_can_focus(true);
 
@@ -112,24 +115,11 @@ static GLuint create_shader(int type, const char *src) {
   return shader;
 }
 
-void Render::init_shaders() {
-  auto vertex = create_shader(GL_VERTEX_SHADER,
-			      "#version 330\n"
-			      "in vec3 vp;"
- 			      "uniform mat4 trans;"
-			      "void main() {"
-			      "  gl_Position = trans * vec4(vp, 1.0);"
-			      "}");
-
-  auto fragment = create_shader(GL_FRAGMENT_SHADER,
-				"#version 330\n"
-				"out vec4 frag_color;"
-				"uniform vec4 color;"
-				"void main() {"
-				"  frag_color = color;"
-				"}");
+static GLuint compile_program(const char *vertex_code, const char *fragment_code) {
+  auto vertex = create_shader(GL_VERTEX_SHADER,  vertex_code);
+  auto fragment = create_shader(GL_FRAGMENT_SHADER, fragment_code);
   
-  m_program = glCreateProgram();
+  GLuint m_program = glCreateProgram();
   glAttachShader(m_program, vertex);
   glAttachShader(m_program, fragment);
 
@@ -149,8 +139,55 @@ void Render::init_shaders() {
     m_program = 0;
   }
   
-  m_trans = glGetUniformLocation(m_program, "trans");
-  m_color = glGetUniformLocation(m_program, "color");
+  return m_program;
+}
+
+void Render::init_shaders() {
+  m_line_program = compile_program(
+    // Vertex shader
+    "#version 330\n"
+    "layout (location = 0) in vec3 vp;"
+    "uniform mat4 trans;"
+    "void main() {"
+    "  gl_Position = trans * vec4(vp, 1.0);"
+    "}",
+
+    // Fragment shader
+    "#version 330\n"
+    "out vec4 frag_color;"
+    "uniform vec4 color;"
+    "void main() {"
+    "  frag_color = color;"
+    "}");
+  
+  m_line_trans = glGetUniformLocation(m_line_program, "trans");
+  m_line_color = glGetUniformLocation(m_line_program, "color");
+
+  m_tri_program = compile_program(
+    // Vertex shader
+    "#version 330\n"
+    "layout (location = 0) in vec3 vp;"
+    "layout (location = 1) in vec3 norm;"
+    "uniform mat4 trans;"
+    "uniform vec3 light;"
+    "out float brightness;"
+    "void main() {"
+    "  brightness = 1;" //clamp(0.1 + 0.9*max(dot(norm,light),0), 0, 1);"
+    "  gl_Position = trans * vec4(vp, 1.0);"
+    "}",
+
+    // Fragment shader
+    "#version 330\n"
+    "in float brightness;"
+    "out vec4 frag_color;"
+    "uniform vec4 color;"
+    "void main() {"
+    "  frag_color = vec4(color.rgb * brightness, color.a);"
+    "}");
+  
+  m_tri_trans = glGetUniformLocation(m_tri_program, "trans");
+  m_tri_light = glGetUniformLocation(m_tri_program, "light");
+  m_tri_color = glGetUniformLocation(m_tri_program, "color");  
 }
 
 Render::~Render() {
@@ -182,17 +219,23 @@ void Render::on_realize() {
 }
 
 bool Render::on_configure_event(GdkEventConfigure* event) {
+  cout << "on_configure_event" << endl;
+  
   return true;
 }
 
-void Render::SetTrans(const Matrix4d &trans) {
+static void SetUniform(GLuint mat, const Matrix4d &trans) {
   GLfloat val[16], *cur = val;
   
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 4; j++)
       *cur++ = trans(j, i);
   
-  glUniformMatrix4fv(m_trans, 1, GL_FALSE, val);
+  glUniformMatrix4fv(mat, 1, GL_FALSE, val);
+}
+
+static void SetUniform(GLuint vec, const Vector3d &vv) {
+  glUniform3f(vec, vv.x(), vv.y(), vv.z());
 }
 
 bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
@@ -207,7 +250,6 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   /*glClearColor(0.5, 0.5, 0.5, 1.0);*/
   make_current();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glUseProgram(m_program);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  //define blending factors
@@ -252,12 +294,12 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
 
 void Render::set_model_transform(const Matrix4d &trans) {
   m_comb_transform = m_full_transform * trans;
-  SetTrans(m_comb_transform);
+  (m_transform * trans).inverse(m_inv_model);
 }
 
 void Render::set_default_transform(void) {
   m_comb_transform = m_full_transform;
-  SetTrans(m_full_transform);
+  m_transform.inverse(m_inv_model);
 }
 
 static void AddPolyLines(RenderVert &vert, const double *pts, double x_offset) {
@@ -333,7 +375,7 @@ void Render::draw_string(const float color[4], const Vector3d &pos, const string
   trans.move(Vector3d(x, y, 1));
   trans.scale_x(char_width);
   trans.scale_y(char_height);
-  SetTrans(trans.getTransform());
+  //SetTrans(trans.getTransform());
 
   float bg_color[4] = {0, 0, 0, 0.5};
   RenderVert vert;
@@ -352,25 +394,34 @@ void Render::draw_string(const float color[4], const Vector3d &pos, const string
 
   draw_lines(color, vert, 1.0);
   
-  SetTrans(m_comb_transform);
+  //SetTrans(m_comb_transform);
 }
 
 void Render::draw_triangles(const float color[4], const RenderVert &vert) {
   //cout << "draw_triangles tranform:" << endl;
-  
-  glUniform4fv(m_color, 1, color);
+
+  glUseProgram(m_tri_program);
+  SetUniform(m_tri_trans, m_comb_transform);
+  SetUniform(m_tri_light, normalized(hom(m_inv_model * light_dir)));
+  glUniform4fv(m_tri_color, 1, color);
 
   glBindBuffer(GL_ARRAY_BUFFER, m_vao);
   glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
   glBufferData(GL_ARRAY_BUFFER, vert.size(), vert.data(), GL_STREAM_DRAW);
+  
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+  
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), BUFFER_OFFSET(3 * sizeof(GLfloat)));
 
-  glDrawArrays(GL_TRIANGLES, 0, vert.size() / (3 * sizeof(GLfloat)));  
+  glDrawArrays(GL_TRIANGLES, 0, vert.size() / (6 * sizeof(GLfloat)));  
 }
 
 void Render::draw_lines(const float color[4], const RenderVert &vert, float line_width) {
-  glUniform4fv(m_color, 1, color);
+  glUseProgram(m_line_program);
+  SetUniform(m_line_trans, m_comb_transform);
+  glUniform4fv(m_line_color, 1, color);
   glLineWidth(line_width);
 
   glBindBuffer(GL_ARRAY_BUFFER, m_vao);
