@@ -304,6 +304,10 @@ Vector3d Model::FindEmptyLocation(const vector<Shape*> &shapes,
 				  const vector<Matrix4d> &transforms,
 				  const Shape *shape)
 {
+  Vector3d offset = {settings.get_double("Hardware", "Volume.X") / 2,
+		     settings.get_double("Hardware", "Volume.Y") / 2,
+		     0};
+  
   // Get all object positions
   std::vector<Vector3d> maxpos;
   std::vector<Vector3d> minpos;
@@ -312,8 +316,8 @@ Vector3d Model::FindEmptyLocation(const vector<Shape*> &shapes,
     Matrix4d strans = transforms[s];
     Vector3d min = strans * shapes[s]->Min;
     Vector3d max = strans * shapes[s]->Max;
-    minpos.push_back(Vector3d(min.x(), min.y(), 0));
-    maxpos.push_back(Vector3d(max.x(), max.y(), 0));
+    minpos.push_back(Vector3d(min.x(), min.y(), 0) - offset);
+    maxpos.push_back(Vector3d(max.x(), max.y(), 0) - offset);
   }
 
   double d = 5.0; // 5mm spacing between objects
@@ -324,14 +328,13 @@ Vector3d Model::FindEmptyLocation(const vector<Shape*> &shapes,
 
   for (uint j=0; j<maxpos.size(); j++)
   {
-    candidates.push_back(Vector3d(maxpos[j].x() + d, minpos[j].y(), 0));
-    candidates.push_back(Vector3d(minpos[j].x(), maxpos[j].y() + d, 0));
-    candidates.push_back(maxpos[j] + Vector3d(d,d,0));
+    candidates.push_back(Vector3d(maxpos[j].x() + d, minpos[j].y(), 0) - offset);
+    candidates.push_back(Vector3d(minpos[j].x(), maxpos[j].y() + d, 0) - offset);
+    candidates.push_back(maxpos[j] + Vector3d(d,d,0) - offset);
   }
 
-  // Prefer positions closest to origin
+  // Prefer positions closest to offset
   sort(candidates.begin(), candidates.end(), ClosestToOrigin);
-
 
   Vector3d result;
   // Check all candidates for collisions with existing objects
@@ -374,9 +377,9 @@ Vector3d Model::FindEmptyLocation(const vector<Shape*> &shapes,
 	}
     }
     if (ok) {
-      result.x() = candidates[c].x();
-      result.y() = candidates[c].y();
-      result.z() = candidates[c].z();
+      result.x() = candidates[c].x() + offset.x();
+      result.y() = candidates[c].y() + offset.y();
+      result.z() = candidates[c].z() + offset.z();
       // keep z
       result.x() -= shape->Min.x();
       result.y() -= shape->Min.y();
@@ -385,7 +388,7 @@ Vector3d Model::FindEmptyLocation(const vector<Shape*> &shapes,
   }
 
   // no empty spots
-  return Vector3d(100,100,0);
+  return offset;
 }
 
 bool Model::FindEmptyLocation(Vector3d &result, const Shape *shape)

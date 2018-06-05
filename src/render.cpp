@@ -334,7 +334,7 @@ void Render::draw_string(const float color[4], const Vector3d &pos, const string
   trans.scale_y(char_height);
   SetTrans(trans.getTransform());
 
-  float bg_color[4] = {0, 0, 0, 1};
+  float bg_color[4] = {0, 0, 0, 0.5};
   RenderVert vert;
   vert.add(-1.2, -1.2, 0);
   vert.add(-1.2,  1.2, 0);

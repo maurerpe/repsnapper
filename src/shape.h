@@ -60,8 +60,6 @@ public:
 	Glib::ustring filename;
 	int idx;
 
-	int parseASCIISTL(istream &text, uint max_triangles=0, bool readnormals=false);
-
 	Transform3D transform3D;
 
 	virtual void clear();

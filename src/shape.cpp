@@ -32,6 +32,8 @@
 Shape::Shape() {
   Min.set(0,0,0);
   Max.set(200,200,200);
+  /* FIXME: Use center of bed */
+  transform3D.move(Vector3d(150,110,0));
   CalcBBox();
 }
 
