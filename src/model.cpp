@@ -674,7 +674,6 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter)
 	offset = preview_shapes[i]->Center;
 	glTranslated(offset.x(), offset.y(), offset.z());
 	preview_shapes[i]->draw(render, settings, false, 2000000);
-	preview_shapes[i]->drawBBox(render);
       }
       return 0;
     }
@@ -694,7 +693,6 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter)
 	  is_selected = true;
 
       shape->draw(render, settings, is_selected);
-      shape->draw_geometry(render);
     }
   }
   

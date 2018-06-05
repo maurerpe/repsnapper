@@ -211,8 +211,7 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  //define blending factors
 
-  glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
+  glDisable(GL_DEPTH_TEST);
 
   //glEnable(GL_CULL_FACE);
   
@@ -228,7 +227,7 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
 			 5000);
   camera.compute_matrix(camera_mat);
   m_full_transform = camera_mat * view_mat;
-
+  
   // cout << "on_draw: m_full_transform" << endl << m_full_transform << endl;
 
   set_default_transform();

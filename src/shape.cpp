@@ -665,7 +665,7 @@ void Shape::drawBBox(Render &render) const
 void Shape::draw_geometry(Render &render, uint max_triangles)
 {
   RenderVert vert;
-  float color[4] = {1.0, 1.0, 1.0, 0.3};
+  float color[4] = {1.0, 1.0, 1.0, 0.5};
   
   for(size_t i = 0; i < triangles.size(); i++) {
     vert.add(triangles[i].A);

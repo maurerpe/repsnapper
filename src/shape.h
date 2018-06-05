@@ -70,8 +70,6 @@ public:
 	void draw(Render &render,
 		  const Settings &settings,
 		  bool highlight=false, uint max_triangles=0);
-	virtual void draw_geometry(Render &render, uint max_triangles=0);
-	void drawBBox(Render &render) const;
 
     virtual vector<Vector3d> getMostUsedNormals() const;
 	// Auto-Rotate object to have the largest area surface down for printing:
@@ -140,6 +138,9 @@ private:
 
     bool hasAdjacentTriangleTo(const Triangle &triangle,
 			       double sqdistance = 0.05) const;
+    
+    virtual void draw_geometry(Render &render, uint max_triangles=0);
+    void drawBBox(Render &render) const;
 };
 
 
