@@ -171,7 +171,7 @@ void Render::init_shaders() {
     "uniform vec3 light;"
     "out float brightness;"
     "void main() {"
-    "  brightness = 1;" //clamp(0.1 + 0.9*max(dot(norm,light),0), 0, 1);"
+    "  brightness = clamp(0.1 + 0.9*abs(dot(norm,light)), 0, 1);"
     "  gl_Position = trans * vec4(vp, 1.0);"
     "}",
 
@@ -354,7 +354,9 @@ void Render::draw_string(const float color[4], const Vector3d &pos, const string
   size_t height = te.height + 2 * border;
   size_t radius = 2*border;
   
-  // Draw text
+  // Start transparent
+  // Draw partially transparent rounded rect
+  // Finally draw the text
   Cairo::RefPtr<Cairo::ImageSurface> surface =
     Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, width, height);
   Cairo::RefPtr< Cairo::Context > cr = Cairo::Context::create(surface); 
