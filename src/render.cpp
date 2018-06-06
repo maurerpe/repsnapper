@@ -18,6 +18,7 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stdint.h>
 #include <epoxy/gl.h>
 
 #include "config.h"
@@ -28,8 +29,6 @@
 #include "model.h"
 #include "geometry.h"
 #include "transform3d.h"
-
-//#define TRYFONTS "helvetica,arial,dejavu sans,sans,courier"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -187,7 +186,37 @@ void Render::init_shaders() {
   
   m_tri_trans = glGetUniformLocation(m_tri_program, "trans");
   m_tri_light = glGetUniformLocation(m_tri_program, "light");
-  m_tri_color = glGetUniformLocation(m_tri_program, "color");  
+  m_tri_color = glGetUniformLocation(m_tri_program, "color");
+  
+  m_str_program = compile_program(
+    // Vertex shader
+    "#version 330\n"
+    "layout (location = 0) in vec3 vp;"
+    "uniform mat4 trans;"
+    "out vec2 textr_uv;"
+    "void main() {"
+    "  textr_uv = vec2(vp.x, 1-vp.y);"
+    "  gl_Position = trans * vec4(vp, 1.0);"
+    "}",
+
+    // Fragment shader
+    "#version 330\n"
+    "in vec2 textr_uv;"
+    "out vec4 frag_color;"
+    "uniform sampler2D textr;"
+    "void main() {"
+    "  frag_color = texture(textr, textr_uv);"
+    "}");
+  
+  m_str_trans = glGetUniformLocation(m_str_program, "trans");
+  m_str_textr = glGetUniformLocation(m_str_program, "textr");
+  
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  float border[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
 }
 
 Render::~Render() {
@@ -302,99 +331,94 @@ void Render::set_default_transform(void) {
   m_transform.inverse(m_inv_model);
 }
 
-static void AddPolyLines(RenderVert &vert, const double *pts, double x_offset) {
-  while (!isnan(*pts)) {
-    pts += 2;
-    while (!isnan(*pts)) {
-      vert.add(x_offset + pts[-2], pts[-1], 0);
-      vert.add(x_offset + pts[ 0], pts[ 1], 0);
-      pts += 2;
-    }
-    pts++;
-  }
-}
-
-static const double char_0[] = {0.35,1, 0.7,0.5, 0.7,-0.5, 0.35,-1, -0.35,-1, -0.7,-0.5, -0.7,0.5, -0.35,1, 0.35,1, NAN, NAN};
-static const double char_1[] = {-0.35,0.5, 0,1, 0,-1, NAN, NAN};
-static const double char_2[] = {-0.7,0.5, -0.35,1, 0.35,1, 0.7,0.5, 0.7,0.2, -0.7,-1, 0.7,-1, NAN, NAN};
-static const double char_3[] = {-0.7,0.67, -0.35,1, 0.35,1, 0.7,0.67, 0.7,0.33, 0.35,0, -0.35,0, NAN,
-				0.35,0, 0.7,-0.33, 0.7,-0.67, 0.35,-1, -0.35,-1, -0.7,-0.67, NAN, NAN};
-static const double char_4[] = {-0.7,1, -0.7,0, 0.7,0, NAN, 0.7,1,0.7,-1, NAN, NAN};
-static const double char_5[] = {0.7,1, -0.7,1, -0.7,0, 0.35,0, 0.7,-0.33, 0.7,-0.67, 0.35,-1, -0.35,-1, -0.7,-0.67, NAN, NAN};
-static const double char_6[] = {-0.7,-0.33, -0.35,0, 0.35,0, 0.7,-0.33, 0.7,-0.67, 0.35,-1, -0.35,-1, -0.7,-0.67, NAN,
-				-0.7,-0.67, -0.7,0.67, -0.35,1, 0.35,1, 0.7,0.67, NAN, NAN};
-static const double char_7[] = {-0.7,1, 0.7,1, -0.35,-1, NAN, NAN};
-static const double char_8[] = {-0.35,0, -0.7,0.33, -0.7,0.67, -0.35,1, 0.35,1, 0.7,0.67, 0.7,0.33, 0.35,0, -0.35,0, NAN,
-				0.35,0, 0.7,-0.33, 0.7,-0.67, 0.35,-1, -0.35,-1, -0.7,-0.67, -0.7,-0.33, -0.35,0, NAN, NAN};
-static const double char_9[] = {0.7,0.33, 0.35,0, -0.35,0, -0.7,0.33, -0.7,0.67, -0.35,1, 0.35,1, 0.7,0.67, NAN,
-				0.7,0.67, 0.7,-0.67, 0.35,-1, -0.35,-1, -0.7,-0.67, NAN, NAN};
-static const double period[] = {0.2,-1, -0.2,-1, -0.2,-0.7, 0.2,-0.7, 0.2,-1, NAN, NAN};
-static const double comma[]  = {0.2,-1 -0.2,-1, -0.2,-0.7, 0.2,-0.7, 0.2,-1.2, NAN, NAN};
-static const double hyphen[] = {-0.7,0, 0.7,0, NAN, NAN};
-static const double char_x[] = {-0.7,1,  0.7,-1, NAN,
-				-0.7,-1, 0.7,1,  NAN, NAN};
-
-static void AddChar(RenderVert &vert, char ch, double x_offset) {
-  const double *lines;
-  
-  switch (ch) {
-  case '0': lines = char_0; break;
-  case '1': lines = char_1; break;
-  case '2': lines = char_2; break;
-  case '3': lines = char_3; break;
-  case '4': lines = char_4; break;
-  case '5': lines = char_5; break;
-  case '6': lines = char_6; break;
-  case '7': lines = char_7; break;
-  case '8': lines = char_8; break;
-  case '9': lines = char_9; break;
-  case '.': lines = period; break;
-  case ',': lines = comma;  break;
-  case '-': lines = hyphen; break;
-  default:  lines = char_x; break;
-  }
-
-  AddPolyLines(vert, lines, x_offset);
-}
+const string font_face("Sans");
 
 void Render::draw_string(const float color[4], const Vector3d &pos, const string s, double fontheight) {
-  if (fontheight <= 0) return;
+  if (fontheight <= 0)
+    return;
+  fontheight *= 1.5;
 
-  size_t len = s.size();
-  double char_height = fontheight / get_height();
-  double char_width  = fontheight * 5.0 / 8.0 / get_width();
+  // Determine text size
+  Cairo::RefPtr<Cairo::ImageSurface> dummy_surface =
+    Cairo::ImageSurface::create(Cairo::FORMAT_A1, 1, 1);
+  Cairo::RefPtr< Cairo::Context > dummy = Cairo::Context::create(dummy_surface);
+  Cairo::TextExtents te;
+  dummy->select_font_face(font_face, Cairo::FONT_SLANT_NORMAL, Cairo::FONT_WEIGHT_BOLD);
+  dummy->set_font_size(fontheight);
+  dummy->get_text_extents(s, te);
   
+  //cout << "Fontheight: " << fontheight << ", " << te.height << endl;  
+  
+  size_t border = max(fontheight / 5.0, 3.0);
+  size_t width  = te.width + 2 * border;
+  size_t height = te.height + 2 * border;
+  size_t radius = 2*border;
+  
+  // Draw text
+  Cairo::RefPtr<Cairo::ImageSurface> surface =
+    Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, width, height);
+  Cairo::RefPtr< Cairo::Context > cr = Cairo::Context::create(surface); 
+  cr->select_font_face(font_face, Cairo::FONT_SLANT_NORMAL, Cairo::FONT_WEIGHT_BOLD);
+  cr->set_font_size(fontheight);
+  cr->set_source_rgba(0.0, 0.0, 0.0, 0.0);
+  cr->paint();
+  cr->set_source_rgba(0.0, 0.0, 0.0, 0.5);
+  cr->begin_new_sub_path();
+  cr->arc(        radius,          radius, radius,  M_PI,     -M_PI/2.0);
+  cr->arc(width - radius,          radius, radius, -M_PI/2.0,  0);
+  cr->arc(width - radius, height - radius, radius,  0,         M_PI/2.0);
+  cr->arc(        radius, height - radius, radius,  M_PI/2.0,  M_PI);
+  cr->close_path();
+  cr->fill();
+  cr->set_source_rgba(1.0, 0.0, 0.0, 1.0);
+  cr->move_to(border - te.x_bearing,
+	      border - te.y_bearing);
+  cr->show_text(s);
+  const uint32_t *data = (const uint32_t *) surface->get_data();
+
+  // Convert to rgba for use as a texture
+  const uint32_t *dcur = data, *dend = data + (width * height);
+  unsigned char image[width*height*4], *icur = image;
+  while (dcur < dend) {
+    *icur++ = *dcur >> 16;
+    *icur++ = *dcur >> 8;
+    *icur++ = *dcur;
+    *icur++ = *dcur++ >> 24;
+  }
+
+  // Map texture
+  double w = 2.0 * ((double) width) / get_width();
+  double h = 2.0 * ((double) height) / get_height();
   Vector4d pos4 = {pos.x(), pos.y(), pos.z(), 1};
   Vector3d tpos = hom(m_comb_transform * pos4);
-  double x = tpos.x() - char_width * len;
-  double y = tpos.y();
 
-  // cout << "String: " << s << " @ " << tpos << endl;
-  
   Transform3D trans;
-  trans.move(Vector3d(x, y, 1));
-  trans.scale_x(char_width);
-  trans.scale_y(char_height);
-  //SetTrans(trans.getTransform());
+  trans.move(Vector3d(tpos.x() - w/2, tpos.y() - h/2, 1));
+  trans.scale_x(w);
+  trans.scale_y(h);
 
-  float bg_color[4] = {0, 0, 0, 0.5};
   RenderVert vert;
-  vert.add(-1.2, -1.2, 0);
-  vert.add(-1.2,  1.2, 0);
-  vert.add(2.0 * len - 0.8, -1.2, 0);
-
-  vert.add(2.0 * len - 0.8, -1.2, 0);
-  vert.add(2.0 * len - 0.8,  1.2, 0);
-  vert.add(-1.2,  1.2, 0);
-  draw_triangles(bg_color, vert);
+  vert.add(0, 0, 0);
+  vert.add(1, 0, 0);
+  vert.add(1, 1, 0);
   
-  vert.clear();
-  for (size_t count = 0; count < len; count++)
-    AddChar(vert, s[count], 2.0 * count);
+  vert.add(0, 0, 0);
+  vert.add(1, 1, 0);
+  vert.add(0, 1, 0);
 
-  draw_lines(color, vert, 1.0);
+  glUseProgram(m_str_program);
+  SetUniform(m_str_trans, trans.getTransform());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+	       GL_UNSIGNED_BYTE, image);
   
-  //SetTrans(m_comb_transform);
+  glBindBuffer(GL_ARRAY_BUFFER, m_vao);
+  glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+  glBufferData(GL_ARRAY_BUFFER, vert.size(), vert.data(), GL_STREAM_DRAW);
+  
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
+  
+  glDrawArrays(GL_TRIANGLES, 0, vert.len() / 3);
 }
 
 void Render::draw_triangles(const float color[4], const RenderVert &vert) {
@@ -415,7 +439,7 @@ void Render::draw_triangles(const float color[4], const RenderVert &vert) {
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), BUFFER_OFFSET(3 * sizeof(GLfloat)));
 
-  glDrawArrays(GL_TRIANGLES, 0, vert.size() / (6 * sizeof(GLfloat)));  
+  glDrawArrays(GL_TRIANGLES, 0, vert.len() / 6);  
 }
 
 void Render::draw_lines(const float color[4], const RenderVert &vert, float line_width) {
@@ -430,7 +454,7 @@ void Render::draw_lines(const float color[4], const RenderVert &vert, float line
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-  glDrawArrays(GL_LINES, 0, vert.size() / (3 * sizeof(GLfloat)));
+  glDrawArrays(GL_LINES, 0, vert.len() / 3);
 }
 
 bool Render::on_key_press_event(GdkEventKey* event) {

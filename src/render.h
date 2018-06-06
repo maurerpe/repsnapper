@@ -31,19 +31,21 @@ class Settings;
 
 class RenderVert {
  private:
-  vector< float > vec;
+  vector< GLfloat > vec;
 
  public:
   RenderVert() {};
   ~RenderVert() {};
   void clear() {vec.clear();};
+
   void add(float x, float y, float z) {vec.push_back(x); vec.push_back(y); vec.push_back(z);};
   void add(float v[3]) {add(v[0], v[1], v[2]);};
   void add(double v[3]) {add(v[0], v[1], v[2]);};
   void add(Vector3d v) {add(v[0], v[1], v[2]);};
-  
+
+  size_t len() const {return vec.size();};
   size_t size() const {return vec.size() * sizeof(float);};
-  const float *data() const {return &vec[0];};
+  const GLfloat *data() const {return &vec[0];};
 };
 
 class Render : public Gtk::GLArea {
@@ -70,11 +72,14 @@ class Render : public Gtk::GLArea {
   GLuint m_line_color;
   GLuint m_line_program;
 
-  GLuint m_tri_vertex;
   GLuint m_tri_trans;
   GLuint m_tri_light;
   GLuint m_tri_color;
   GLuint m_tri_program;
+
+  GLuint m_str_trans;
+  GLuint m_str_textr;
+  GLuint m_str_program;
   
   float m_zoom;
   void CenterView();
