@@ -1404,6 +1404,8 @@
                                   <object class="GtkSpinButton" id="Printer.ExtrudeAmount">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
+                                    <property name="climb_rate">1</property>
+                                    <property name="value">10</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -1427,6 +1429,9 @@
                                   <object class="GtkSpinButton" id="Printer.ExtrudeSpeed">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
+                                    <property name="climb_rate">0.5</property>
+                                    <property name="digits">1</property>
+                                    <property name="value">1.5</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -1807,7 +1812,7 @@
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkCheckButton">
+                      <object class="GtkCheckButton" id="Display.DisplayBBox">
                         <property name="label" translatable="yes">Bounding Boxes</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -1825,7 +1830,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkCheckButton">
+                          <object class="GtkCheckButton" id="Display.DisplayPolygons">
                             <property name="label" translatable="yes">Shapes</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>

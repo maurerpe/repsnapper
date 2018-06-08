@@ -40,7 +40,7 @@ class View::TranslationSpinRow
 
 };
 
-class View::TempRow : public Gtk::HBox
+class View::TempRow : public Gtk::Box
 {
 
  public:
@@ -62,7 +62,7 @@ class View::TempRow : public Gtk::HBox
 
 };
 
-class View::AxisRow : public Gtk::HBox
+class View::AxisRow : public Gtk::Box
 {
 
  public:
@@ -83,7 +83,7 @@ class View::AxisRow : public Gtk::HBox
 
 
 
-class View::ExtruderRow : public Gtk::HBox
+class View::ExtruderRow : public Gtk::Box
 {
  public:
   ExtruderRow(Printer *printer);
