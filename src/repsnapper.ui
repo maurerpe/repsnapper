@@ -881,6 +881,7 @@
                               <object class="GtkSpinButton" id="Slicing.LayerHeight">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
+                                <property name="digits">2</property>
                               </object>
                               <packing>
                                 <property name="left_attach">3</property>
