@@ -76,11 +76,11 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     codes[(unsigned char) letter] = num;
   }
   
-  if (isnormal(codes['F']))
+  if (isfinite(codes['F']))
     state.feedrate = codes['F'] * state.scale;
 
   cmd.spec_xy = 0;
-  if (isnormal(codes['X'])) {
+  if (isfinite(codes['X'])) {
     if (state.is_rel)
       dest[0] += codes['X'] * state.scale;
     else
@@ -88,7 +88,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     cmd.spec_xy = 1;
   }
   
-  if (isnormal(codes['Y'])) {
+  if (isfinite(codes['Y'])) {
     if (state.is_rel)
       dest[1] += codes['Y'] * state.scale;
     else
@@ -97,7 +97,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   }
 
   cmd.spec_z = 0;
-  if (isnormal(codes['Z'])) {
+  if (isfinite(codes['Z'])) {
     if (state.is_rel)
       dest[2] += codes['Z'] * state.scale;
     else
@@ -105,20 +105,20 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     cmd.spec_z = 1;
   }
   
-  if (isnormal(codes['I']))
+  if (isfinite(codes['I']))
     center[0] += codes['I'] * state.scale;
   
-  if (isnormal(codes['J']))
+  if (isfinite(codes['J']))
     center[1] += codes['J'] * state.scale;
   
-  if (isnormal(codes['K']))
+  if (isfinite(codes['K']))
     center[2] += codes['K'] * state.scale;
   
-  if (isnormal(codes['R']))
+  if (isfinite(codes['R']))
     radius = codes['R'] * state.scale;
   
   cmd.spec_e = 0;
-  if (isnormal(codes['E'])) {
+  if (isfinite(codes['E'])) {
     if (state.is_e_rel)
       ext_end += codes['E'] * state.scale;
     else
@@ -126,7 +126,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     cmd.spec_e = 1;
   }
   
-  if (isnormal(codes['T']))
+  if (isfinite(codes['T']))
     state.e_no = codes['T'];
   
   this_feed = state.feedrate;
@@ -137,17 +137,17 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   cmd.center = {0, 0, 0};
   cmd.angle = 0;
   cmd.ccw = 0;
-  cmd.e_start = state.ext;
-  cmd.e_stop = state.ext;
+  cmd.e_start = state.ext + state.ext_offset;
+  cmd.e_stop = state.ext + state.ext_offset;
   cmd.t_start = state.time;
   cmd.layerno = state.layerno;
   
-  if (isnormal('G')) {
+  if (isfinite('G')) {
     if (codes['G'] == 0.0) {
       // Rapid positioning
       cmd.type = line;
       cmd.stop = dest;
-      cmd.e_stop = ext_end;
+      cmd.e_stop = ext_end + state.ext_offset;
       state.pos = dest;
       state.ext = ext_end;
       this_feed = max_feedrate;
@@ -156,7 +156,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
       // Linear
       cmd.type = line;
       cmd.stop = dest;
-      cmd.e_stop = ext_end;
+      cmd.e_stop = ext_end + state.ext_offset;
       state.pos = dest;
       state.ext = ext_end;
       length = len3(dest[0] - pos[0], dest[1] - pos[1], dest[2] - pos[2]);
@@ -164,13 +164,13 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
       // Arc: 2 = CW, 3 = CCW
       cmd.type = arc;
       cmd.stop = dest;
-      cmd.e_stop = ext_end;
+      cmd.e_stop = ext_end + state.ext_offset;
       state.pos = dest;
       state.ext = ext_end;
       if (codes['G'] == 3.0)
 	cmd.ccw = 1;
       
-      if (isnormal(codes['R'])) {
+      if (isfinite(codes['R'])) {
 	radius = codes['R'];
 	Vector3d mid = (pos + dest) / 2.0;
 	double dx = mid.x() - pos.x();
@@ -223,16 +223,22 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     } else if (codes['G'] == 91.0) {
       state.is_rel = 1;
       state.is_e_rel = 1;
+    } else if (codes['G'] == 92.0) {
+      if (isfinite(codes['E'])) {
+	state.ext_offset += state.ext - codes['E'];
+	state.ext = codes['E'];
+	cout << "Extruder reset, new offset = " << state.ext_offset << endl;
+      }
     }
-  } else if (isnormal(codes['M'])) {
+  } else if (isfinite(codes['M'])) {
     if (codes['M'] == 82.0) {
       state.is_e_rel = 0;
     } else if (codes['M'] == 83.0) {
       state.is_e_rel = 1;
     } else if (codes['M'] == 204.0) {
-      if (isnormal(codes['P']))
+      if (isfinite(codes['P']))
 	state.accel = codes['P'] * state.scale;
-      if (isnormal(codes['S']))
+      if (isfinite(codes['S']))
 	state.accel = codes['S'] * state.scale;
     }
   }

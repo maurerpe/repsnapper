@@ -63,6 +63,7 @@ class GCode {
     Vector3d pos;
     double layer_z;
     double ext;
+    double ext_offset;
     double feedrate;
     double accel;
     double scale;
