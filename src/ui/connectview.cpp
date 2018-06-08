@@ -89,21 +89,14 @@ void ConnectView::find_ports() {
 
   string port_setting = m_settings->get_string("Hardware","PortName");
 
-#if GTK_VERSION_GE(2, 24)
   m_combo.append(port_setting);
-#else
-  m_combo.append_text(port_setting);
-#endif
 
   vector<string> ports = PrinterSerial::FindPorts();
 
   for(size_t i = 0; i < ports.size(); i++) {
+    cout << "Found port: " << ports[i] << endl;
     if (ports[i] != port_setting) {
-#if GTK_VERSION_GE(2, 24)
       m_combo.append(ports[i]);
-#else
-      m_combo.append_text(ports[i]);
-#endif
     }
   }
 }
@@ -111,29 +104,31 @@ void ConnectView::find_ports() {
 ConnectView::ConnectView (Printer *printer,
                           Settings *settings,
 			  bool show_connect)
-  : Gtk::VBox(), m_connect(), m_port_label(_("Port:")),
-    m_settings(settings), m_printer(printer)
+  : Gtk::Box(Gtk::ORIENTATION_VERTICAL), m_hbox(Gtk::ORIENTATION_HORIZONTAL),
+  m_connect(), m_port_label(_("Port:")),
+  m_combo(true), m_settings(settings), m_printer(printer)
 {
   m_port_align.set_padding(0, 0, 6, 0);
   m_port_align.add (m_port_label);
 
   m_setting_state = false;
 
-  add (m_hbox);
+  add(m_hbox);
   m_hbox.set_spacing(2);
-  m_hbox.add (m_image);
-  m_hbox.add (m_connect);
-  m_hbox.add (m_port_align);
-  m_hbox.add (m_combo);
+  m_hbox.set_orientation(Gtk::ORIENTATION_HORIZONTAL);
+  m_hbox.add(m_image);
+  m_hbox.add(m_connect);
+  m_hbox.add(m_port_align);
+  m_hbox.add(m_combo);
 
   m_connect.signal_toggled().connect(sigc::mem_fun(*this, &ConnectView::connect_toggled));
   m_combo.signal_changed().connect(sigc::mem_fun(*this, &ConnectView::signal_entry_changed));
   //m_combo.signal_popup_menu().connect(sigc::mem_fun(*this, &ConnectView::find_ports));
 
-  show_all ();
+  show_all();
   if (!show_connect)
-    m_connect.hide ();
-  serial_state_changed (SERIAL_DISCONNECTED);
+    m_connect.hide();
+  serial_state_changed(SERIAL_DISCONNECTED);
   m_printer->signal_serial_state_changed.connect
     (sigc::mem_fun(*this, &ConnectView::serial_state_changed));
 

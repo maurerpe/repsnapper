@@ -46,8 +46,6 @@ RSFilechooser::RSFilechooser(View * view_)
   modelfiles->set_name(_("Models"));
   modelfiles->add_pattern("*.stl");
   modelfiles->add_pattern("*.STL");
-  modelfiles->add_pattern("*.svg");
-  modelfiles->add_pattern("*.SVG");
   modelfiles->add_pattern("*.wrl");
   modelfiles->add_pattern("*.WRL");
 
@@ -67,7 +65,7 @@ RSFilechooser::RSFilechooser(View * view_)
   chooser->add_filter(gcodefiles);
   chooser->add_filter(settingsfiles);
 
-  view->connect_button ("load_save_button",
+  view->connect_button ("load_button",
 			sigc::mem_fun(*this, &RSFilechooser::do_action));
 
   chooser->signal_file_activated().connect
@@ -83,70 +81,32 @@ RSFilechooser::~RSFilechooser()
 
 void RSFilechooser::set_filetype(FileType type)
 {
-  if (!chooser) return;
-
-  Gtk::Button *button = NULL;
-  // if no argument re-apply the filetype we have already
-  // to prevent "recent files"
-  if ( type == UNDEF ) {
-    type = filetype;
-  }
-  else {
-    builder->get_widget ("load_save_button", button);
-  }
-  string labeltext = "";
-  switch(type) {
-  case GCODE:
-    chooser->set_select_multiple (false);
-    chooser->set_current_folder (GCodePath);
-    chooser->set_filter(gcodefiles);
-    labeltext += _("GCode");
-    break;
-  case SETTINGS:
-    chooser->set_select_multiple (false);
-    chooser->set_current_folder (SettingsPath);
-    chooser->set_filter(settingsfiles);
-    labeltext += _("Settings");
-    break;
-  case SVG:
-    chooser->set_current_folder (ModelPath);
-    chooser->set_filter(modelfiles);
-    labeltext += _("SVG");
-    break;
-  case MODEL:
-  default:
-    chooser->set_current_folder (ModelPath);
-    chooser->set_filter(modelfiles);
-    labeltext += _("Model");
-    break;
-  }
-  if (button != NULL) button->set_label(button->get_label() + " " + labeltext);
   filetype = type;
 }
 
 void RSFilechooser::set_loading(FileType type)
 {
-  chooser->set_action(Gtk::FILE_CHOOSER_ACTION_OPEN);
-  chooser->set_select_multiple (true);
-  view->show_widget("load_buttons", true);
-  view->show_widget("save_buttons", false);
-  Gtk::Button *button = NULL;
-  builder->get_widget ("load_save_button", button);
-  if (button) button->set_label(_("Load"));
+  //chooser->set_action(Gtk::FILE_CHOOSER_ACTION_OPEN);
+  //chooser->set_select_multiple (true);
+  //view->show_widget("load_buttons", true);
+  //view->show_widget("save_buttons", false);
+  //Gtk::Button *button = NULL;
+  //builder->get_widget ("load_button", button);
+  //if (button) button->set_label(_("Load"));
   set_filetype(type);
 }
 
 void RSFilechooser::set_saving(FileType type)
 {
-  chooser->set_select_multiple (false);
-  chooser->set_action(Gtk::FILE_CHOOSER_ACTION_SAVE);
-  chooser->set_do_overwrite_confirmation(true);
+  // chooser->set_select_multiple (false);
+  // chooser->set_action(Gtk::FILE_CHOOSER_ACTION_SAVE);
+  // chooser->set_do_overwrite_confirmation(true);
 
-  view->show_widget("save_buttons", true);
-  view->show_widget("load_buttons", false);
-  Gtk::Button *button = NULL;
-  builder->get_widget ("load_save_button", button);
-  if (button) button->set_label(_("Save"));
+  // view->show_widget("save_buttons", true);
+  // view->show_widget("load_buttons", false);
+  // Gtk::Button *button = NULL;
+  // builder->get_widget ("load_save_button", button);
+  // if (button) button->set_label(_("Save"));
   set_filetype(type);
 }
 
@@ -160,16 +120,6 @@ void RSFilechooser::do_action()
     case MODEL: view->do_save_stl(); break;
     case GCODE: view->do_save_gcode(); break;
     case SETTINGS: view->do_save_settings_as(); break;
-    case SVG:
-      {
-	bool singlelayer = false;
-	Gtk::CheckButton *mult;
-	builder->get_widget("save_multiple_svg", mult);
-	if (mult)
-	  singlelayer = mult->get_state();
-	view->do_slice_svg(singlelayer);
-      }
-      break;
     default: break;
     }
   }
@@ -208,4 +158,3 @@ void RSFilechooser::on_filechooser_preview(Gtk::FileChooserWidget *chooser)
   if (ftype != Gio::FILE_TYPE_NOT_KNOWN)
     view->preview_file(pfile);
 }
-

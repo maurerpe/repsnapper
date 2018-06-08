@@ -283,9 +283,10 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  //define blending factors
 
-  glDisable(GL_DEPTH_TEST);
-
-  //glEnable(GL_CULL_FACE);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_ALWAYS);
+  
+  glDisable(GL_CULL_FACE);
   
   glEnable(GL_LINE_SMOOTH);
   

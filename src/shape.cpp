@@ -418,28 +418,6 @@ void Shape::Rotate(const Vector3d & axis, const double & angle)
   CalcBBox();
 }
 
-// this is primitive, it just rotates triangle vertices
-void Shape::Twist(double angle)
-{
-  CalcBBox();
-  double h = Max.z()-Min.z();
-  double hangle=0;
-  Vector3d axis(0,0,1);
-  int count = (int)triangles.size();
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif
-  for (int i=0; i<count; i++) {
-    for (size_t j=0; j<3; j++)
-      {
-	hangle = angle * (triangles[i][j].z() - Min.z()) / h;
-	triangles[i][j] = triangles[i][j].rotate(hangle,axis);
-      }
-    triangles[i].calcNormal();
-  }
-  CalcBBox();
-}
-
 bool getLineSequences(const vector<Segment> lines, vector< vector<uint> > &connectedlines)
 {
   uint nlines = lines.size();
@@ -593,7 +571,7 @@ void Shape::draw(Render &render, const Settings &settings, bool highlight, uint 
   //cerr << "Shape::draw" <<  endl;
 
   if (settings.get_boolean("Display","DisplayPolygons")) {
-    draw_geometry(render, max_triangles);
+    draw_geometry(render, settings, max_triangles);
   }
   
   if (settings.get_boolean("Display","DisplayBBox")) {
@@ -664,10 +642,11 @@ void Shape::drawBBox(Render &render) const
   render.draw_string(color, pos, val.str(), 12);
 }
 
-void Shape::draw_geometry(Render &render, uint max_triangles)
+void Shape::draw_geometry(Render &render, const Settings &settings, uint max_triangles)
 {
   RenderVert vert;
-  float color[4] = {1.0, 1.0, 1.0, 0.5};
+  float color[4] = {1.0, 1.0, 1.0, 0};
+  color[3] = settings.get_double("Display","PolygonOpacity");
   
   for(size_t i = 0; i < triangles.size(); i++) {
     Triangle *tri = &triangles[i];

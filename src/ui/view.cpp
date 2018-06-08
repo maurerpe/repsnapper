@@ -90,11 +90,6 @@ void View::connect_tooltoggled(const char *name, const sigc::slot<void, Gtk::Tog
   }
 }
 
-/* FIXME: Dead code */
-void View::move_gcode_to_platform ()
-{
-}
-
 void View::convert_to_gcode ()
 {
   extruder_selected(); // be sure to get extruder settings from gui
@@ -141,11 +136,8 @@ void View::preview_file (Glib::RefPtr< Gio::File > file)
   m_model->settings.set_boolean("Display","DisplayPolygons",display_poly);
 }
 
-void View::load_stl ()
-{
-  m_filechooser->set_loading(RSFilechooser::MODEL);
+void View::load_stl () {
   show_notebooktab("file_tab", "controlnotebook");
-  // FileChooser::ioDialog (m_model, this, FileChooser::OPEN, FileChooser::STL);
 }
 
 void View::autoarrange ()
@@ -192,19 +184,6 @@ void View::do_load ()
   show_notebooktab("model_tab", "controlnotebook");
 }
 
-void View::do_slice_svg (bool singlelayer)
-{
-  PrintInhibitor inhibitPrint(m_printer);
-  std::vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
-  if (files.size()>0) {
-    if (!files[0]) return; // should never happen
-    if (files[0]->query_exists())
-      if (!get_userconfirm(_("Overwrite File?"), files[0]->get_basename()))
-	return;
-    m_model->SliceToSVG(files[0], singlelayer);
-  }
-}
-
 bool View::get_userconfirm(string maintext, string secondarytext) const
 {
   Gtk::MessageDialog *dialog = new Gtk::MessageDialog(maintext);
@@ -219,7 +198,7 @@ bool View::get_userconfirm(string maintext, string secondarytext) const
   return result;
 }
 
-void View::do_save_stl ()
+void View::do_save_stl()
 {
   PrintInhibitor inhibitPrint(m_printer);
   std::vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
@@ -288,13 +267,6 @@ void View::save_gcode ()
   //FileChooser::ioDialog (m_model, this, FileChooser::SAVE, FileChooser::GCODE);
 }
 
-
-void View::slice_svg ()
-{
-  m_filechooser->set_saving (RSFilechooser::SVG);
-  show_notebooktab("file_tab", "controlnotebook");
-  //FileChooser::ioDialog (m_model, this, FileChooser::SAVE, FileChooser::SVG);
-}
 
 void View::send_gcode ()
 {
@@ -718,41 +690,6 @@ void View::update_rot_value()
   toggle_block = false;
 }
 
-void View::twist_selection (double angle)
-{
-  vector<Shape*> shapes;
-  vector<TreeObject*> objects;
-  get_selected_objects (objects, shapes);
-  for (uint i=0; i<shapes.size() ; i++)
-    m_model->TwistObject (shapes[i], NULL, angle);
-  queue_draw();
-}
-
-void View::invertnormals_selection ()
-{
-  vector<Shape*> shapes;
-  vector<TreeObject*> objects;
-  get_selected_objects (objects, shapes);
-  if (shapes.size()>0)
-    for (uint i=0; i<shapes.size() ; i++)
-      m_model->InvertNormals(shapes[i], NULL);
-  else
-    for (uint i=0; i<objects.size() ; i++)
-      m_model->InvertNormals(NULL, objects[i]);
-  queue_draw();
-}
-
-void View::hollow_selection ()
-{
-  vector<Shape*> shapes;
-  vector<Matrix4d> transforms;
-  get_selected_shapes (shapes, transforms);
-  for (uint i=0; i<shapes.size() ; i++)
-    shapes[i]->makeHollow(3);
-  m_model->ModelChanged();
-  queue_draw();
-}
-
 void View::placeonplatform_selection ()
 {
   vector<Shape*> shapes;
@@ -792,17 +729,14 @@ void View::stl_added (Gtk::TreePath &path)
 
 void View::set_SliderBBox(double max_z)
 {
-  double smin = 0, smax = max(smin+0.001, max_z);
-  Gtk::HScale * scale;
-  m_builder->get_widget ("Display.LayerValue", scale);
+  double smax = max(0.001, max_z);
+  Gtk::Scale *scale;
+  m_builder->get_widget("Display.PolygonOpacity", scale);
   if (scale)
-    scale->set_range (smin, smax);
-  m_builder->get_widget ("Display.GCodeDrawStart", scale);
+    scale->set_range (0, 1);
+  m_builder->get_widget ("Display.GCodeLayer", scale);
   if (scale)
-    scale->set_range (smin, smax);
-  m_builder->get_widget ("Display.GCodeDrawEnd", scale);
-  if (scale)
-    scale->set_range (smin, smax);
+    scale->set_range(0, smax);
 }
 
 void View::model_changed ()
@@ -842,7 +776,6 @@ void View::gcode_changed ()
 {
   set_SliderBBox(m_model->gcode.max_z());
   // show gcode result
-  show_notebooktab("gcode_result_win", "gcode_text_notebook");
   show_notebooktab("gcode_tab", "controlnotebook");
 }
 
@@ -992,7 +925,7 @@ bool View::key_pressed_event(GdkEventKey *event)
 View::View(BaseObjectType* cobject,
 	   const Glib::RefPtr<Gtk::Builder>& builder)
   : Gtk::Window(cobject),
-    m_builder(builder), m_model(NULL), printtofile_name("")
+    m_builder(builder), m_model(NULL)
 {
   toggle_block = false;
 
@@ -1009,33 +942,17 @@ View::View(BaseObjectType* cobject,
   connect_action ("SaveSettings",    sigc::mem_fun(*this, &View::save_settings));
   connect_action ("SaveSettingsAs",  sigc::mem_fun(*this, &View::save_settings_as));
 
-  // pronterface-mode
-  connect_button ("printtofilebutton",      sigc::mem_fun(*this, &View::PrintToFile) );
-#if 0
-  // Simple tab
-  connect_button ("s_load_stl",      sigc::mem_fun(*this, &View::load_stl) );
-  connect_button ("s_convert_gcode", sigc::mem_fun(*this, &View::ConvertToGCode) );
-  connect_button ("s_load_gcode",    sigc::mem_fun(*this, &View::load_gcode) );
-  connect_button ("s_print",         sigc::mem_fun(*this, &View::SimplePrint) );
-#endif
-
   // View tab
-  connect_button ("m_load_stl",      sigc::mem_fun(*this, &View::load_stl) );
   connect_button ("Misc.AutoArrange",sigc::mem_fun(*this, &View::autoarrange) );
   connect_button ("m_save_stl",      sigc::mem_fun(*this, &View::save_stl) );
-  connect_button ("m_slice_svg",     sigc::mem_fun(*this, &View::slice_svg) );
   connect_button ("m_delete",        sigc::mem_fun(*this, &View::delete_selected_objects) );
   connect_button ("m_duplicate",     sigc::mem_fun(*this, &View::duplicate_selected_objects) );
   connect_button ("m_split",         sigc::mem_fun(*this, &View::split_selected_objects) );
   connect_button ("m_merge",         sigc::mem_fun(*this, &View::merge_selected_objects) );
   connect_button ("m_divide",        sigc::mem_fun(*this, &View::divide_selected_objects) );
   connect_button ("m_auto_rotate",   sigc::mem_fun(*this, &View::auto_rotate) );
-  connect_button ("m_normals",       sigc::mem_fun(*this, &View::invertnormals_selection));
-  connect_button ("m_hollow",        sigc::mem_fun(*this, &View::hollow_selection));
   connect_button ("m_platform",      sigc::mem_fun(*this, &View::placeonplatform_selection));
   connect_button ("m_mirror",        sigc::mem_fun(*this, &View::mirror_selection));
-  connect_button ("twist_neg",       sigc::bind(sigc::mem_fun(*this, &View::twist_selection), -M_PI/12));
-  connect_button ("twist_pos",       sigc::bind(sigc::mem_fun(*this, &View::twist_selection), M_PI/12));
 
   connect_button ("progress_stop",   sigc::mem_fun(*this, &View::stop_progress));
 
@@ -1100,7 +1017,6 @@ View::View(BaseObjectType* cobject,
   connect_button ("g_convert_gcode", sigc::mem_fun(*this, &View::convert_to_gcode) );
   connect_button ("g_save_gcode",    sigc::mem_fun(*this, &View::save_gcode) );
   connect_button ("g_send_gcode",    sigc::mem_fun(*this, &View::send_gcode) );
-  connect_button ("g_platform",      sigc::mem_fun(*this, &View::move_gcode_to_platform) );
 
   // Print tab
   m_builder->get_widget ("p_print", m_print_button);
@@ -1257,65 +1173,6 @@ void View::showAllWidgets() {
   m_builder->get_widget("main_window", pWindow);
   if (pWindow)
     pWindow->show_all();
-}
-
-// this mode will not connect to a printer
-// instead shows a "save gcode" button
-// for use with pronterface
-// call repsnapper with -i and -o filenames
-void View::setNonPrintingMode(bool noprinting, string filename) {
-  if (noprinting) {
-    Gtk::HBox *hbox = NULL;
-    m_builder->get_widget("printer controls", hbox);
-    if (hbox)
-      hbox->hide();
-    else cerr << "No printer controls GUI element found" << endl;
-    Gtk::Notebook *nb = NULL;
-    m_builder->get_widget("controlnotebook", nb);
-    if (nb) {
-      Gtk::VBox *vbox = NULL;
-      m_builder->get_widget("printer_tab", vbox);
-      if (vbox) {
-	int num = nb->page_num(*vbox);
-	nb->remove_page(num);
-      } else cerr << "No printer_tab GUI element found" << endl;
-      m_builder->get_widget("logs_tab", vbox);
-      if (vbox) {
-	int num = nb->page_num(*vbox);
-	nb->remove_page(num);
-      } else cerr << "No logs_tab GUI element found" << endl;
-    } else cerr << "No controlnotebook GUI element found" << endl;
-    Gtk::Label *lab = NULL;
-    m_builder->get_widget("outfilelabel", lab);
-    if (lab) {
-      lab->set_label(_("Output File: ")+filename);
-      printtofile_name = filename;
-    }
-    else cerr << "No outfilelabel GUI element found" << endl;
-    show_notebooktab("model_tab", "controlnotebook");
-  } else {
-    Gtk::HBox *hbox = NULL;
-    m_builder->get_widget("printtofile", hbox);
-    if (hbox)
-      hbox->hide();
-    else cerr << "No  printtfile GUI element found" << endl;
-  }
-}
-
-void View::PrintToFile() {
-  if (printtofile_name != "") {
-    if (m_model) {
-      if (m_model->gcode.empty()) {
-	alert(Gtk::MESSAGE_WARNING,"No GCode","Generate GCode first");
-	return;
-      }
-      Glib::RefPtr<Gio::File> file = Gio::File::create_for_path(printtofile_name);
-      m_model->WriteGCode(file);
-      cerr << "saved GCode to file " << printtofile_name << endl;
-      Gtk::Main::quit();
-    }
-    else cerr << " no model " << endl;
-  } else cerr << " no filename " << endl;
 }
 
 bool View::saveWindowSizeAndPosition(Settings &settings) const
@@ -1756,7 +1613,7 @@ void View::Draw(vector<Gtk::TreeModel::Path> selected, bool objects_only)
     //}
     //else {
     //m_model->gcode.currentCursorWhere = Vector3d::ZERO;
-    m_model->GlDrawGCode(*m_renderer, m_model->settings.get_double("Display", "GCodeDrawStart"));
+    m_model->GlDrawGCode(*m_renderer, m_model->settings.get_double("Display", "GCodeLayer"));
     //}
   }
   

@@ -43,8 +43,6 @@ public:
 	string gcode_output_path;
 	string settings_path;
 	string printerdevice_path;
-  string svg_output_path;
-  bool svg_single_output;
 	std::vector<std::string> files;
 private:
 	void init ()
@@ -66,11 +64,6 @@ private:
 			     "  -t, --no-gui           act as a head-less renderer\n"
 			     "  -i, --input [file]     read input Model [file]\n"
 			     "  -b, --binary [file]    batch convert input file to binary STL\n"
-			     "  -o, --output [file]    if not head-less (-t),\n"
-			     "                         enter non-printing GUI mode\n"
-			     "                         only able to output gcode to [file]\n"
-			     "  --svg [file]           slice to SVG file\n"
-			     "  --ssvg [file]          slice to single layer SVG files [file]NNNN.svg\n"
 			     "  -s, --settings [file]  read render settings [file]\n"
 			     "  -h, --help             show this help\n"
 			     "\n"
@@ -98,9 +91,6 @@ public:
 					   !strcmp (arg, "--printnow")))
 			        printerdevice_path = argv[++i];
 
-			else if (param && (!strcmp (arg, "-o") ||
-					   !strcmp (arg, "--output")))
-				gcode_output_path = argv[++i];
 			else if (param && (!strcmp (arg, "-s") ||
 					   !strcmp (arg, "--settings")))
 				settings_path = argv[++i];
@@ -109,14 +99,6 @@ public:
 			else if (!strcmp (arg, "--help") || !strcmp (arg, "-h") ||
 				 !strcmp (arg, "/?"))
 				usage();
-			else if (!strcmp (arg, "--svg")) {
-				svg_output_path = argv[++i];
-				svg_single_output = false;
-			}
-			else if (!strcmp (arg, "--ssvg")) {
-				svg_output_path = argv[++i];
-				svg_single_output = true;
-			}
 			else if (!strcmp (arg, "--version") || !strcmp (arg, "-v"))
 				version();
 			else
@@ -250,12 +232,6 @@ int main(int argc, char **argv)
   if (conf->query_exists())
     model->LoadConfig(conf);
 
-  bool nonprintingmode = false;
-
-  if (opts.gcode_output_path.size() > 0) {
-    nonprintingmode = true;
-  }
-
   if (opts.printerdevice_path.size() > 0) {
     model->settings.set_string("Hardware","PortName",opts.printerdevice_path);
   }
@@ -286,10 +262,6 @@ int main(int argc, char **argv)
 	model->ConvertToGCode();
         model->WriteGCode(Gio::File::create_for_path(opts.gcode_output_path));
       }
-      else if (opts.svg_output_path.size() > 0) {
-	model->SliceToSVG(Gio::File::create_for_path(opts.svg_output_path),
-			  opts.svg_single_output);
-      }
       else if (opts.binary_output_path.size() > 0) {
 	model->SaveStl(Gio::File::create_for_path(opts.binary_output_path));
       }
@@ -299,8 +271,6 @@ int main(int argc, char **argv)
   }
 
   View* mainwin = View::create(model);
-
-  mainwin->setNonPrintingMode(nonprintingmode, opts.gcode_output_path);
 
   Glib::RefPtr<Gio::File> iconfile = find_global_config("repsnapper.svg");
   mainwin->set_icon_file(iconfile);

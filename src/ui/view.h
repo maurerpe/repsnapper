@@ -27,7 +27,7 @@
 
 #include "filechooser.h"
 
-static bool UNUSED toggle_block = false; // blocks signals for togglebuttons etc.
+static bool UNUSED toggle_block = false; // blocks signals for togglebuttons etc
 
 
 class View : public Gtk::Window
@@ -47,7 +47,6 @@ class View : public Gtk::Window
   void gcode_status();
   void load_gcode();
   void save_gcode();
-  void move_gcode_to_platform ();
   void convert_to_gcode();
   void load_stl();
   void autoarrange();
@@ -56,8 +55,6 @@ class View : public Gtk::Window
   void do_save_stl();
   void do_save_gcode();
   void do_save_settings_as();
-  void slice_svg();
-  void do_slice_svg(bool singlelayer=false);
 
   void send_gcode();
   void printing_changed();
@@ -168,10 +165,6 @@ class View : public Gtk::Window
   void stop_progress();
 
  public:
-  void setNonPrintingMode(bool noprinting=true, string filename="");
-  void PrintToFile();
-  string printtofile_name;
-
   Model *get_model() { return m_model; }
   ViewProgress *get_view_progress() { return m_progress; }
   bool get_selected_objects(vector<TreeObject*> &objects, vector<Shape*> &shapes);
@@ -190,9 +183,6 @@ class View : public Gtk::Window
   bool rotate_selection (Vector3d axis, double angle);
   void scale_selection();
   void scale_selection_to(const double factor);
-  void twist_selection (double angle);
-  void invertnormals_selection ();
-  void hollow_selection ();
   void mirror_selection ();
   void placeonplatform_selection ();
   void stl_added (Gtk::TreePath &path);

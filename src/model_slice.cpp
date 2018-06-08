@@ -198,6 +198,3 @@ void Model::ConvertToGCode() {
   gcode.Parse(this, settings.get_extruder_letters(), m_progress, iss);
   cout << "Slicing complete" << endl;
 }
-
-void Model::SliceToSVG(Glib::RefPtr<Gio::File>, bool) {
-}

@@ -468,13 +468,6 @@ void Model::RotateObject(Shape* shape, TreeObject* object, Vector4d rotate) {
   ModelChanged();
 }
 
-void Model::TwistObject(Shape *shape, TreeObject *object, double angle) {
-  if (!shape)
-    return;
-  shape->Twist(angle);
-  ModelChanged();
-}
-
 void Model::OptimizeRotation(Shape *shape, TreeObject *object) {
   if (!shape)
     return; // FIXME: rotate entire Objects ...
@@ -482,18 +475,10 @@ void Model::OptimizeRotation(Shape *shape, TreeObject *object) {
   ModelChanged();
 }
 
-void Model::InvertNormals(Shape *shape, TreeObject *object) {
-  if (shape)
-    shape->invertNormals();
-  else // if (object) object->invertNormals();
-    return;
-  ModelChanged();
-}
-
 void Model::Mirror(Shape *shape, TreeObject *object) {
   if (shape)
     shape->mirror();
-  else // if (object) object->mirror();
+  else
     return;
   ModelChanged();
 }

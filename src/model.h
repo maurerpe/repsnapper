@@ -80,17 +80,12 @@ public:
 	void ScaleObjectY(Shape *shape, TreeObject *object, double scale);
 	void ScaleObjectZ(Shape *shape, TreeObject *object, double scale);
 	void RotateObject(Shape *shape, TreeObject *object, Vector4d rotate);
-	void TwistObject(Shape *shape, TreeObject *object, double angle);
 	void PlaceOnPlatform(Shape *shape, TreeObject *object);
 	bool updateStatusBar(GdkEventCrossing *event, Glib::ustring = "");
-	void InvertNormals(Shape *shape, TreeObject *object);
 	void Mirror(Shape *shape, TreeObject *object);
 
 	vector<Shape*> preview_shapes;
 	double get_preview_Z() {return 0.0;};
-
-	// Slicing
-	void SliceToSVG(Glib::RefPtr<Gio::File> file, bool single_layer=false);
 
 	// GCode Functions
 	void init();
@@ -143,8 +138,6 @@ public:
 	GCode gcode;
 
 	void SetIsPrinting(bool printing) { is_printing = printing; };
-
-	string getSVG(int single_layer_no = -1) const;
 
         bool isCalculating() const { return is_calculating; };
  private:

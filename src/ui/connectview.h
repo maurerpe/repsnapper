@@ -24,8 +24,8 @@
 
 #include "printer/printer.h"
 
-class ConnectView : public Gtk::VBox {
-  Gtk::HBox	     m_hbox;
+class ConnectView : public Gtk::Box {
+  Gtk::Box	     m_hbox;
   Gtk::Image         m_image;
   Gtk::ToggleButton  m_connect;
   Gtk::Label         m_port_label;

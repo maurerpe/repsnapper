@@ -75,7 +75,6 @@ public:
     virtual void CalcBBox();
 	// Rotation for manual rotate and used by OptimizeRotation:
     virtual void Rotate(const Vector3d & axis, const double &angle);
-	void Twist(double angle);
 
 	virtual void move(Vector3d delta){ transform3D.move(delta); CalcBBox();};
 
@@ -137,7 +136,7 @@ private:
     bool hasAdjacentTriangleTo(const Triangle &triangle,
 			       double sqdistance = 0.05) const;
     
-    virtual void draw_geometry(Render &render, uint max_triangles=0);
+    virtual void draw_geometry(Render &render, const Settings &settings, uint max_triangles=0);
     void drawBBox(Render &render) const;
 };
 
