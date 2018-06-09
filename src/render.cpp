@@ -144,7 +144,7 @@ static GLuint compile_program(const char *vertex_code, const char *fragment_code
 void Render::init_shaders() {
   m_line_program = compile_program(
     // Vertex shader
-    "#version 330\n"
+    "#version 330 core\n"
     "layout (location = 0) in vec3 vp;"
     "uniform mat4 trans;"
     "void main() {"
@@ -152,7 +152,7 @@ void Render::init_shaders() {
     "}",
 
     // Fragment shader
-    "#version 330\n"
+    "#version 330 core\n"
     "out vec4 frag_color;"
     "uniform vec4 color;"
     "void main() {"
@@ -164,7 +164,7 @@ void Render::init_shaders() {
 
   m_tri_program = compile_program(
     // Vertex shader
-    "#version 330\n"
+    "#version 330 core\n"
     "layout (location = 0) in vec3 vp;"
     "layout (location = 1) in vec3 norm;"
     "uniform mat4 trans;"
@@ -176,7 +176,7 @@ void Render::init_shaders() {
     "}",
 
     // Fragment shader
-    "#version 330\n"
+    "#version 330 core\n"
     "in float brightness;"
     "out vec4 frag_color;"
     "uniform vec4 color;"
@@ -190,7 +190,7 @@ void Render::init_shaders() {
   
   m_str_program = compile_program(
     // Vertex shader
-    "#version 330\n"
+    "#version 330 core\n"
     "layout (location = 0) in vec3 vp;"
     "uniform mat4 trans;"
     "out vec2 textr_uv;"
@@ -200,7 +200,7 @@ void Render::init_shaders() {
     "}",
 
     // Fragment shader
-    "#version 330\n"
+    "#version 330 core\n"
     "in vec2 textr_uv;"
     "out vec4 frag_color;"
     "uniform sampler2D textr;"
@@ -561,8 +561,8 @@ bool Render::on_scroll_event(GdkEventScroll* event) {
     // Zoom view
     m_zoom *= factor;
     
-    if (m_zoom < 0.1)
-      m_zoom = 0.2;
+    if (m_zoom < 0.02)
+      m_zoom = 0.02;
     else if (m_zoom > 30)
       m_zoom = 30;
   }

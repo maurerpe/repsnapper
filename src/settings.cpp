@@ -71,22 +71,18 @@ void set_up_combobox(Gtk::ComboBox *combo, vector<string> values)
     //cerr << " adding " << values[i] << endl;
     store->append()->set_value(0, Glib::ustring(values[i].c_str()));
   }
-#if GTK_VERSION_GE(2, 24)
   if (!combo->get_has_entry())
-#endif
     combo->set_active(0);
   //cerr << "ok" << endl;
 }
 
 string combobox_get_active_value(Gtk::ComboBox *combo){
-#if GTK_VERSION_GE(2, 24)
   if (combo->get_has_entry())
     {
       Gtk::Entry *entry = combo->get_entry();
       if (entry)
 	return string(entry->get_text());
     } else
-#endif
     {
       uint c = combo->get_active_row_number();
       Glib::ustring rval;
@@ -104,7 +100,6 @@ bool combobox_set_to(Gtk::ComboBox *combo, string value)
   uint nch = model->children().size();
   Glib::ustring rval;
   Glib::ustring gvalue(value.c_str());
-#if GTK_VERSION_GE(2, 24)
   if (combo->get_has_entry())
     {
       Gtk::Entry *entry = combo->get_entry();
@@ -114,7 +109,6 @@ bool combobox_set_to(Gtk::ComboBox *combo, string value)
       }
     }
   else
-#endif
     {
       for (uint c=0; c < nch; c++) {
 	Gtk::TreeRow row = model->children()[c];

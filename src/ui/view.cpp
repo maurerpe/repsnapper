@@ -407,10 +407,12 @@ void View::edit_custombutton(string name, string code, Gtk::ToolButton *button)
   Gtk::TextView *tview;
   m_builder->get_widget ("custom_gcode", tview);
   tview->get_buffer()->set_text(code);
+  dialog->set_transient_for(*this);
   dialog->show();
   // send result:
   dialog->signal_response().connect (sigc::bind(sigc::mem_fun(*this, &View::hide_custombutton_dlg), dialog));
 }
+
 void View::hide_custombutton_dlg(int code, Gtk::Dialog *dialog)
 {
   Gtk::Entry *nameentry;
@@ -420,6 +422,7 @@ void View::hide_custombutton_dlg(int code, Gtk::Dialog *dialog)
   m_builder->get_widget ("custom_gcode", tview);
   string gcode = tview->get_buffer()->get_text();
   if (code==1) {  // OK clicked
+    add_custombutton(name, gcode);
     // save in settings:
     m_model->settings.set_user_button(name, gcode);
   }
