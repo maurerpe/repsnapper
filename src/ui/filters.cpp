@@ -23,7 +23,6 @@ void Filters::attach_filters(Gtk::FileChooser &chooser, Filters::FileType type) 
   Glib::RefPtr< Gtk::FileFilter > allfiles = Gtk::FileFilter::create();
   allfiles->set_name(_("All Files"));
   allfiles->add_pattern("*");
-
   
   Glib::RefPtr< Gtk::FileFilter > spec = Gtk::FileFilter::create();
   switch (type) {

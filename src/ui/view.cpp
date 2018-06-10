@@ -138,12 +138,6 @@ void View::load_stl () {
   show_notebooktab("file_tab", "controlnotebook");
 }
 
-void View::autoarrange ()
-{
-  vector<Gtk::TreeModel::Path> path = m_treeview->get_selection()->get_selected_rows();
-  m_model->AutoArrange(path);
-}
-
 void View::toggle_fullscreen()
 {
   static bool is_fullscreen = false;
@@ -957,7 +951,6 @@ View::View(BaseObjectType* cobject,
     w->set_sensitive(true);
 
   // View tab
-  connect_button ("Misc.AutoArrange",sigc::mem_fun(*this, &View::autoarrange) );
   connect_button ("m_save_stl",      sigc::mem_fun(*this, &View::save_stl) );
   connect_button ("m_delete",        sigc::mem_fun(*this, &View::delete_selected_objects) );
   connect_button ("m_duplicate",     sigc::mem_fun(*this, &View::duplicate_selected_objects) );

@@ -206,7 +206,6 @@ void Model::ReadGCode(Glib::RefPtr<Gio::File> file) {
   is_calculating=false;
 }
 
-
 void Model::ModelChanged() {
   if (m_inhibit_modelchange) return;
   if (objtree.empty()) return;
@@ -216,57 +215,6 @@ void Model::ModelChanged() {
     setCurrentPrintingLine(0);
     m_model_changed.emit();
   }
-}
-
-// rearrange unselected shapes in random sequence
-bool Model::AutoArrange(vector<Gtk::TreeModel::Path> &path) {
-  // all shapes
-  vector<Shape*>   allshapes;
-  vector<Matrix4d> transforms;
-  objtree.get_all_shapes(allshapes, transforms);
-
-  // selected shapes
-  vector<Shape*>   selshapes;
-  vector<Matrix4d> seltransforms;
-  objtree.get_selected_shapes(path, selshapes, seltransforms);
-
-  // get unselected shapes
-  vector<Shape*>   unselshapes;
-  vector<Matrix4d> unseltransforms;
-
-  for(uint s=0; s < allshapes.size(); s++) {
-    bool issel = false;
-    for(uint ss=0; ss < selshapes.size(); ss++)
-      if (selshapes[ss] == allshapes[s]) {
-	issel = true; break;
-      }
-    if (!issel) {
-      unselshapes.    push_back(allshapes[s]);
-      unseltransforms.push_back(transforms[s]);
-    }
-  }
-
-  // find place for unselected shapes
-  int num = unselshapes.size();
-  vector<int> rand_seq(num,1); // 1,1,1...
-  partial_sum(rand_seq.begin(), rand_seq.end(), rand_seq.begin()); // 1,2,3,...,N
-
-  Glib::TimeVal timeval;
-  timeval.assign_current_time();
-  srandom((unsigned long)(timeval.as_double()));
-  random_shuffle(rand_seq.begin(), rand_seq.end()); // shuffle
-
-  for(int s=0; s < num; s++) {
-    int index = rand_seq[s]-1;
-    // use selshapes as vector to fill up
-    Vector3d trans = FindEmptyLocation(selshapes, seltransforms, unselshapes[index]);
-    selshapes.push_back(unselshapes[index]);
-    seltransforms.push_back(unseltransforms[index]); // basic transform, not shape
-    selshapes.back()->transform3D.move(trans);
-    CalcBoundingBoxAndCenter();
-  }
-  ModelChanged();
-  return true;
 }
 
 Vector3d Model::FindEmptyLocation(const vector<Shape*> &shapes,

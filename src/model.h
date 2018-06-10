@@ -114,7 +114,6 @@ public:
 
 	void CalcBoundingBoxAndCenter(bool selected_only = false);
 	Vector3d GetViewCenter();
-        bool AutoArrange(vector<Gtk::TreeModel::Path> &iter);
 	Vector3d FindEmptyLocation(const vector<Shape*> &shapes,
 				   const vector<Matrix4d> &transforms,
 				   const Shape *shape);

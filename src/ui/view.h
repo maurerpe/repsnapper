@@ -48,7 +48,6 @@ class View : public Gtk::ApplicationWindow
   void save_gcode();
   void convert_to_gcode();
   void load_stl();
-  void autoarrange();
   void save_stl();
   void do_load_stl();
 
