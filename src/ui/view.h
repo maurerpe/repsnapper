@@ -156,7 +156,6 @@ class View : public Gtk::ApplicationWindow
   bool key_pressed_event(GdkEventKey *event);
 
   void setModel (Model *model);
-  void showAllWidgets();
 
   bool saveWindowSizeAndPosition(Settings &settings) const;
 
@@ -207,8 +206,8 @@ class View : public Gtk::ApplicationWindow
   void set_logging(bool);
   bool logprint_timeout_cb();
 
-  void Draw(vector<Gtk::TreeModel::Path> selected, bool objects_only=false);
-  void DrawGrid ();
+  void Draw(vector<Gtk::TreeModel::Path> selected);
+  void DrawGrid();
   void showCurrentPrinting(unsigned long line);
 
   Glib::Mutex mutex;

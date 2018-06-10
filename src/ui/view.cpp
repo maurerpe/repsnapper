@@ -1043,18 +1043,17 @@ View::View(BaseObjectType* cobject,
   connect_button ("i_extrude_length", sigc::mem_fun(*this, &View::run_extruder) );
 
   connect_button ("i_new_custombutton", sigc::mem_fun(*this, &View::new_custombutton) );
-
-
+  
   // 3D preview of the bed
   Gtk::Box *pBox = NULL;
   m_builder->get_widget("viewarea", pBox);
   if (!pBox)
     cerr << "missing box!";
   else {
-    m_renderer = manage(new Render (this, m_treeview->get_selection()));
-    pBox->add (*m_renderer);
+    m_renderer = manage(new Render(this, m_treeview->get_selection()));
+    pBox->add(*m_renderer);
+    m_renderer->show_all();
   }
-
 
   m_settings_ui = new PrefsDlg(m_builder);
 
@@ -1072,7 +1071,6 @@ View::View(BaseObjectType* cobject,
 
   m_printer = NULL;
 
-
   m_builder->get_widget ("extruder_treeview", extruder_treeview);
   if (extruder_treeview) {
     extruder_treeview->signal_cursor_changed().connect (sigc::mem_fun(*this, &View::extruder_selected) );
@@ -1084,8 +1082,8 @@ View::View(BaseObjectType* cobject,
     extruder_treeview->append_column("Extruder",extrudername);
   }
 
-  showAllWidgets();
   update_extruderlist();
+  show();
 }
 
 void View::extruder_selected()
@@ -1171,14 +1169,6 @@ View::~View()
   m_renderer = NULL;
 }
 
-/* Recursively sets all widgets in the window to visible */
-void View::showAllWidgets() {
-  Gtk::Window *pWindow = NULL;
-  m_builder->get_widget("main_window", pWindow);
-  if (pWindow)
-    pWindow->show_all();
-}
-
 bool View::saveWindowSizeAndPosition(Settings &settings) const
 {
   Gtk::Window *pWindow = NULL;
@@ -1229,7 +1219,7 @@ void View::setModel(Model *model)
   m_progress = new ViewProgress (box, bar, label);
 
   m_model->SetViewProgress(m_progress);
-
+  
   Gtk::Statusbar *sbar = NULL;
   m_builder->get_widget("statusbar", sbar);
   m_model->statusbar = sbar;
@@ -1286,12 +1276,10 @@ void View::setModel(Model *model)
   m_printer->signal_alert.connect (sigc::mem_fun(*this, &View::alert));
 
   // connect settings
-  // FIXME: better have settings here and delegate to model AND printer
-  m_model->settings.connect_to_ui (m_builder);
+  m_model->settings.connect_to_ui(m_builder);
 
   m_printer->setModel(m_model);
 
-  showAllWidgets();
   m_renderer->queue_draw();
 }
 
@@ -1537,11 +1525,6 @@ void View::DrawGrid()
 
   RenderVert vert;
   
-  // glEnable (GL_BLEND);
-  // glEnable (GL_DEPTH_TEST);
-  // glDisable (GL_LIGHTING);
-  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // define blending factors
-  
   // Boarder lines
   // left edge
   vert.add(0.0f, 0.0f, 0.0f);
@@ -1595,26 +1578,24 @@ void View::DrawGrid()
 }
 
 // called from Render::on_draw
-void View::Draw(vector<Gtk::TreeModel::Path> selected, bool objects_only)
+void View::Draw(vector<Gtk::TreeModel::Path> selected)
 {
-  // Draw the grid, pushed back so it can be seen
-  // when viewed from below.
-  if (!objects_only) {
-    DrawGrid();
-  }
+  // Draw the grid
+  DrawGrid();
   
-  // FIXME: Add functionality back in
-  // Draw GCode, which already incorporates any print offset
-  if (!objects_only && !m_model->isCalculating()) {
-    //if (m_gcodetextview->has_focus()) {
-    //  double z = m_model->gcode.currentCursorWhere.z();
-    //  m_model->GlDrawGCode(z);
-    //}
-    //else {
-    //m_model->gcode.currentCursorWhere = Vector3d::ZERO;
-    m_model->GlDrawGCode(*m_renderer, m_model->settings.get_double("Display", "GCodeLayer"));
-    //}
+  // Draw GCode
+  if (!m_model->isCalculating()) {
+    if (m_gcodetextview->has_focus()) {
+      size_t line = m_gcodetextview->get_buffer()->get_insert()->get_iter().get_line();
+      m_model->GlDrawGCode(*m_renderer, m_model->gcode.getLayerNo(line));
+    }
+    else {
+      m_model->GlDrawGCode(*m_renderer, m_model->settings.get_double("Display", "GCodeLayer"));
+    }
   }
+
+  // Draw models
+  m_model->draw(*m_renderer, selected);
 }
 
 void View::showCurrentPrinting(unsigned long lineno)

@@ -243,8 +243,6 @@ void Render::on_realize() {
   }
   
   cout << "Render Initialized" << endl;
-  
-  queue_draw();
 }
 
 bool Render::on_configure_event(GdkEventConfigure* event) {

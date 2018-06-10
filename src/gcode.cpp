@@ -426,17 +426,18 @@ double GCode::GetTimeEstimation(void) const {
 int GCode::getLayerNo(const double z) const {
   size_t i;
   
-  if (cmds.empty())
+  if (layers.empty())
     return 0;
   
-  for (i = 0; i < cmds.size(); i++) {
-    if (cmds[i].start.z() >= z)
+  for (i = 0; i < layers.size(); i++) {
+    if (cmds[layers[i]].start.z() >= z)
       break;
   }
+
+  // cout << "Searching for layer at z = " << z << ", found " << i << endl;
+  // cout << "Length layers = " << layers.size() << endl;
   
-  //cout << "Searching for layer at z = " << z << ", found " << i << endl;
-  
-  return cmds[i].layerno;
+  return i;
 }
 
 int GCode::getLayerNo(const unsigned long commandno) const {
