@@ -23,24 +23,15 @@
 #include <string>
 #include <giomm/file.h>
 
+#include "filters.h"
+
 class View;
 
 class RSFilechooser
 {
-
  public:
-  enum FileType {
-    UNDEF, MODEL, SVG, RFO, GCODE, SETTINGS
-  };
-
   RSFilechooser(View * view);
   ~RSFilechooser();
-
-  void set_loading(FileType type);
-  void set_saving (FileType type);
-
-  void set_filetype(FileType type = UNDEF);
-  FileType get_filetype() { return filetype; };
 
   void do_action();
 
@@ -52,15 +43,9 @@ class RSFilechooser
   Gtk::FileChooserWidget *chooser;
   Glib::RefPtr<Gtk::Builder> builder;
 
-  FileType filetype;
-
-  string ModelPath, GCodePath, SettingsPath;
-
   Glib::RefPtr< Gtk::FileFilter > allfiles, modelfiles, gcodefiles, settingsfiles;
 
-  void on_filechooser_preview    (Gtk::FileChooserWidget *chooser);
-  bool on_filechooser_key        (GdkEventKey* event);
-  void on_controlnotebook_switch (Gtk::Widget* page, guint page_num);
-
+  void on_filechooser_preview(Gtk::FileChooserWidget *chooser);
+  bool on_filechooser_key(GdkEventKey* event);
+  void on_controlnotebook_switch(Gtk::Widget* page, guint page_num);
 };
-

@@ -14,13 +14,15 @@ SHARED_SRC += \
 	src/ui/view.cpp \
 	src/ui/prefs_dlg.cpp \
 	src/ui/connectview.cpp \
-	src/ui/filechooser.cpp \
-	src/ui/progress.cpp
+	src/ui/rsfilechooser.cpp \
+	src/ui/progress.cpp \
+	src/ui/filters.cpp
 
 SHARED_INC += \
 	src/ui/widgets.h \
 	src/ui/view.h \
 	src/ui/prefs_dlg.h \
 	src/ui/connectview.h \
-	src/ui/filechooser.h \
-	src/ui/progress.h
+	src/ui/rsfilechooser.h \
+	src/ui/progress.h \
+	src/ui/filters.h

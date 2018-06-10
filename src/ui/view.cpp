@@ -156,29 +156,14 @@ void View::toggle_fullscreen()
   }
 }
 
-void View::do_load ()
+void View::do_load_stl()
 {
-  PrintInhibitor inhibitPrint(m_printer);
-  RSFilechooser::FileType type = m_filechooser->get_filetype();
-  if (type == RSFilechooser::GCODE)
-    if (m_printer->IsPrinting())
-      {
-	m_printer->error (_("Complete print before reading"),
-			  _("Reading GCode while printing will abort the print"));
-	return;
-      }
   m_model->preview_shapes.clear();
 
   vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
-  for (uint i= 0; i < files.size(); i++) {
-    if (!files[i]) continue; // should never happen
-    if (type == RSFilechooser::SETTINGS)
-      m_model->LoadConfig(files[i]);
-    else
-      m_model->Read(files[i]);
-  }
-  if (type == RSFilechooser::GCODE)
-    gcode_status();
+  for (uint i= 0; i < files.size(); i++)
+    m_model->Read(files[i]);
+
   show_notebooktab("model_tab", "controlnotebook");
 }
 
@@ -196,40 +181,26 @@ bool View::get_userconfirm(string maintext, string secondarytext) const
   return result;
 }
 
-void View::do_save_stl()
+void View::save_stl()
 {
-  PrintInhibitor inhibitPrint(m_printer);
-  vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
+  Gtk::FileChooserDialog dlg(*this, "Save Model", Gtk::FILE_CHOOSER_ACTION_SAVE);
+  dlg.add_button("Cancel", 0);
+  dlg.add_button("Save", 1);
+  dlg.set_default_response(1);
+  
+  Filters::attach_filters(dlg, Filters::MODEL);
+  
+  if (dlg.run() != 1)
+    return;
+  
+  vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
   if (files.size()>0) {
-    if (!files[0]) return; // should never happen
     if (files[0]->query_exists())
       if (!get_userconfirm(_("Overwrite File?"), files[0]->get_basename()))
 	return;
 
-    files[0]->get_path();
     m_model->SaveStl(files[0]);
   }
-}
-
-void View::do_save_gcode ()
-{
-  PrintInhibitor inhibitPrint(m_printer);
-  vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
-  if (files.size()>0) {
-    if (!files[0]) return; // should never happen
-    if (files[0]->query_exists())
-      if (!get_userconfirm(_("Overwrite File?"), files[0]->get_basename()))
-	return;
-    m_model->WriteGCode (files[0]);
-  }
-}
-
-void View::save_stl ()
-{
-  PrintInhibitor inhibitPrint(m_printer);
-  m_filechooser->set_saving (RSFilechooser::MODEL);
-  show_notebooktab("file_tab", "controlnotebook");
-  // FileChooser::ioDialog (m_model, this, FileChooser::SAVE, FileChooser::STL);
 }
 
 void View::gcode_status() {
@@ -244,27 +215,54 @@ void View::gcode_status() {
   }
 }
 
-void View::load_gcode ()
+void View::load_gcode()
 {
-  PrintInhibitor inhibitPrint(m_printer);
   if (m_printer->IsPrinting())
   {
     m_printer->error (_("Complete print before reading"),
   		   _("Reading GCode while printing will abort the print"));
     return;
   }
-  m_filechooser->set_loading (RSFilechooser::GCODE);
-  show_notebooktab("file_tab", "controlnotebook");
-  // FileChooser::ioDialog (m_model, this, FileChooser::OPEN, FileChooser::GCODE);
+  PrintInhibitor inhibitPrint(m_printer);
+  
+  Gtk::FileChooserDialog dlg(*this, "Load GCode", Gtk::FILE_CHOOSER_ACTION_OPEN);
+  dlg.add_button("Cancel", 0);
+  dlg.add_button("Save", 1);
+  dlg.set_default_response(1);
+  
+  Filters::attach_filters(dlg, Filters::GCODE);
+  
+  if (dlg.run() != 1)
+    return;
+  
+  vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
+  for (uint i= 0; i < files.size(); i++)
+    m_model->Read(files[i]);
+  
+  gcode_status();
 }
 
-void View::save_gcode ()
+void View::save_gcode()
 {
-  m_filechooser->set_saving (RSFilechooser::GCODE);
-  show_notebooktab("file_tab", "controlnotebook");
-  //FileChooser::ioDialog (m_model, this, FileChooser::SAVE, FileChooser::GCODE);
+  Gtk::FileChooserDialog dlg(*this, "Save GCode", Gtk::FILE_CHOOSER_ACTION_SAVE);
+  dlg.add_button("Cancel", 0);
+  dlg.add_button("Save", 1);
+  dlg.set_default_response(1);
+  
+  Filters::attach_filters(dlg, Filters::GCODE);
+  
+  if (dlg.run() != 1)
+    return;
+  
+  vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
+  if (files.size()>0) {
+    if (files[0]->query_exists())
+      if (!get_userconfirm(_("Overwrite File?"), files[0]->get_basename()))
+	return;
+    
+    m_model->WriteGCode(files[0]);
+  }
 }
-
 
 void View::send_gcode ()
 {
@@ -544,13 +542,24 @@ void View::show_preferences()
 
 void View::about_dialog()
 {
-  show_dialog ("about_dialog");
+  show_dialog("about_dialog");
 }
 
 void View::load_settings()
 {
-  m_filechooser->set_loading(RSFilechooser::SETTINGS);
-  show_notebooktab("file_tab", "controlnotebook");
+    Gtk::FileChooserDialog dlg(*this, "Load Settings", Gtk::FILE_CHOOSER_ACTION_OPEN);
+  dlg.add_button("Cancel", 0);
+  dlg.add_button("Save", 1);
+  dlg.set_default_response(1);
+  
+  Filters::attach_filters(dlg, Filters::SETTINGS);
+  
+  if (dlg.run() != 1)
+    return;
+  
+  vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
+  for (uint i= 0; i < files.size(); i++)
+    m_model->LoadConfig(files[i]);
 }
 
 // save to standard config file
@@ -561,7 +570,7 @@ void View::save_settings()
   user_config_bits[1] = "repsnapper";
   user_config_bits[2] = "repsnapper3.conf";
 
-  string user_config_file = Glib::build_filename (user_config_bits);
+  string user_config_file = Glib::build_filename(user_config_bits);
   Glib::RefPtr<Gio::File> conffile = Gio::File::create_for_path(user_config_file);
 
   save_settings_to(conffile);
@@ -570,22 +579,24 @@ void View::save_settings()
 // gets config file from user
 void View::save_settings_as()
 {
-  m_filechooser->set_saving (RSFilechooser::SETTINGS);
-  show_notebooktab("file_tab", "controlnotebook");
-}
-
-// callback from m_filechooser for settings file
-void View::do_save_settings_as()
-{
-  vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
+  Gtk::FileChooserDialog dlg(*this, "Save Settings", Gtk::FILE_CHOOSER_ACTION_SAVE);
+  dlg.add_button("Cancel", 0);
+  dlg.add_button("Save", 1);
+  dlg.set_default_response(1);
+  
+  Filters::attach_filters(dlg, Filters::SETTINGS);
+  
+  if (dlg.run() != 1)
+    return;
+  
+  vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
   if (files.size()>0) {
-    if (!files[0]) return; // should never happen
     if (files[0]->query_exists())
       if (!get_userconfirm(_("Overwrite File?"), files[0]->get_basename()))
 	return;
+
     save_settings_to(files[0]);
   }
-  //FileChooser::ioDialog (m_model, this, FileChooser::SAVE, FileChooser::SETTINGS);
 }
 
 // save to given config file
@@ -595,7 +606,6 @@ void View::save_settings_to(Glib::RefPtr < Gio::File > file)
   saveWindowSizeAndPosition(m_model->settings);
   m_model->SaveConfig(file);
 }
-
 
 void View::inhibit_print_changed()
 {
@@ -1145,8 +1155,7 @@ void View::update_extruderlist()
 void View::on_controlnotebook_switch(Gtk::Widget* page, guint page_num)
 {
   if (!page) return;
-  if (m_filechooser) m_filechooser->set_filetype();
-  if (m_model)       m_model->preview_shapes.clear();
+  if (m_model) m_model->preview_shapes.clear();
 }
 
 View::~View()

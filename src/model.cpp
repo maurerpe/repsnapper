@@ -181,18 +181,15 @@ void Model::Read(Glib::RefPtr<Gio::File> file) {
   string directory_path = file->get_parent()->get_path();
   if (pos != std::string::npos) {
     std::string extn = basename.substr(pos);
-    if (extn == ".conf")
-      {
-	LoadConfig (file);
-	settings.SettingsPath = directory_path;
-	return;
-      }
-    else if (extn == ".gcode")
-      {
-	ReadGCode (file);
-	settings.GCodePath = directory_path;
-	return;
-      }
+    if (extn == ".conf") {
+      LoadConfig(file);
+      settings.SettingsPath = directory_path;
+      return;
+    } else if (extn == ".gcode") {
+      ReadGCode(file);
+      settings.GCodePath = directory_path;
+      return;
+    }
   }
   ReadStl (file);
   settings.STLPath = directory_path;

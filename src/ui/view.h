@@ -25,7 +25,7 @@
 #include "stdafx.h"
 #include "printer/printer.h"
 
-#include "filechooser.h"
+#include "rsfilechooser.h"
 
 static bool UNUSED toggle_block = false; // blocks signals for togglebuttons etc
 
@@ -50,10 +50,7 @@ class View : public Gtk::ApplicationWindow
   void load_stl();
   void autoarrange();
   void save_stl();
-  void do_load();
-  void do_save_stl();
-  void do_save_gcode();
-  void do_save_settings_as();
+  void do_load_stl();
 
   void send_gcode();
   void printing_changed();
