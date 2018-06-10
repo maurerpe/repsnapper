@@ -135,9 +135,10 @@ PrefsDlg::load_settings()
 }
 
 void
-PrefsDlg::show()
+PrefsDlg::show(Gtk::Window &trans)
 {
   load_settings();
+  m_preferences_dlg->set_transient_for(trans);
   m_preferences_dlg->show();
   m_preferences_dlg->raise();
 }

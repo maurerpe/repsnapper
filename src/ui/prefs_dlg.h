@@ -36,8 +36,8 @@ class PrefsDlg {
  public:
   PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder);
   ~PrefsDlg();
-  void show();
+  void show(Gtk::Window &trans);
   void set_icon_from_file(const string path) {m_preferences_dlg->set_icon_from_file(path);}
 };
 
-#endif // SETTINGS_H
+#endif // SETTINGS_UI_H

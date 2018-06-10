@@ -29,8 +29,7 @@
 
 static bool UNUSED toggle_block = false; // blocks signals for togglebuttons etc
 
-
-class View : public Gtk::Window
+class View : public Gtk::ApplicationWindow
 {
   class TempRow;
   class AxisRow;
@@ -96,7 +95,7 @@ class View : public Gtk::Window
   Gtk::ToggleToolButton *m_pause_button;
 
   void connect_button(const char *name, const sigc::slot<void> &slot);
-  void connect_action(const char *name, const sigc::slot<void> &slot);
+  void connect_activate(const char *name, const sigc::slot<void> &slot);
   void connect_toggled(const char *name, const sigc::slot<void,
 		       Gtk::ToggleButton *> &slot);
   void connect_tooltoggled(const char *name, const sigc::slot<void,

@@ -46,9 +46,7 @@ typedef pthread_cond_t cond_t;
 // USE_GLIB_THREADS
 #include <glib.h>
 #include <glib-object.h>
-#if GLIB_CHECK_VERSION( 2, 32, 0 )
-// Glib thread implementation changed 2.32.  Use the newer version
-// if it is available.
+
 typedef GThread *thread_t;
 typedef GMutex mutex_t;
 typedef GCond cond_t;
@@ -67,28 +65,6 @@ inline int mutex_unlock( mutex_t *m ) { g_mutex_unlock( m ); return 0; };
 inline int cond_wait( cond_t *c, mutex_t *m ) { g_cond_wait( c, m ); return 0; };
 inline int cond_signal( cond_t *c ) { g_cond_signal( c ); return 0; };
 inline int cond_broadcast( cond_t *c ) { g_cond_broadcast( c ); return 0; };
-#else
-// Glib older than 2.32.  Use 2.24 version of pthreads, which was
-// deprecated in 2.32.
-typedef GThread *thread_t;
-typedef GMutex *mutex_t;
-typedef GCond *cond_t;
-inline int thread_create( thread_t *thread, void *(*start_func)( void *), void *arg ) {
-  *thread = g_thread_create( start_func, arg, TRUE, NULL );
-  return 0;
-};
-inline int thread_join( thread_t thd ) { g_thread_join( thd ); return 0; };
-#define thread_exit() g_thread_exit( NULL )
-inline void mutex_init( mutex_t *m ) { *m = g_mutex_new(); };
-#define mutex_destroy( m ) g_mutex_free( *(m) )
-inline int mutex_lock( mutex_t *m ) { g_mutex_lock( *m ); return 0; };
-inline int mutex_unlock( mutex_t *m ) { g_mutex_unlock( *m ); return 0; };
-inline void cond_init( cond_t *c ) { *c = g_cond_new(); };
-#define cond_destroy( m ) g_cond_free( *(m) )
-inline int cond_wait( cond_t *c, mutex_t *m ) { g_cond_wait( *c, *m ); return 0; };
-inline int cond_signal( cond_t *c ) { g_cond_signal( *c ); return 0; };
-inline int cond_broadcast( cond_t *c ) { g_cond_broadcast( *c ); return 0; };
-#endif
 #endif
 
 #ifdef WIN32

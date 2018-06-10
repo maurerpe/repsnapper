@@ -51,20 +51,18 @@ void View::connect_button(const char *name, const sigc::slot<void> &slot)
     if (button)
       button->signal_clicked().connect (slot);
     else {
-      std::cerr << "missing button " << name << "\n";
+      cerr << "missing button " << name << endl;
     }
   }
 }
 
-void View::connect_action(const char *name, const sigc::slot<void> &slot)
-{
-  Glib::RefPtr<Glib::Object> object;
-  object = m_builder->get_object (name);
-  Glib::RefPtr<Gtk::Action> action = Glib::RefPtr<Gtk::Action>::cast_dynamic(object);
-  if (action)
-    action->signal_activate().connect (slot);
+void View::connect_activate(const char *name, const sigc::slot<void> &slot) {
+  Gtk::MenuItem *item = NULL;
+  m_builder->get_widget(name, item);
+  if (item)
+    item->signal_activate().connect(slot);
   else {
-    std::cerr << "missing action " << name << "\n";
+    cerr << "missing menu item " << name << endl;
   }
 }
 
@@ -75,7 +73,7 @@ void View::connect_toggled(const char *name, const sigc::slot<void, Gtk::ToggleB
   if (button)
     button->signal_toggled().connect (sigc::bind(slot, button));
   else {
-    std::cerr << "missing toggle button " << name << "\n";
+    cerr << "missing toggle button " << name << endl;
   }
 }
 
@@ -86,7 +84,7 @@ void View::connect_tooltoggled(const char *name, const sigc::slot<void, Gtk::Tog
   if (button)
     button->signal_toggled().connect (sigc::bind(slot, button));
   else {
-    std::cerr << "missing toggle button " << name << "\n";
+    cerr << "missing toggle button " << name << endl;
   }
 }
 
@@ -201,7 +199,7 @@ bool View::get_userconfirm(string maintext, string secondarytext) const
 void View::do_save_stl()
 {
   PrintInhibitor inhibitPrint(m_printer);
-  std::vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
+  vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
   if (files.size()>0) {
     if (!files[0]) return; // should never happen
     if (files[0]->query_exists())
@@ -216,7 +214,7 @@ void View::do_save_stl()
 void View::do_save_gcode ()
 {
   PrintInhibitor inhibitPrint(m_printer);
-  std::vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
+  vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
   if (files.size()>0) {
     if (!files[0]) return; // should never happen
     if (files[0]->query_exists())
@@ -276,11 +274,11 @@ void View::send_gcode ()
 
 View *View::create(Model *model)
 {
-  std::vector<std::string> dirs = Platform::getConfigPaths();
+  vector<string> dirs = Platform::getConfigPaths();
   Glib::ustring ui;
-  for (std::vector<std::string>::const_iterator i = dirs.begin();
+  for (vector<string>::const_iterator i = dirs.begin();
        i != dirs.end(); ++i) {
-    std::string f_name = Glib::build_filename (*i, "repsnapper.ui");
+    string f_name = Glib::build_filename (*i, "repsnapper.ui");
     Glib::RefPtr<Gio::File> file = Gio::File::create_for_path(f_name);
     try {
       char *ptr;
@@ -368,7 +366,7 @@ void View::fan_enabled_toggled (Gtk::ToggleButton *button)
       toggle_block = false;
     }
   } else {
-    std::stringstream oss;
+    stringstream oss;
     oss << "M106 S" << (int)m_fan_voltage->get_value();
     if (!m_printer->SendAsync(oss.str())) {
       toggle_block = true;
@@ -527,7 +525,7 @@ void View::show_dialog(const char *name)
   Gtk::Dialog *dialog;
   m_builder->get_widget (name, dialog);
   if (!dialog) {
-    cerr << "no such dialog " << name << "\n";
+    cerr << "no such dialog " << name << endl;
     return;
   }
   if (iconfile)
@@ -535,20 +533,19 @@ void View::show_dialog(const char *name)
   else
     dialog->set_icon_name("gtk-convert");
   dialog->signal_response().connect (sigc::bind(sigc::mem_fun(*this, &View::hide_on_response), dialog));
+  dialog->set_transient_for(*this);
   dialog->show();
-  //  dialog->set_transient_for (*this);
 }
 
 void View::show_preferences()
 {
-  m_settings_ui->show();
+  m_settings_ui->show(*this);
 }
 
 void View::about_dialog()
 {
   show_dialog ("about_dialog");
 }
-
 
 void View::load_settings()
 {
@@ -559,12 +556,12 @@ void View::load_settings()
 // save to standard config file
 void View::save_settings()
 {
-  std::vector<std::string> user_config_bits(3);
+  vector<string> user_config_bits(3);
   user_config_bits[0] = Glib::get_user_config_dir();
   user_config_bits[1] = "repsnapper";
   user_config_bits[2] = "repsnapper3.conf";
 
-  std::string user_config_file = Glib::build_filename (user_config_bits);
+  string user_config_file = Glib::build_filename (user_config_bits);
   Glib::RefPtr<Gio::File> conffile = Gio::File::create_for_path(user_config_file);
 
   save_settings_to(conffile);
@@ -580,7 +577,7 @@ void View::save_settings_as()
 // callback from m_filechooser for settings file
 void View::do_save_settings_as()
 {
-  std::vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
+  vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
   if (files.size()>0) {
     if (!files[0]) return; // should never happen
     if (files[0]->query_exists())
@@ -927,23 +924,27 @@ bool View::key_pressed_event(GdkEventKey *event)
 
 View::View(BaseObjectType* cobject,
 	   const Glib::RefPtr<Gtk::Builder>& builder)
-  : Gtk::Window(cobject),
+  : Gtk::ApplicationWindow(cobject),
     m_builder(builder), m_model(NULL)
 {
   toggle_block = false;
 
   // Menus
-  connect_action ("OpenStl",         sigc::mem_fun(*this, &View::load_stl) );
-  connect_action ("OpenGCode",       sigc::mem_fun(*this, &View::load_gcode) );
-  connect_action ("Quit",            sigc::ptr_fun(&Gtk::Main::quit));
-  connect_action ("About",           sigc::mem_fun(*this, &View::about_dialog) );
-
-  connect_action ("Fullscreen",        sigc::mem_fun(*this, &View::toggle_fullscreen) );
-  connect_action ("PreferencesDialog", sigc::mem_fun(*this, &View::show_preferences) );
-
-  connect_action ("LoadSettings",    sigc::mem_fun(*this, &View::load_settings));
-  connect_action ("SaveSettings",    sigc::mem_fun(*this, &View::save_settings));
-  connect_action ("SaveSettingsAs",  sigc::mem_fun(*this, &View::save_settings_as));
+  connect_activate("file.loadstl",         sigc::mem_fun(*this, &View::load_stl) );
+  connect_activate("file.loadgcode",       sigc::mem_fun(*this, &View::load_gcode) );
+  connect_activate("file.loadsettings",    sigc::mem_fun(*this, &View::load_settings));
+  connect_activate("file.savesettings",    sigc::mem_fun(*this, &View::save_settings));
+  connect_activate("file.savesettingsas",  sigc::mem_fun(*this, &View::save_settings_as));
+  connect_activate("file.quit",            sigc::ptr_fun(&Gtk::Main::quit));
+   
+  connect_activate("edit.fullscreen",      sigc::mem_fun(*this, &View::toggle_fullscreen) );
+  connect_activate("edit.preferences",     sigc::mem_fun(*this, &View::show_preferences) );
+  
+  connect_activate("help.about",           sigc::mem_fun(*this, &View::about_dialog));
+  Gtk::Widget *w;
+  m_builder->get_widget ("help.about", w);
+  if (w)
+    w->set_sensitive(true);
 
   // View tab
   connect_button ("Misc.AutoArrange",sigc::mem_fun(*this, &View::autoarrange) );
@@ -1048,7 +1049,7 @@ View::View(BaseObjectType* cobject,
   Gtk::Box *pBox = NULL;
   m_builder->get_widget("viewarea", pBox);
   if (!pBox)
-    std::cerr << "missing box!";
+    cerr << "missing box!";
   else {
     m_renderer = manage(new Render (this, m_treeview->get_selection()));
     pBox->add (*m_renderer);
@@ -1089,7 +1090,7 @@ View::View(BaseObjectType* cobject,
 
 void View::extruder_selected()
 {
-  std::vector< Gtk::TreeModel::Path > path =
+  vector< Gtk::TreeModel::Path > path =
     extruder_treeview->get_selection()->get_selected_rows();
   if(path.size()>0 && path[0].size()>0) {
     // copy selected extruder from Extruders to current Extruder
@@ -1100,7 +1101,7 @@ void View::extruder_selected()
 void View::copy_extruder()
 {
   if (!m_model) return;
-  std::vector< Gtk::TreeModel::Path > path =
+  vector< Gtk::TreeModel::Path > path =
     extruder_treeview->get_selection()->get_selected_rows();
   if(path.size()>0 && path[0].size()>0) {
     m_model->settings.CopyExtruder(path[0][0]);
@@ -1114,7 +1115,7 @@ void View::copy_extruder()
 void View::remove_extruder()
 {
   if (!m_model) return;
-  std::vector< Gtk::TreeModel::Path > path =
+  vector< Gtk::TreeModel::Path > path =
     extruder_treeview->get_selection()->get_selected_rows();
   if (path.size()>0 && path[0].size()>0) {
     m_model->settings.RemoveExtruder(path[0][0]);
@@ -1599,13 +1600,8 @@ void View::Draw(vector<Gtk::TreeModel::Path> selected, bool objects_only)
   // Draw the grid, pushed back so it can be seen
   // when viewed from below.
   if (!objects_only) {
-    // glEnable (GL_POLYGON_OFFSET_FILL);
-    // glPolygonOffset (1.0f, 1.0f);
     DrawGrid();
   }
-  
-  // glPolygonOffset (-0.5f, -0.5f);
-  // glDisable (GL_POLYGON_OFFSET_FILL);
   
   // FIXME: Add functionality back in
   // Draw GCode, which already incorporates any print offset
@@ -1618,18 +1614,6 @@ void View::Draw(vector<Gtk::TreeModel::Path> selected, bool objects_only)
     //m_model->gcode.currentCursorWhere = Vector3d::ZERO;
     m_model->GlDrawGCode(*m_renderer, m_model->settings.get_double("Display", "GCodeLayer"));
     //}
-  }
-  
-  // Draw all objects
-  int layerdrawn = m_model->draw(*m_renderer, selected);
-  if (layerdrawn > -1) {
-    Gtk::Label *layerlabel;
-    m_builder->get_widget("layerno_label", layerlabel);
-    if (layerlabel){
-      stringstream s;
-      s << layerdrawn ;
-      layerlabel->set_text(s.str());
-    }
   }
 }
 
