@@ -32,8 +32,6 @@
 #include "triangle.h"
 #include "render.h"
 
-#define sqr(x) ((x)*(x))
-
 class Shape {
  public:
   virtual short dimensions(){return 3;};
