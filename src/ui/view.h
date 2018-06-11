@@ -1,6 +1,7 @@
 /*
     This file is a part of the RepSnapper project.
     Copyright (C) 2011 Michael Meeks
+    Copyright (C) 2018 Paul Maurer
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -16,8 +17,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-#ifndef VIEW_H
-#define VIEW_H
+#pragma once
 
 #include <vector>
 #include <gtkmm.h>
@@ -217,5 +217,3 @@ class View : public Gtk::ApplicationWindow
 #ifdef MODEL_IMPLEMENTATION
 #  error "The whole point is to avoid coupling the model to the view - think again"
 #endif
-
-#endif // VIEW_H

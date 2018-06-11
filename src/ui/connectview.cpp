@@ -27,8 +27,7 @@
 #include "connectview.h"
 #include "model.h"
 
-void ConnectView::serial_state_changed(SerialState state)
-{
+void ConnectView::serial_state_changed(SerialState state) {
   bool sensitive;
   const char *label;
   Gtk::BuiltinStockID id;
@@ -61,7 +60,7 @@ void ConnectView::serial_state_changed(SerialState state)
 
   m_image.set (id, Gtk::ICON_SIZE_BUTTON);
   m_connect.set_label (label);
-  m_connect.set_sensitive (sensitive);
+  m_connect.set_sensitive(sensitive);
   if (sensitive) {
     m_setting_state = true; // inhibit unhelpful recursion.
     m_connect.set_active (state == SERIAL_CONNECTED);
@@ -69,14 +68,12 @@ void ConnectView::serial_state_changed(SerialState state)
   }
 }
 
-void ConnectView::connect_toggled()
-{
+void ConnectView::connect_toggled() {
   if (!m_setting_state)
-    m_printer->Connect (m_connect.get_active ());
+    m_printer->Connect(m_connect.get_active());
 }
 
-void ConnectView::signal_entry_changed()
-{
+void ConnectView::signal_entry_changed() {
   // Use the value of the entry widget, rather than the
   // active text, so the user can enter other values.
   Gtk::Entry *entry = m_combo.get_entry();

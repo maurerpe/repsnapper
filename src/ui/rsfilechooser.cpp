@@ -1,6 +1,7 @@
 /*
     This file is a part of the RepSnapper project.
     Copyright (C) 2012 martin.dieringer@gmx.de
+    Copyright (C) 2018 Paul Maurer
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -23,8 +24,7 @@
 #include "model.h"
 
 RSFilechooser::RSFilechooser(View * view_)
-  : view(view_)
-{
+  : view(view_) {
   builder = view->getBuilder();
   builder->get_widget("filechooser", chooser);
   if (!chooser) {
@@ -45,18 +45,15 @@ RSFilechooser::RSFilechooser(View * view_)
     (sigc::mem_fun(*this, &RSFilechooser::do_action));
 }
 
-RSFilechooser::~RSFilechooser()
-{
+RSFilechooser::~RSFilechooser() {
   chooser = NULL;
 }
 
-void RSFilechooser::do_action()
-{
+void RSFilechooser::do_action() {
   view->do_load_stl();
 }
 
-bool RSFilechooser::on_filechooser_key(GdkEventKey* event)
-{
+bool RSFilechooser::on_filechooser_key(GdkEventKey* event) {
   if (event->state & GDK_SHIFT_MASK) {
     switch (event->keyval) {
     case GDK_KEY_Return: do_action();
@@ -66,8 +63,7 @@ bool RSFilechooser::on_filechooser_key(GdkEventKey* event)
   return false;
 }
 
-void RSFilechooser::on_filechooser_preview(Gtk::FileChooserWidget *chooser)
-{
+void RSFilechooser::on_filechooser_preview(Gtk::FileChooserWidget *chooser) {
   if (!chooser) return;
   Glib::RefPtr< Gio::File > pfile = chooser->get_preview_file();
   if (!pfile) return;

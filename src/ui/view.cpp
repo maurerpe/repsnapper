@@ -31,14 +31,12 @@
 #include "widgets.h"
 #include "platform.h"
 
-bool View::on_delete_event(GdkEventAny* event)
-{
+bool View::on_delete_event(GdkEventAny* event) {
   Gtk::Main::quit();
   return false;
 }
 
-void View::connect_button(const char *name, const sigc::slot<void> &slot)
-{
+void View::connect_button(const char *name, const sigc::slot<void> &slot) {
   Gtk::Widget *bw = NULL;
   m_builder->get_widget (name, bw);
   // try Button
@@ -66,8 +64,7 @@ void View::connect_activate(const char *name, const sigc::slot<void> &slot) {
   }
 }
 
-void View::connect_toggled(const char *name, const sigc::slot<void, Gtk::ToggleButton *> &slot)
-{
+void View::connect_toggled(const char *name, const sigc::slot<void, Gtk::ToggleButton *> &slot) {
   Gtk::ToggleButton *button = NULL;
   m_builder->get_widget (name, button);
   if (button)
@@ -77,8 +74,7 @@ void View::connect_toggled(const char *name, const sigc::slot<void, Gtk::ToggleB
   }
 }
 
-void View::connect_tooltoggled(const char *name, const sigc::slot<void, Gtk::ToggleToolButton *> &slot)
-{
+void View::connect_tooltoggled(const char *name, const sigc::slot<void, Gtk::ToggleToolButton *> &slot) {
   Gtk::ToggleToolButton *button = NULL;
   m_builder->get_widget (name, button);
   if (button)
@@ -88,8 +84,7 @@ void View::connect_tooltoggled(const char *name, const sigc::slot<void, Gtk::Tog
   }
 }
 
-void View::convert_to_gcode ()
-{
+void View::convert_to_gcode() {
   extruder_selected(); // be sure to get extruder settings from gui
   PrintInhibitor inhibitPrint(m_printer);
   if (m_printer->IsPrinting())
@@ -103,8 +98,7 @@ void View::convert_to_gcode ()
   gcode_status();
 }
 
-void View::preview_file (Glib::RefPtr< Gio::File > file)
-{
+void View::preview_file (Glib::RefPtr< Gio::File > file) {
   if (!m_model) return;
   m_model->preview_shapes.clear();
   if (!m_model->settings.get_boolean("Display","PreviewLoad")) return;
@@ -138,8 +132,7 @@ void View::load_stl () {
   show_notebooktab("file_tab", "controlnotebook");
 }
 
-void View::toggle_fullscreen()
-{
+void View::toggle_fullscreen() {
   static bool is_fullscreen = false;
   if (is_fullscreen) {
     unfullscreen();
@@ -150,8 +143,7 @@ void View::toggle_fullscreen()
   }
 }
 
-void View::do_load_stl()
-{
+void View::do_load_stl() {
   m_model->preview_shapes.clear();
 
   vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
@@ -161,8 +153,7 @@ void View::do_load_stl()
   show_notebooktab("model_tab", "controlnotebook");
 }
 
-bool View::get_userconfirm(string maintext, string secondarytext) const
-{
+bool View::get_userconfirm(string maintext, string secondarytext) const {
   Gtk::MessageDialog *dialog = new Gtk::MessageDialog(maintext);
   if (secondarytext != "")
     dialog->set_secondary_text (secondarytext);
@@ -175,8 +166,7 @@ bool View::get_userconfirm(string maintext, string secondarytext) const
   return result;
 }
 
-void View::save_stl()
-{
+void View::save_stl() {
   Gtk::FileChooserDialog dlg(*this, "Save Model", Gtk::FILE_CHOOSER_ACTION_SAVE);
   dlg.add_button("Cancel", 0);
   dlg.add_button("Save", 1);
@@ -212,8 +202,7 @@ void View::gcode_status() {
   }
 }
 
-void View::load_gcode()
-{
+void View::load_gcode() {
   if (m_printer->IsPrinting())
   {
     m_printer->error (_("Complete print before reading"),
@@ -242,8 +231,7 @@ void View::load_gcode()
   gcode_status();
 }
 
-void View::save_gcode()
-{
+void View::save_gcode() {
   Gtk::FileChooserDialog dlg(*this, "Save GCode", Gtk::FILE_CHOOSER_ACTION_SAVE);
   dlg.add_button("Cancel", 0);
   dlg.add_button("Save", 1);
@@ -267,14 +255,12 @@ void View::save_gcode()
   }
 }
 
-void View::send_gcode ()
-{
+void View::send_gcode () {
   m_printer->SendAsync(m_gcode_entry->get_text());
   m_gcode_entry->select_region(0,-1);
 }
 
-View *View::create(Model *model)
-{
+View *View::create(Model *model) {
   vector<string> dirs = Platform::getConfigPaths();
   Glib::ustring ui;
   for (vector<string>::const_iterator i = dirs.begin();
@@ -331,8 +317,7 @@ View *View::create(Model *model)
   return view;
 }
 
-void View::printing_changed()
-{
+void View::printing_changed() {
   bool printing = m_printer->IsPrinting();
 
   if (printing)
@@ -346,20 +331,19 @@ void View::printing_changed()
     m_pause_button->set_active( false );
 }
 
-void View::enable_logging_toggled (Gtk::ToggleButton *button)
-{
+void View::enable_logging_toggled (Gtk::ToggleButton *button) {
   m_model->settings.set_boolean("Printer","Logging", button->get_active());
 }
 
-void View::temp_monitor_enabled_toggled (Gtk::ToggleButton *button)
-{
+void View::temp_monitor_enabled_toggled (Gtk::ToggleButton *button) {
   m_model->settings.set_boolean("Misc","TempReadingEnabled", button->get_active());
   m_printer->UpdateTemperatureMonitor();
 }
 
-void View::fan_enabled_toggled (Gtk::ToggleButton *button)
-{
-  if (toggle_block) return;
+void View::fan_enabled_toggled (Gtk::ToggleButton *button) {
+  if (toggle_block)
+    return;
+  
   if (!button->get_active()) {
     if (!m_printer->SendAsync("M107")) {
       toggle_block = true;
@@ -377,17 +361,15 @@ void View::fan_enabled_toggled (Gtk::ToggleButton *button)
   }
 }
 
-void View::run_extruder ()
-{
+void View::run_extruder () {
   double amount = m_extruder_length->get_value();
-  m_printer->RunExtruder (m_extruder_speed->get_value() * 60,
-			  amount,
-			  false,
-			  m_extruder_row->get_selected());
+  m_printer->RunExtruder(m_extruder_speed->get_value() * 60,
+			 amount,
+			 false,
+			 m_extruder_row->get_selected());
 }
 
-void View::clear_logs()
-{
+void View::clear_logs() {
   log_view ->get_buffer()->set_text("");
   echo_view->get_buffer()->set_text("");
   err_view ->get_buffer()->set_text("");
@@ -395,12 +377,11 @@ void View::clear_logs()
 }
 
 // open dialog to edit user gcode button
-void View::edit_custombutton(string name, string code, Gtk::ToolButton *button)
-{
+void View::edit_custombutton(string name, string code, Gtk::ToolButton *button) {
   Gtk::Dialog *dialog;
-  m_builder->get_widget ("custom_button_dialog", dialog);
+  m_builder->get_widget("custom_button_dialog", dialog);
   Gtk::Entry *nameentry;
-  m_builder->get_widget ("custom_name", nameentry);
+  m_builder->get_widget("custom_name", nameentry);
   nameentry->set_text(name);
   //if (name!="") nameentry->set_sensitive(false);
   Gtk::TextView *tview;
@@ -409,16 +390,15 @@ void View::edit_custombutton(string name, string code, Gtk::ToolButton *button)
   dialog->set_transient_for(*this);
   dialog->show();
   // send result:
-  dialog->signal_response().connect (sigc::bind(sigc::mem_fun(*this, &View::hide_custombutton_dlg), dialog));
+  dialog->signal_response().connect(sigc::bind(sigc::mem_fun(*this, &View::hide_custombutton_dlg), dialog));
 }
 
-void View::hide_custombutton_dlg(int code, Gtk::Dialog *dialog)
-{
+void View::hide_custombutton_dlg(int code, Gtk::Dialog *dialog) {
   Gtk::Entry *nameentry;
-  m_builder->get_widget ("custom_name", nameentry);
+  m_builder->get_widget("custom_name", nameentry);
   string name = nameentry->get_text();
   Gtk::TextView *tview;
-  m_builder->get_widget ("custom_gcode", tview);
+  m_builder->get_widget("custom_gcode", tview);
   string gcode = tview->get_buffer()->get_text();
   if (code==1) {  // OK clicked
     add_custombutton(name, gcode);
@@ -428,8 +408,7 @@ void View::hide_custombutton_dlg(int code, Gtk::Dialog *dialog)
   dialog->hide();
 }
 
-void View::add_custombutton(string name, string gcode)
-{
+void View::add_custombutton(string name, string gcode) {
   Gtk::Toolbar *toolbar;
   m_builder->get_widget ("i_custom_toolbar", toolbar);
   if (toolbar) {
@@ -446,15 +425,17 @@ void View::add_custombutton(string name, string gcode)
   } else cerr << "no Toolbar for button!" << endl;
 }
 
-void View::custombutton_pressed(string name, Gtk::ToolButton *button)
-{
+void View::custombutton_pressed(string name, Gtk::ToolButton *button) {
   Gtk::ToggleButton *rembutton;
-  m_builder->get_widget ("i_remove_custombutton", rembutton);
+  m_builder->get_widget("i_remove_custombutton", rembutton);
   Gtk::ToggleButton *editbutton;
-  m_builder->get_widget ("i_edit_custombutton", editbutton);
+  m_builder->get_widget("i_edit_custombutton", editbutton);
   Gtk::Toolbar *toolbar;
-  m_builder->get_widget ("i_custom_toolbar", toolbar);
-  if (!toolbar) return;
+  m_builder->get_widget("i_custom_toolbar", toolbar);
+  
+  if (!toolbar)
+    return;
+  
   if (rembutton->get_active()) {
     rembutton->set_active(false);
     if (m_model->settings.del_user_button(name)) {
@@ -469,10 +450,11 @@ void View::custombutton_pressed(string name, Gtk::ToolButton *button)
 }
 
 
-void View::log_msg(Gtk::TextView *tview, string s)
-{
+void View::log_msg(Gtk::TextView *tview, string s) {
   //Glib::Mutex::Lock lock(mutex);
-  if (!tview || s.length() == 0) return;
+  if (!tview || s.length() == 0)
+    return;
+  
   if (!m_model || !m_model->settings.get_boolean("Printer","Logging"))
     return;
 
@@ -483,41 +465,37 @@ void View::log_msg(Gtk::TextView *tview, string s)
   tview->scroll_to(tend);
 }
 
-void View::err_log(string s)
-{
+void View::err_log(string s) {
   log_msg(err_view,s);
 }
-void View::comm_log(string s)
-{
+
+void View::comm_log(string s) {
   log_msg(log_view,s);
 }
-void View::echo_log(string s)
-{
+
+void View::echo_log(string s) {
   log_msg(echo_view,s);
 }
 
-void View::set_logging(bool logging)
-{
+void View::set_logging(bool logging) {
 }
 
-bool View::logprint_timeout_cb()
-{
+bool View::logprint_timeout_cb() {
   return true;
 }
 
-void View::hide_on_response(int, Gtk::Dialog *dialog)
-{
+void View::hide_on_response(int, Gtk::Dialog *dialog) {
   dialog->hide();
 }
 
-void View::set_icon_file(Glib::RefPtr<Gio::File> file)
-{
+void View::set_icon_file(Glib::RefPtr<Gio::File> file) {
   iconfile = file;
   if (iconfile) {
     set_icon_from_file(iconfile->get_path());
     m_settings_ui->set_icon_from_file(iconfile->get_path());
-  } else
+  } else {
     set_icon_name("gtk-convert");
+  }
 }
 
 
@@ -533,24 +511,21 @@ void View::show_dialog(const char *name)
     dialog->set_icon_from_file(iconfile->get_path());
   else
     dialog->set_icon_name("gtk-convert");
-  dialog->signal_response().connect (sigc::bind(sigc::mem_fun(*this, &View::hide_on_response), dialog));
+  dialog->signal_response().connect(sigc::bind(sigc::mem_fun(*this, &View::hide_on_response), dialog));
   dialog->set_transient_for(*this);
   dialog->show();
 }
 
-void View::show_preferences()
-{
+void View::show_preferences() {
   m_settings_ui->show(*this);
 }
 
-void View::about_dialog()
-{
+void View::about_dialog() {
   show_dialog("about_dialog");
 }
 
-void View::load_settings()
-{
-    Gtk::FileChooserDialog dlg(*this, "Load Settings", Gtk::FILE_CHOOSER_ACTION_OPEN);
+void View::load_settings() {
+  Gtk::FileChooserDialog dlg(*this, "Load Settings", Gtk::FILE_CHOOSER_ACTION_OPEN);
   dlg.add_button("Cancel", 0);
   dlg.add_button("Save", 1);
   dlg.set_default_response(1);
@@ -569,8 +544,7 @@ void View::load_settings()
 }
 
 // save to standard config file
-void View::save_settings()
-{
+void View::save_settings() {
   vector<string> user_config_bits(3);
   user_config_bits[0] = Glib::get_user_config_dir();
   user_config_bits[1] = "repsnapper";
@@ -583,8 +557,7 @@ void View::save_settings()
 }
 
 // gets config file from user
-void View::save_settings_as()
-{
+void View::save_settings_as() {
   Gtk::FileChooserDialog dlg(*this, "Save Settings", Gtk::FILE_CHOOSER_ACTION_SAVE);
   dlg.add_button("Cancel", 0);
   dlg.add_button("Save", 1);
@@ -609,15 +582,13 @@ void View::save_settings_as()
 }
 
 // save to given config file
-void View::save_settings_to(Glib::RefPtr < Gio::File > file)
-{
+void View::save_settings_to(Glib::RefPtr < Gio::File > file) {
   m_model->settings.SettingsPath = file->get_parent()->get_path();
   saveWindowSizeAndPosition(m_model->settings);
   m_model->SaveConfig(file);
 }
 
-void View::inhibit_print_changed()
-{
+void View::inhibit_print_changed() {
   if (m_printer->IsInhibited()) {
     if (!m_printer->IsPrinting())
       m_pause_button->set_sensitive (false);
@@ -629,8 +600,7 @@ void View::inhibit_print_changed()
 }
 
 void View::alert (Gtk::MessageType t, const char *message,
-		  const char *secondary)
-{
+		  const char *secondary) {
   Gtk::MessageDialog dialog (*this, message, false /* markup */,
 			     t, Gtk::BUTTONS_CLOSE, true);
   if (secondary)
@@ -638,10 +608,10 @@ void View::alert (Gtk::MessageType t, const char *message,
   dialog.run();
 }
 
-
-void View::rot_object_from_spinbutton()
-{
-  if (toggle_block) return;
+void View::rot_object_from_spinbutton() {
+  if (toggle_block)
+    return;
+  
   Gtk::SpinButton *spB;
   m_builder->get_widget("rot_x", spB);
   const double xangle = spB->get_value()*M_PI/180.;
@@ -665,8 +635,7 @@ void View::rot_object_from_spinbutton()
   queue_draw();
 }
 
-bool View::rotate_selection(Vector3d axis, double angle)
-{
+bool View::rotate_selection(Vector3d axis, double angle) {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
@@ -684,8 +653,7 @@ bool View::rotate_selection(Vector3d axis, double angle)
   return true;
 }
 
-void View::update_rot_value()
-{
+void View::update_rot_value() {
   toggle_block = true;
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
@@ -709,8 +677,7 @@ void View::update_rot_value()
   toggle_block = false;
 }
 
-void View::placeonplatform_selection ()
-{
+void View::placeonplatform_selection () {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
@@ -724,8 +691,7 @@ void View::placeonplatform_selection ()
   queue_draw();
 }
 
-void View::mirror_selection ()
-{
+void View::mirror_selection () {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
@@ -739,15 +705,13 @@ void View::mirror_selection ()
   queue_draw();
 }
 
-void View::stl_added (Gtk::TreePath &path)
-{
+void View::stl_added (Gtk::TreePath &path) {
   m_treeview->expand_all();
   m_treeview->get_selection()->unselect_all();
   m_treeview->get_selection()->select (path);
 }
 
-void View::set_SliderBBox(double max_z)
-{
+void View::set_SliderBBox(double max_z) {
   double smax = max(0.001, max_z);
   Gtk::Scale *scale;
   m_builder->get_widget("Display.PolygonOpacity", scale);
@@ -758,16 +722,14 @@ void View::set_SliderBBox(double max_z)
     scale->set_range(0, smax);
 }
 
-void View::model_changed ()
-{
+void View::model_changed () {
   m_translation_row->selection_changed();
   set_SliderBBox(m_model->Max.z());
   show_notebooktab("model_tab", "controlnotebook");
   queue_draw();
 }
 
-void View::show_widget (string name, bool visible) const
-{
+void View::show_widget (string name, bool visible) const {
   Gtk::Widget *w;
   m_builder->get_widget (name, w);
   if (w)
@@ -777,8 +739,7 @@ void View::show_widget (string name, bool visible) const
 }
 
 
-void View::show_notebooktab (string name, string notebookname) const
-{
+void View::show_notebooktab (string name, string notebookname) const {
   Gtk::Notebook *nb;
   m_builder->get_widget (notebookname, nb);
   if (!nb) { cerr << "no notebook " << notebookname << endl; return;}
@@ -791,41 +752,34 @@ void View::show_notebooktab (string name, string notebookname) const
   else cerr << "no page " << num << endl;
 }
 
-void View::gcode_changed ()
-{
+void View::gcode_changed () {
   set_SliderBBox(m_model->gcode.max_z());
   // show gcode result
   show_notebooktab("gcode_tab", "controlnotebook");
 }
 
-void View::power_toggled(Gtk::ToggleToolButton *button)
-{
+void View::power_toggled(Gtk::ToggleToolButton *button) {
   m_printer->SwitchPower (button->get_active());
 }
 
-void View::print_clicked()
-{
+void View::print_clicked() {
   m_printer->StartPrinting();
 }
 
-void View::pause_toggled(Gtk::ToggleToolButton *button)
-{
+void View::pause_toggled(Gtk::ToggleToolButton *button) {
   if (button->get_active())
     m_printer->StopPrinting();
   else
     m_printer->ContinuePrinting();
 }
 
-void View::reset_clicked()
-{
+void View::reset_clicked() {
   if (get_userconfirm(_("Reset Printer?"))) {
     m_printer->Reset();
-    //printing_changed();
   }
 }
 
-void View::home_all()
-{
+void View::home_all() {
   if (m_printer->IsPrinting()) return;
   m_printer->SendAsync ("G28");
   for (uint i = 0; i < 3; i++)
@@ -833,17 +787,16 @@ void View::home_all()
 }
 
 
-void View::update_settings_gui()
-{
+void View::update_settings_gui() {
   // awful cast-ness to avoid having glibmm headers everywhere.
-  m_model->settings.set_to_gui (m_builder);
+  m_model->settings.set_to_gui(m_builder);
 
   Gtk::AboutDialog *about;
-  m_builder->get_widget ("about_dialog", about);
+  m_builder->get_widget("about_dialog", about);
   about->set_version(VERSION);
 
   Gtk::Toolbar *toolbar;
-  m_builder->get_widget ("i_custom_toolbar", toolbar);
+  m_builder->get_widget("i_custom_toolbar", toolbar);
   if (toolbar) {
     vector<Gtk::Widget*> buts = toolbar->get_children();
     for (guint i=buts.size(); i>0; i--) {
@@ -859,20 +812,17 @@ void View::update_settings_gui()
   update_extruderlist();
 }
 
-void View::handle_ui_settings_changed()
-{
+void View::handle_ui_settings_changed() {
   queue_draw();
 }
 
 
-void View::temp_changed()
-{
+void View::temp_changed() {
   for (int i = 0; i < TEMP_LAST; i++)
     m_temps[i]->update_temp (m_printer->get_temp((TempType) i));
 }
 
-bool View::move_selection(float x, float y, float z)
-{
+bool View::move_selection(float x, float y, float z) {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
@@ -888,49 +838,43 @@ bool View::move_selection(float x, float y, float z)
   return true;
 }
 
-bool View::key_pressed_event(GdkEventKey *event)
-{
+bool View::key_pressed_event(GdkEventKey *event) {
   //  cerr << "key " << event->keyval << endl;
   // if (m_treeview->get_selection()->count_selected_rows() <= 0)
   //   return false;
-  switch (event->keyval)
-    {
-    case GDK_KEY_Tab:
-      {
-	if (event->state & GDK_CONTROL_MASK) {
-	  Gtk::Notebook *nb;
-	  m_builder->get_widget ("controlnotebook", nb);
-	  if (nb) {
-	    if (event->state & GDK_SHIFT_MASK)
-	      nb->prev_page();
-	    else
-	      nb->next_page();
-	  }
-	  return true;
-	}
+  switch (event->keyval) {
+  case GDK_KEY_Tab:
+    if (event->state & GDK_CONTROL_MASK) {
+      Gtk::Notebook *nb;
+      m_builder->get_widget ("controlnotebook", nb);
+      if (nb) {
+	if (event->state & GDK_SHIFT_MASK)
+	  nb->prev_page();
+	else
+	  nb->next_page();
       }
-      break;
-    case GDK_KEY_Escape:
-      {
-	stop_progress();
-	return true;
-      }
-      break;
-    case GDK_KEY_Delete:
-    case GDK_KEY_KP_Delete:
-      delete_selected_objects();
       return true;
-    default:
-      return false;
     }
+    break;
+  case GDK_KEY_Escape:
+    stop_progress();
+    return true;
+    
+  case GDK_KEY_Delete:
+  case GDK_KEY_KP_Delete:
+    delete_selected_objects();
+    return true;
+    
+  default:
+    return false;
+  }
   return false;
 }
 
 View::View(BaseObjectType* cobject,
 	   const Glib::RefPtr<Gtk::Builder>& builder)
   : Gtk::ApplicationWindow(cobject),
-  m_builder(builder), m_model(NULL), m_renderer(NULL)
-{
+  m_builder(builder), m_model(NULL), m_renderer(NULL) {
   toggle_block = false;
 
   // Menus
@@ -1077,8 +1021,7 @@ View::View(BaseObjectType* cobject,
   show();
 }
 
-void View::extruder_selected()
-{
+void View::extruder_selected() {
   vector< Gtk::TreeModel::Path > path =
     extruder_treeview->get_selection()->get_selected_rows();
   if(path.size()>0 && path[0].size()>0) {
@@ -1087,9 +1030,11 @@ void View::extruder_selected()
   }
   queue_draw();
 }
-void View::copy_extruder()
-{
-  if (!m_model) return;
+
+void View::copy_extruder() {
+  if (!m_model)
+    return;
+  
   vector< Gtk::TreeModel::Path > path =
     extruder_treeview->get_selection()->get_selected_rows();
   if(path.size()>0 && path[0].size()>0) {
@@ -1101,9 +1046,11 @@ void View::copy_extruder()
   extruder_treeview->get_selection()->select(row);
   extruder_selected();
 }
-void View::remove_extruder()
-{
-  if (!m_model) return;
+
+void View::remove_extruder() {
+  if (!m_model)
+    return;
+  
   vector< Gtk::TreeModel::Path > path =
     extruder_treeview->get_selection()->get_selected_rows();
   if (path.size()>0 && path[0].size()>0) {
@@ -1111,10 +1058,11 @@ void View::remove_extruder()
   }
   update_extruderlist();
 }
-void View::update_extruderlist()
-{
-  if (!m_model) return;
-  if (!extruder_liststore) return;
+
+void View::update_extruderlist() {
+  if (!m_model || !extruder_treeview)
+    return;
+  
   extruder_liststore->clear();
   uint num = m_model->settings.getNumExtruders();
   if (num==0) return;
@@ -1133,14 +1081,15 @@ void View::update_extruderlist()
 }
 
 //  stop file preview when leaving file tab
-void View::on_controlnotebook_switch(Gtk::Widget* page, guint page_num)
-{
-  if (!page) return;
-  if (m_model) m_model->preview_shapes.clear();
+void View::on_controlnotebook_switch(Gtk::Widget* page, guint page_num) {
+  if (!page)
+    return;
+  
+  if (m_model)
+    m_model->preview_shapes.clear();
 }
 
-View::~View()
-{
+View::~View() {
   delete m_settings_ui;
   delete m_translation_row;
   for (uint i = 0; i < 3; i++) {
@@ -1159,8 +1108,7 @@ View::~View()
   m_renderer = NULL;
 }
 
-bool View::saveWindowSizeAndPosition(Settings &settings) const
-{
+bool View::saveWindowSizeAndPosition(Settings &settings) const {
   Gtk::Window *pWindow = NULL;
   m_builder->get_widget("main_window", pWindow);
   if (pWindow) {
@@ -1175,8 +1123,7 @@ bool View::saveWindowSizeAndPosition(Settings &settings) const
   return false;
 }
 
-void View::setModel(Model *model)
-{
+void View::setModel(Model *model) {
   m_model = model;
 
   m_model->settings.m_signal_visual_settings_changed.connect
@@ -1286,21 +1233,18 @@ void View::setModel(Model *model)
 }
 
 void View::on_gcodebuffer_cursor_set(const Gtk::TextIter &iter,
-				     const Glib::RefPtr <Gtk::TextMark> &refMark)
-{
+				     const Glib::RefPtr <Gtk::TextMark> &refMark) {
   if (m_renderer)
     m_renderer->queue_draw();
 }
 
-void View::delete_selected_objects()
-{
+void View::delete_selected_objects() {
   vector<Gtk::TreeModel::Path> path = m_treeview->get_selection()->get_selected_rows();
   m_model->DeleteObjTree(path);
   m_treeview->expand_all();
 }
 
-void View::tree_selection_changed()
-{
+void View::tree_selection_changed() {
   if (m_model) {
     m_model->m_current_selectionpath = m_treeview->get_selection()->get_selected_rows();
     vector<Shape*> shapes;
@@ -1317,21 +1261,20 @@ void View::tree_selection_changed()
     m_model->m_inhibit_modelchange = false;
   }
 }
-bool View::get_selected_objects(vector<TreeObject*> &objects, vector<Shape*> &shapes)
-{
+
+bool View::get_selected_objects(vector<TreeObject*> &objects, vector<Shape*> &shapes) {
   vector<Gtk::TreeModel::Path> iter = m_treeview->get_selection()->get_selected_rows();
   m_model->objtree.get_selected_objects(iter, objects, shapes);
   return objects.size() != 0 || shapes.size() != 0;
 }
-bool View::get_selected_shapes(vector<Shape*> &shapes, vector<Matrix4d> &transforms)
-{
+
+bool View::get_selected_shapes(vector<Shape*> &shapes, vector<Matrix4d> &transforms) {
   vector<Gtk::TreeModel::Path> iter = m_treeview->get_selection()->get_selected_rows();
   m_model->objtree.get_selected_shapes(iter, shapes, transforms);
   return shapes.size() != 0;
 }
 
-void View::duplicate_selected_objects()
-{
+void View::duplicate_selected_objects() {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
@@ -1347,8 +1290,7 @@ void View::duplicate_selected_objects()
     }
 }
 
-void View::split_selected_objects()
-{
+void View::split_selected_objects() {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
@@ -1364,8 +1306,7 @@ void View::split_selected_objects()
   }
 }
 
-void View::merge_selected_objects()
-{
+void View::merge_selected_objects() {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
@@ -1376,29 +1317,25 @@ void View::merge_selected_objects()
   }
 }
 
-void View::divide_selected_objects()
-{
+void View::divide_selected_objects() {
 }
 
 /* Handler for widget rollover. Displays a message in the window status bar */
-bool View::statusBarMessage(Glib::ustring message)
-{
-    Gtk::Statusbar *statusbar;
-    m_builder->get_widget("statusbar", statusbar);
-    statusbar->push(message);
-
-    return false;
+bool View::statusBarMessage(Glib::ustring message) {
+  Gtk::Statusbar *statusbar;
+  m_builder->get_widget("statusbar", statusbar);
+  statusbar->push(message);
+  
+  return false;
 }
 
 
-void View::stop_progress()
-{
+void View::stop_progress() {
   m_progress->stop_running();
 }
 
 
-void View::scale_selection()
-{
+void View::scale_selection() {
   if (toggle_block) return;
   double scale=1;
   Gtk::SpinButton *scale_value;
@@ -1407,25 +1344,24 @@ void View::scale_selection()
   scale_selection_to(scale);
 }
 
-void View::scale_selection_to(const double factor)
-{
+void View::scale_selection_to(const double factor) {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
   if (shapes.size()>0)
-    for (uint i=0; i<shapes.size() ; i++) {
+    for (uint i=0; i<shapes.size() ; i++)
       shapes[i]->transform3D.scale(factor);
-    }
   else if (objects.size()>0)
-    for (uint i=0; i<objects.size() ; i++) {
+    for (uint i=0; i<objects.size() ; i++)
       objects[i]->transform3D.scale(factor);
-    }
+  
   m_model->ModelChanged();
 }
 
-void View::scale_object_x()
-{
-  if (toggle_block) return;
+void View::scale_object_x() {
+  if (toggle_block)
+    return;
+  
   double scale=1;
   Gtk::SpinButton *scale_value;
   m_builder->get_widget("scale_x", scale_value);
@@ -1434,18 +1370,19 @@ void View::scale_object_x()
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
   if (shapes.size()>0)
-    for (uint i=0; i<shapes.size() ; i++) {
+    for (uint i=0; i<shapes.size() ; i++)
       shapes[i]->transform3D.scale_x(scale);
-    }
   else if (objects.size()>0)
-    for (uint i=0; i<objects.size() ; i++) {
+    for (uint i=0; i<objects.size() ; i++)
       objects[i]->transform3D.scale_x(scale);
-    }
+  
   m_model->ModelChanged();
 }
-void View::scale_object_y()
-{
-  if (toggle_block) return;
+
+void View::scale_object_y() {
+  if (toggle_block)
+    return;
+  
   double scale=1;
   Gtk::SpinButton *scale_value;
   m_builder->get_widget("scale_y", scale_value);
@@ -1454,17 +1391,16 @@ void View::scale_object_y()
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
   if (shapes.size()>0)
-    for (uint i=0; i<shapes.size() ; i++) {
+    for (uint i=0; i<shapes.size() ; i++)
       shapes[i]->transform3D.scale_y(scale);
-    }
   else if (objects.size()>0)
-    for (uint i=0; i<objects.size() ; i++) {
+    for (uint i=0; i<objects.size() ; i++)
       objects[i]->transform3D.scale_y(scale);
-    }
+  
   m_model->ModelChanged();
 }
-void View::scale_object_z()
-{
+
+void View::scale_object_z() {
   if (toggle_block) return;
   double scale=1;
   Gtk::SpinButton *scale_value;
@@ -1474,20 +1410,18 @@ void View::scale_object_z()
   vector<TreeObject*> objects;
   get_selected_objects (objects, shapes);
   if (shapes.size()>0)
-    for (uint i=0; i<shapes.size() ; i++) {
+    for (uint i=0; i<shapes.size() ; i++)
       shapes[i]->transform3D.scale_z(scale);
-    }
   else if (objects.size()>0)
-    for (uint i=0; i<objects.size() ; i++) {
+    for (uint i=0; i<objects.size() ; i++)
       objects[i]->transform3D.scale_z(scale);
-    }
+  
   m_model->ModelChanged();
 }
 
 /* Updates the scale value when a new STL is selected,
  * giving it the new STL's current scale factor */
-void View::update_scale_value()
-{
+void View::update_scale_value() {
   toggle_block = true;
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
@@ -1502,8 +1436,7 @@ void View::update_scale_value()
     scale_sb->set_value(shapes.back()->getScaleFactorY());
     m_builder->get_widget("scale_z", scale_sb);
     scale_sb->set_value(shapes.back()->getScaleFactorZ());
-  }
-  else if (objects.size()>0) {
+  } else if (objects.size()>0) {
     Gtk::SpinButton *scale_sb;
     m_builder->get_widget("m_scale_value", scale_sb);
     scale_sb->set_value(objects.back()->transform3D.get_scale());
@@ -1514,12 +1447,11 @@ void View::update_scale_value()
     m_builder->get_widget("scale_z", scale_sb);
     scale_sb->set_value(objects.back()->transform3D.get_scale_z());
   }
+  
   toggle_block = false;
 }
 
-// GPL bits below from model.cpp ...
-void View::DrawGrid()
-{
+void View::DrawGrid() {
   if (!m_renderer)
     return;
   
@@ -1580,8 +1512,7 @@ void View::DrawGrid()
 }
 
 // called from Render::on_draw
-void View::Draw(vector<Gtk::TreeModel::Path> selected)
-{
+void View::Draw(vector<Gtk::TreeModel::Path> selected) {
   if (!m_renderer)
     return;
   
@@ -1603,8 +1534,7 @@ void View::Draw(vector<Gtk::TreeModel::Path> selected)
   m_model->draw(*m_renderer, selected);
 }
 
-void View::showCurrentPrinting(unsigned long lineno)
-{
+void View::showCurrentPrinting(unsigned long lineno) {
   if (lineno == 0) {
     m_progress->stop(_("Done"));
     return;

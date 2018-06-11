@@ -17,8 +17,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-#ifndef MODEL_H
-#define MODEL_H
+#pragma once
 
 #include <math.h>
 
@@ -38,109 +37,106 @@
 #  pragma warning( disable : 4244 4267)
 #endif
 
-
 class Model {
-	ViewProgress *m_progress;
+  ViewProgress *m_progress;
+  
+ public:
+  Gtk::Statusbar *statusbar;
+  // Something in the rfo changed
+  sigc::signal< void > m_signal_gcode_changed;
+  
+  Model();
+  ~Model();
+  
+  void SaveConfig(Glib::RefPtr<Gio::File> file);
+  void LoadConfig() { LoadConfig(Gio::File::create_for_path("repsnapper3.conf")); }
+  void LoadConfig(Glib::RefPtr<Gio::File> file);
+  
+  // STL Functions
+  void ReadStl(Glib::RefPtr<Gio::File> file);
+  vector<Shape*> ReadShapes(Glib::RefPtr<Gio::File> file,
+			    uint max_triangles = 0);
+  void SaveStl(Glib::RefPtr<Gio::File> file);
+  
+  int AddShape(TreeObject *parent, Shape * shape, string filename,
+	       bool autoplace = true);
+  int SplitShape(TreeObject *parent, Shape *shape, string filename);
+  int MergeShapes(TreeObject *parent, const vector<Shape*> shapes);
+  Shape GetCombinedShape() const;
+	
+  sigc::signal< void, Gtk::TreePath & > m_signal_stl_added;
 
-public:
-	Gtk::Statusbar *statusbar;
-	// Something in the rfo changed
-	sigc::signal< void > m_signal_gcode_changed;
+  void Read(Glib::RefPtr<Gio::File> file);
+  void SetViewProgress (ViewProgress *progress);
 
-	Model();
-	~Model();
+  void DeleteObjTree(vector<Gtk::TreeModel::Path> &iter);
+  vector<Gtk::TreeModel::Path> m_current_selectionpath;
 
-	void SaveConfig(Glib::RefPtr<Gio::File> file);
-	void LoadConfig() { LoadConfig(Gio::File::create_for_path("repsnapper3.conf")); }
-	void LoadConfig(Glib::RefPtr<Gio::File> file);
+  void ScaleObject(Shape *shape, TreeObject *object, double scale);
+  void ScaleObjectX(Shape *shape, TreeObject *object, double scale);
+  void ScaleObjectY(Shape *shape, TreeObject *object, double scale);
+  void ScaleObjectZ(Shape *shape, TreeObject *object, double scale);
+  void RotateObject(Shape *shape, TreeObject *object, Vector4d rotate);
+  void PlaceOnPlatform(Shape *shape, TreeObject *object);
+  bool updateStatusBar(GdkEventCrossing *event, Glib::ustring = "");
+  void Mirror(Shape *shape, TreeObject *object);
 
-	// STL Functions
-	void ReadStl(Glib::RefPtr<Gio::File> file);
-	vector<Shape*> ReadShapes(Glib::RefPtr<Gio::File> file,
-				  uint max_triangles = 0);
-	void SaveStl(Glib::RefPtr<Gio::File> file);
+  vector<Shape*> preview_shapes;
+  double get_preview_Z() {return 0.0;};
 
-	int AddShape(TreeObject *parent, Shape * shape, string filename,
-		     bool autoplace = true);
-	int SplitShape(TreeObject *parent, Shape *shape, string filename);
-	int MergeShapes(TreeObject *parent, const vector<Shape*> shapes);
-	Shape GetCombinedShape() const;
+  // GCode Functions
+  void init();
+  void ReadGCode(Glib::RefPtr<Gio::File> file);
+  void ConvertToGCode();
 
-	sigc::signal< void, Gtk::TreePath & > m_signal_stl_added;
+  void MakeRaft(GCodeState &state, double &z);
+  void WriteGCode(Glib::RefPtr<Gio::File> file);
+  void ClearGCode();
+  Glib::RefPtr<Gtk::TextBuffer> GetGCodeBuffer();
+  void GlDrawGCode(Render &render, int layer=-1); // should be in the view
+  void GlDrawGCode(Render &render, double z);
+  void setCurrentPrintingLine(long line){ currentprintingline = line; }
+  unsigned long currentprintingline;
 
-	void Read(Glib::RefPtr<Gio::File> file);
-	void SetViewProgress (ViewProgress *progress);
+  Matrix4f &SelectedNodeMatrix(guint objectNr = 1);
+  void SelectedNodeMatrices(vector<Matrix4d *> &result );
+  void newObject();
 
-	void DeleteObjTree(vector<Gtk::TreeModel::Path> &iter);
-	vector<Gtk::TreeModel::Path> m_current_selectionpath;
+  Settings settings;
 
-	void ScaleObject(Shape *shape, TreeObject *object, double scale);
-	void ScaleObjectX(Shape *shape, TreeObject *object, double scale);
-	void ScaleObjectY(Shape *shape, TreeObject *object, double scale);
-	void ScaleObjectZ(Shape *shape, TreeObject *object, double scale);
-	void RotateObject(Shape *shape, TreeObject *object, Vector4d rotate);
-	void PlaceOnPlatform(Shape *shape, TreeObject *object);
-	bool updateStatusBar(GdkEventCrossing *event, Glib::ustring = "");
-	void Mirror(Shape *shape, TreeObject *object);
+  // Model derived: Bounding box info
+  Vector3d Center;
+  Vector3d Min;
+  Vector3d Max;
 
-	vector<Shape*> preview_shapes;
-	double get_preview_Z() {return 0.0;};
+  void CalcBoundingBoxAndCenter(bool selected_only = false);
+  Vector3d GetViewCenter();
+  Vector3d FindEmptyLocation(const vector<Shape*> &shapes,
+			     const vector<Matrix4d> &transforms,
+			     const Shape *shape);
+  bool FindEmptyLocation(Vector3d &result, const Shape *stl);
 
-	// GCode Functions
-	void init();
-	void ReadGCode(Glib::RefPtr<Gio::File> file);
-	void ConvertToGCode();
+  sigc::signal< void > m_model_changed;
+  void ModelChanged();
+  bool m_inhibit_modelchange;
+  // Truly the model
+  ObjectsTree objtree;
+  Glib::RefPtr<Gtk::TextBuffer> errlog, echolog;
 
-	void MakeRaft(GCodeState &state, double &z);
-	void WriteGCode(Glib::RefPtr<Gio::File> file);
-	void ClearGCode();
-	Glib::RefPtr<Gtk::TextBuffer> GetGCodeBuffer();
-	void GlDrawGCode(Render &render, int layer=-1); // should be in the view
-	void GlDrawGCode(Render &render, double z);
-	void setCurrentPrintingLine(long line){ currentprintingline = line; }
-	unsigned long currentprintingline;
+  int draw(Render &render, vector<Gtk::TreeModel::Path> &selected);
 
-	Matrix4f &SelectedNodeMatrix(guint objectNr = 1);
-	void SelectedNodeMatrices(vector<Matrix4d *> &result );
-	void newObject();
+  sigc::signal< void, Gtk::MessageType, const char *, const char * > signal_alert;
+  void alert (const char *message);
+  void error (const char *message, const char *secondary);
 
-	Settings settings;
+  void ClearLogs();
 
-	// Model derived: Bounding box info
-	Vector3d Center;
-	Vector3d Min;
-	Vector3d Max;
+  GCode gcode;
 
-	void CalcBoundingBoxAndCenter(bool selected_only = false);
-	Vector3d GetViewCenter();
-	Vector3d FindEmptyLocation(const vector<Shape*> &shapes,
-				   const vector<Matrix4d> &transforms,
-				   const Shape *shape);
-        bool FindEmptyLocation(Vector3d &result, const Shape *stl);
+  void SetIsPrinting(bool printing) { is_printing = printing; };
 
-	sigc::signal< void > m_model_changed;
-	void ModelChanged();
-	bool m_inhibit_modelchange;
-	// Truly the model
-	ObjectsTree objtree;
-	Glib::RefPtr<Gtk::TextBuffer> errlog, echolog;
-
-	int draw(Render &render, vector<Gtk::TreeModel::Path> &selected);
-
-	sigc::signal< void, Gtk::MessageType, const char *, const char * > signal_alert;
-	void alert (const char *message);
-	void error (const char *message, const char *secondary);
-
-	void ClearLogs();
-
-	GCode gcode;
-
-	void SetIsPrinting(bool printing) { is_printing = printing; };
-
-        bool isCalculating() const { return is_calculating; };
+  bool isCalculating() const { return is_calculating; };
  private:
-	bool is_calculating;
-	bool is_printing;
+  bool is_calculating;
+  bool is_printing;
 };
-
-#endif // MODEL_H

@@ -17,7 +17,6 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-
 #pragma once
 
 #include <vector>
@@ -33,116 +32,70 @@
 #include "triangle.h"
 #include "render.h"
 
-struct Segment {
-  Segment(guint s, guint e) { start = s; end = e; }
-  int start;		// Vertex index of start point
-    int end;		// Vertex index of end point
-  void Swap() {
-    int tmp = start;
-    start = end;
-    end = tmp;
-  }
-};
-
-
-
 #define sqr(x) ((x)*(x))
 
-
-class Shape
-{
-public:
+class Shape {
+ public:
   virtual short dimensions(){return 3;};
 
-	Shape();
-	/* Shape(string filename, istream &text); */
-	virtual ~Shape(){};
-	Glib::ustring filename;
-	int idx;
+  Shape();
+  virtual ~Shape(){};
+  Glib::ustring filename;
+  int idx;
 
-	Transform3D transform3D;
+  Transform3D transform3D;
 
-	virtual void clear();
-	/* void displayInfillOld(const Settings &settings, CuttingPlane &plane,  */
-	/* 		      guint LayerNr, vector<int>& altInfillLayers); */
-	void draw(Render &render,
-		  const Settings &settings,
-		  bool highlight=false, uint max_triangles=0);
+  virtual void clear();
+  
+  void draw(Render &render,
+	    const Settings &settings,
+	    bool highlight=false, uint max_triangles=0);
 
-    virtual vector<Vector3d> getMostUsedNormals() const;
-	// Auto-Rotate object to have the largest area surface down for printing:
-    virtual void CalcBBox();
-	// Rotation for manual rotate and used by OptimizeRotation:
-    virtual void Rotate(const Vector3d & axis, const double &angle);
+  virtual void CalcBBox();
 
-	virtual void move(Vector3d delta){ transform3D.move(delta); CalcBBox();};
+  virtual void Rotate(const Vector3d & axis, const double &angle);
+  virtual void move(Vector3d delta){ transform3D.move(delta); CalcBBox();};
 
-	void Scale(double scale_factor, bool calcbbox = true);
-	void ScaleX(double scale_factor);
-	void ScaleY(double scale_factor);
-	virtual void ScaleZ(double scale_factor);
-	double getScaleFactor() { return transform3D.get_scale(); };
-	double getScaleFactorX(){ return transform3D.get_scale_x(); };
-	double getScaleFactorY(){ return transform3D.get_scale_y(); };
-	virtual double getScaleFactorZ(){ return transform3D.get_scale_z(); };
+  void Scale(double scale_factor, bool calcbbox = true);
+  void ScaleX(double scale_factor);
+  void ScaleY(double scale_factor);
+  virtual void ScaleZ(double scale_factor);
+  double getScaleFactor() { return transform3D.get_scale(); };
+  double getScaleFactorX(){ return transform3D.get_scale_x(); };
+  double getScaleFactorY(){ return transform3D.get_scale_y(); };
+  virtual double getScaleFactorZ(){ return transform3D.get_scale_z(); };
 
+  void FitToVolume(const Vector3d &vol);
 
-	void FitToVolume(const Vector3d &vol);
+  void PlaceOnPlatform();
 
-    void PlaceOnPlatform();
+  Vector3d Min, Max, Center;
 
-    Vector3d Min, Max, Center;
+  vector<Triangle> trianglesSteeperThan(double angle) const;
 
-    Vector3d scaledCenter() const;
+  string getSTLsolid() const;
+  double volume() const;
 
-    vector<Triangle> trianglesSteeperThan(double angle) const;
+  void invertNormals();
+  void repairNormals(double sqdistance);
+  virtual void mirror();
+  virtual void splitshapes(vector<Shape*> &shapes, ViewProgress *progress=NULL);
 
-    string getSTLsolid() const;
-    double volume() const;
+  int saveBinarySTL(Glib::ustring filename) const;
 
-    void invertNormals();
-    void repairNormals(double sqdistance);
-    virtual void mirror();
-    void makeHollow(double wallthickness);
-    virtual void splitshapes(vector<Shape*> &shapes, ViewProgress *progress=NULL);
+  virtual string info() const;
 
+  vector<Triangle> getTriangles(const Matrix4d &T=Matrix4d::IDENTITY) const;
+  void addTriangles(const vector<Triangle> &tr);
 
-    int saveBinarySTL(Glib::ustring filename) const;
+  void setTriangles(const vector<Triangle> &triangles_);
 
+  uint size() const {return triangles.size();}
 
-    virtual string info() const;
+ private:
+  vector<Triangle> triangles;
+  void calcPolygons();
 
-    vector<Triangle> getTriangles(const Matrix4d &T=Matrix4d::IDENTITY) const;
-    void addTriangles(const vector<Triangle> &tr);
-
-    void setTriangles(const vector<Triangle> &triangles_);
-
-    uint size() const {return triangles.size();}
-
-private:
-
-    vector<Triangle> triangles;
-    //vector<Polygon2d>  polygons;  // surface polygons instead of triangles
-    void calcPolygons();
-
-    // returns maximum gradient
-    vector<Segment> getCutlines(const Matrix4d &T, double z,
-				vector<Vector2d> &vertices, double &max_grad,
-				vector<Triangle> &support_triangles,
-				double supportangle,
-				double thickness) const;
-
-    bool hasAdjacentTriangleTo(const Triangle &triangle,
-			       double sqdistance = 0.05) const;
-    
-    virtual void draw_geometry(Render &render, const Settings &settings, uint max_triangles=0);
-    void drawBBox(Render &render) const;
+  virtual void draw_geometry(Render &render, const Settings &settings, uint max_triangles=0);
+  void drawBBox(Render &render) const;
 };
-
-
-
-bool CleanupConnectSegments(const vector<Vector2d> &vertices, vector<Segment> &lines,
-			    bool connect_all=false);
-bool CleanupSharedSegments(vector<Segment> &lines);
-bool CleanupStraightLines(const vector<Vector2d> &vertices, vector<Segment> &lines);
-

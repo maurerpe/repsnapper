@@ -17,8 +17,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-#ifndef RENDER_H
-#define RENDER_H
+#pragma once
 
 #include <gtkmm.h>
 #include <gtkmm/glarea.h>
@@ -121,5 +120,3 @@ class RenderModelTrans {
   RenderModelTrans(Render &render, const Matrix4f &trans) {m_render = &render; m_render->set_model_transform(trans);};
   ~RenderModelTrans() {m_render->set_default_transform();};
 };
-
-#endif // RENDER_H
