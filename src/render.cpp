@@ -48,8 +48,8 @@ inline GtkWidget *Render::get_widget() {
 
 inline Model *Render::get_model() const { return m_view->get_model(); }
 
-Render::Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
-  m_view(view), m_selection(selection) {
+Render::Render(View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
+  realized(false), drawn_once(false), m_view(view), m_selection(selection) {
 
   set_events(Gdk::POINTER_MOTION_MASK |
 	     Gdk::BUTTON_MOTION_MASK |
@@ -65,10 +65,9 @@ Render::Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
   set_can_focus(true);
 
   Transform3D trans;
-  /* FIXME: Set initial transform from settings */
-  double bedw = 300;
-  double bedd = 220;
-  double bedh = 300;
+  double bedw = view->m_model->settings.get_double("Hardware", "Volume.X");
+  double bedd = view->m_model->settings.get_double("Hardware", "Volume.Y");
+  double bedh = view->m_model->settings.get_double("Hardware", "Volume.Z");
   trans.move(Vector3d(-bedw/2, -bedd/2, 0));
   m_transform = trans.getTransform();
 
@@ -316,8 +315,12 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   glFlush();
   
   Gtk::GLArea::on_draw(cr);
+
+  if (!drawn_once)
+    queue_draw();
+  drawn_once = true;
   
-  return true;
+  return false;
 }
 
 void Render::set_model_transform(const Matrix4d &trans) {

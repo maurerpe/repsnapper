@@ -914,7 +914,7 @@ bool View::key_pressed_event(GdkEventKey *event)
 View::View(BaseObjectType* cobject,
 	   const Glib::RefPtr<Gtk::Builder>& builder)
   : Gtk::ApplicationWindow(cobject),
-    m_builder(builder), m_model(NULL)
+  m_builder(builder), m_model(NULL), m_renderer(NULL)
 {
   toggle_block = false;
 
@@ -1031,17 +1031,6 @@ View::View(BaseObjectType* cobject,
 
   connect_button ("i_new_custombutton", sigc::mem_fun(*this, &View::new_custombutton) );
   
-  // 3D preview of the bed
-  Gtk::Box *pBox = NULL;
-  m_builder->get_widget("viewarea", pBox);
-  if (!pBox)
-    cerr << "missing box!";
-  else {
-    m_renderer = manage(new Render(this, m_treeview->get_selection()));
-    pBox->add(*m_renderer);
-    m_renderer->show_all();
-  }
-
   m_settings_ui = new PrefsDlg(m_builder);
 
   // file chooser
@@ -1069,7 +1058,7 @@ View::View(BaseObjectType* cobject,
     extruder_treeview->append_column("Extruder",extrudername);
   }
 
-  update_extruderlist();
+  update_extruderlist();  
   show();
 }
 
@@ -1180,7 +1169,7 @@ void View::setModel(Model *model)
   m_model->settings.m_signal_update_settings_gui.connect
     (sigc::mem_fun(*this, &View::update_settings_gui));
 
-  m_treeview->set_model (m_model->objtree.m_model);
+  m_treeview->set_model(m_model->objtree.m_model);
   m_treeview->append_column_editable("Name", m_model->objtree.m_cols->m_name);
 
   // m_treeview->append_column_editable("Extruder", m_model->objtree.m_cols->m_material);
@@ -1246,7 +1235,8 @@ void View::setModel(Model *model)
     m_axis_rows[i] = new AxisRow (m_model, m_printer, i);
     axis_box->add (*m_axis_rows[i]);
   }
-
+  axis_box->show_all();
+  
   Gtk::Box *extruder_box;
   m_builder->get_widget ("i_extruder_box", extruder_box);
   m_extruder_row = new ExtruderRow(m_printer);
@@ -1266,15 +1256,23 @@ void View::setModel(Model *model)
 
   m_printer->setModel(m_model);
 
+  // 3D preview of the bed
+  Gtk::Box *pBox = NULL;
+  m_builder->get_widget("viewarea", pBox);
+  if (!pBox)
+    cerr << "missing box!";
+  else {
+    m_renderer = manage(new Render(this, m_treeview->get_selection()));
+    pBox->add(*m_renderer);
+    m_renderer->show_all();
+  }
+
   m_renderer->queue_draw();
 }
 
 void View::on_gcodebuffer_cursor_set(const Gtk::TextIter &iter,
 				     const Glib::RefPtr <Gtk::TextMark> &refMark)
 {
-  /* FIXME: Add add functionality back in */
-  //  if (m_model)
-  //  m_model->gcode.updateWhereAtCursor(m_model->settings.get_extruder_letters());
   if (m_renderer)
     m_renderer->queue_draw();
 }
@@ -1507,6 +1505,9 @@ void View::update_scale_value()
 // GPL bits below from model.cpp ...
 void View::DrawGrid()
 {
+  if (!m_renderer)
+    return;
+  
   Vector3d volume = m_model->settings.getPrintVolume();
 
   RenderVert vert;
@@ -1566,6 +1567,9 @@ void View::DrawGrid()
 // called from Render::on_draw
 void View::Draw(vector<Gtk::TreeModel::Path> selected)
 {
+  if (!m_renderer)
+    return;
+  
   // Draw the grid
   DrawGrid();
   
