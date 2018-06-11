@@ -181,11 +181,14 @@ void View::save_stl()
   dlg.add_button("Cancel", 0);
   dlg.add_button("Save", 1);
   dlg.set_default_response(1);
+  dlg.set_current_folder(m_folder);
   
   Filters::attach_filters(dlg, Filters::MODEL);
-  
+
   if (dlg.run() != 1)
     return;
+  
+  m_folder = dlg.get_current_folder();
   
   vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
   if (files.size()>0) {
@@ -223,11 +226,14 @@ void View::load_gcode()
   dlg.add_button("Cancel", 0);
   dlg.add_button("Save", 1);
   dlg.set_default_response(1);
+  dlg.set_current_folder(m_folder);
   
   Filters::attach_filters(dlg, Filters::GCODE);
   
   if (dlg.run() != 1)
     return;
+  
+  m_folder = dlg.get_current_folder();
   
   vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
   for (uint i= 0; i < files.size(); i++)
@@ -242,11 +248,14 @@ void View::save_gcode()
   dlg.add_button("Cancel", 0);
   dlg.add_button("Save", 1);
   dlg.set_default_response(1);
+  dlg.set_current_folder(m_folder);
   
   Filters::attach_filters(dlg, Filters::GCODE);
   
   if (dlg.run() != 1)
     return;
+  
+  m_folder = dlg.get_current_folder();
   
   vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
   if (files.size()>0) {
@@ -545,11 +554,14 @@ void View::load_settings()
   dlg.add_button("Cancel", 0);
   dlg.add_button("Save", 1);
   dlg.set_default_response(1);
-  
+  dlg.set_current_folder(m_folder);
+    
   Filters::attach_filters(dlg, Filters::SETTINGS);
   
   if (dlg.run() != 1)
     return;
+  
+  m_folder = dlg.get_current_folder();
   
   vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
   for (uint i= 0; i < files.size(); i++)
@@ -577,11 +589,14 @@ void View::save_settings_as()
   dlg.add_button("Cancel", 0);
   dlg.add_button("Save", 1);
   dlg.set_default_response(1);
-  
+  dlg.set_current_folder(m_folder);
+    
   Filters::attach_filters(dlg, Filters::SETTINGS);
   
   if (dlg.run() != 1)
     return;
+  
+  m_folder = dlg.get_current_folder();
   
   vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
   if (files.size()>0) {

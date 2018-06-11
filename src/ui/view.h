@@ -64,7 +64,9 @@ class View : public Gtk::ApplicationWindow
 
   void update_rot_value();
   void rot_object_from_spinbutton();
-
+  
+  string m_folder;
+  
   Printer *m_printer;
   ExtruderRow *m_extruder_row;
   PrefsDlg *m_settings_ui;
