@@ -783,21 +783,6 @@ void View::gcode_changed ()
   show_notebooktab("gcode_tab", "controlnotebook");
 }
 
-void View::auto_rotate()
-{
-  vector<Shape*> shapes;
-  vector<TreeObject*> objects;
-  get_selected_objects (objects, shapes);
-  if (shapes.size()>0)
-    for (uint i=0; i<shapes.size() ; i++)
-      m_model->OptimizeRotation(shapes[i], NULL);
-  else
-    for (uint i=0; i<objects.size() ; i++)
-      m_model->OptimizeRotation(NULL, objects[i]);
-  update_scale_value();
-  update_rot_value();
-}
-
 void View::power_toggled(Gtk::ToggleToolButton *button)
 {
   m_printer->SwitchPower (button->get_active());
@@ -957,7 +942,6 @@ View::View(BaseObjectType* cobject,
   connect_button ("m_split",         sigc::mem_fun(*this, &View::split_selected_objects) );
   connect_button ("m_merge",         sigc::mem_fun(*this, &View::merge_selected_objects) );
   connect_button ("m_divide",        sigc::mem_fun(*this, &View::divide_selected_objects) );
-  connect_button ("m_auto_rotate",   sigc::mem_fun(*this, &View::auto_rotate) );
   connect_button ("m_platform",      sigc::mem_fun(*this, &View::placeonplatform_selection));
   connect_button ("m_mirror",        sigc::mem_fun(*this, &View::mirror_selection));
 

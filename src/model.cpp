@@ -413,13 +413,6 @@ void Model::RotateObject(Shape* shape, TreeObject* object, Vector4d rotate) {
   ModelChanged();
 }
 
-void Model::OptimizeRotation(Shape *shape, TreeObject *object) {
-  if (!shape)
-    return; // FIXME: rotate entire Objects ...
-  shape->OptimizeRotation();
-  ModelChanged();
-}
-
 void Model::Mirror(Shape *shape, TreeObject *object) {
   if (shape)
     shape->mirror();

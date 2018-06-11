@@ -380,32 +380,6 @@ vector<Vector3d> Shape::getMostUsedNormals() const
 }
 
 
-void Shape::OptimizeRotation()
-{
-  // CenterAroundXY();
-  vector<Vector3d> normals = getMostUsedNormals();
-  // cycle through most-used normals?
-
-  Vector3d N;
-  Vector3d Z(0,0,-1);
-  double angle=0;
-  int count = (int)normals.size();
-  for (int n=0; n < count; n++) {
-    //cerr << n << normals[n] << endl;
-    N = normals[n];
-    angle = acos(N.dot(Z));
-    if (angle>0) {
-      Vector3d axis = N.cross(Z);
-      if (axis.squared_length()>0.1) {
-	Rotate(axis,angle);
-	break;
-      }
-    }
-  }
-  CalcBBox();
-  PlaceOnPlatform();
-}
-
 void Shape::PlaceOnPlatform()
 {
   transform3D.move(Vector3d(0,0,-Min.z()));

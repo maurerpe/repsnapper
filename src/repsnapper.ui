@@ -5902,40 +5902,6 @@ Paul Maurer</property>
       <placeholder/>
     </child>
   </object>
-  <object class="GtkFileChooserDialog" id="file_dialog">
-    <property name="can_focus">False</property>
-    <property name="type_hint">dialog</property>
-    <child internal-child="vbox">
-      <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-  </object>
   <object class="GtkImage" id="gtk-open">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -6596,16 +6562,7 @@ Paul Maurer</property>
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkButton" id="m_auto_rotate">
-                                        <property name="label" translatable="yes">AutoRotate</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                      </object>
-                                      <packing>
-                                        <property name="left_attach">1</property>
-                                        <property name="top_attach">1</property>
-                                      </packing>
+                                      <placeholder/>
                                     </child>
                                     <child>
                                       <placeholder/>

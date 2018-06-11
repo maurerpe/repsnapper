@@ -146,7 +146,6 @@ class View : public Gtk::ApplicationWindow
   void split_selected_objects();
   void merge_selected_objects();
   void divide_selected_objects();
-  void auto_rotate();
   void update_settings_gui();
   void handle_ui_settings_changed();
   bool key_pressed_event(GdkEventKey *event);

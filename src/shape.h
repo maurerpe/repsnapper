@@ -71,7 +71,6 @@ public:
 
     virtual vector<Vector3d> getMostUsedNormals() const;
 	// Auto-Rotate object to have the largest area surface down for printing:
-    virtual void OptimizeRotation();
     virtual void CalcBBox();
 	// Rotation for manual rotate and used by OptimizeRotation:
     virtual void Rotate(const Vector3d & axis, const double &angle);
