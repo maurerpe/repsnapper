@@ -76,7 +76,7 @@ Render::Render(View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
   trans.move(Vector3d(0, 0, z_center));
   m_transform = trans.getTransform() * m_transform;
   
-  m_zoom = atan(max(max(bedw, bedh), bedd) / 2 / fabs(z_center)) * 180 / M_PI;
+  m_zoom = 2 * atan(max(max(bedw, bedh), bedd) / fabs(z_center)) * 180 / M_PI;
 
   m_selection->signal_changed().connect (sigc::mem_fun(*this, &Render::selection_changed));
 }
@@ -264,6 +264,21 @@ static void SetUniform(GLuint vec, const Vector3d &vv) {
   glUniform3f(vec, vv.x(), vv.y(), vv.z());
 }
 
+static void computeProjection(Matrix4d &mat, double fov, double aspect, double zNear, double zFar) {
+  mat = Matrix4d::IDENTITY;
+
+  if (fov <= 0 || aspect == 0)
+    return;
+
+  double inv_depth = 1.0 / fabs(zFar - zNear);
+  mat(1,1) = 1.0 / tan(0.5 * fov * M_PI / 180);
+  mat(0,0) = mat(1,1) / aspect;
+  mat(2,2) = -(zFar + zNear) * inv_depth;
+  mat(2,3) = -2 * zFar * zNear * inv_depth;
+  mat(3,2) = -1;
+  mat(3,3) = 0;
+}
+
 bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   // cout << "Render::on_draw" << endl;
   // cout << "Transform:" << endl;
@@ -290,12 +305,11 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   Matrix4d view_mat = m_transform;
   
   Matrix4d camera_mat;
-  vmml::frustum< double > camera;
-  camera.set_perspective(m_zoom,
-			 ((double) get_width()) / ((double) get_height()),
-			 0.1,
-			 5000);
-  camera.compute_matrix(camera_mat);
+  computeProjection(camera_mat,
+		    m_zoom,
+		    ((double) get_width()) / ((double) get_height()),
+		    0.5 * fabs(z_center),
+		    1.5 * fabs(z_center));
   m_full_transform = camera_mat * view_mat;
   
   // cout << "on_draw: m_full_transform" << endl << m_full_transform << endl;
@@ -443,6 +457,14 @@ void Render::draw_triangles(const float color[4], const RenderVert &vert) {
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), BUFFER_OFFSET(3 * sizeof(GLfloat)));
 
+  // cout << endl << "Drawing triangls:" << endl;
+  // for (size_t i = 0; i < vert.len(); i += 6) {
+  //   const GLfloat *pos = vert.data() + i;
+  //   Vector4d model(pos[0], pos[1], pos[2], 1.0);
+  //   Vector3d camera = hom(m_comb_transform * model);
+  //   cout << model << " -> " << camera << endl;
+  // }
+  
   glDrawArrays(GL_TRIANGLES, 0, vert.len() / 6);  
 }
 
@@ -564,8 +586,8 @@ bool Render::on_scroll_event(GdkEventScroll* event) {
     
     if (m_zoom < 0.02)
       m_zoom = 0.02;
-    else if (m_zoom > 30)
-      m_zoom = 30;
+    else if (m_zoom > 90)
+      m_zoom = 90;
   }
   
   // cout << "Render::on_scroll_event: " << m_zoom << endl;
