@@ -268,11 +268,11 @@ struct SNorm {
 
 void Shape::PlaceOnPlatform() {
   transform3D.move(Vector3d(0,0,-Min.z()));
+  CalcBBox();
 }
 
-// Rotate shape about center
-void Shape::Rotate(const Vector3d & axis, const double & angle) {
-  transform3D.rotate(Center, axis, angle);
+void Shape::Rotate(const Vector3d &center, const Vector3d &axis, const double & angle) {
+  transform3D.rotate(center, axis, angle);
   CalcBBox();
 }
 
@@ -296,11 +296,11 @@ int find_vertex(const vector<Vector2d> &vertices,
 }
 
 // called from Model::draw
-void Shape::draw(Render &render, const Settings &settings, bool highlight, uint max_triangles) {
+void Shape::draw(Render &render, size_t index, const Settings &settings, bool highlight, uint max_triangles) {
   //cerr << "Shape::draw" <<  endl;
 
   if (settings.get_boolean("Display","DisplayPolygons")) {
-    draw_geometry(render, settings, max_triangles);
+    draw_geometry(render, index, highlight, settings, max_triangles);
   }
   
   if (settings.get_boolean("Display","DisplayBBox")) {
@@ -370,9 +370,12 @@ void Shape::drawBBox(Render &render) const {
   render.draw_string(color, pos, val.str(), 12);
 }
 
-void Shape::draw_geometry(Render &render, const Settings &settings, uint max_triangles) {
+void Shape::draw_geometry(Render &render, size_t index, bool highlight, const Settings &settings, uint max_triangles) {
   RenderVert vert;
   float color[4] = {1.0, 1.0, 1.0, 0};
+  if (highlight) 
+    color[0] = 0.5;
+  
   color[3] = settings.get_double("Display","PolygonOpacity");
   
   for(size_t i = 0; i < triangles.size(); i++) {
@@ -388,7 +391,7 @@ void Shape::draw_geometry(Render &render, const Settings &settings, uint max_tri
   }
 
   RenderModelTrans mt(render, transform3D.getTransform());
-  render.draw_triangles(color, vert);
+  render.draw_triangles(color, vert, index);
 }
 
 string Shape::info() const {

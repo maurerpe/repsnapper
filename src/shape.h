@@ -46,12 +46,14 @@ class Shape {
   virtual void clear();
   
   void draw(Render &render,
+	    size_t index,
 	    const Settings &settings,
 	    bool highlight=false, uint max_triangles=0);
 
   virtual void CalcBBox();
 
-  virtual void Rotate(const Vector3d & axis, const double &angle);
+  virtual void Rotate(const Vector3d &center, const Vector3d &axis, const double &angle);
+  virtual void Rotate(const Vector3d &axis, const double &angle) {Rotate(Center, axis, angle);};
   virtual void move(Vector3d delta){ transform3D.move(delta); CalcBBox();};
 
   void Scale(double scale_factor, bool calcbbox = true);
@@ -94,6 +96,6 @@ class Shape {
   vector<Triangle> triangles;
   void calcPolygons();
 
-  virtual void draw_geometry(Render &render, const Settings &settings, uint max_triangles=0);
+  virtual void draw_geometry(Render &render, size_t index, bool highlight, const Settings &settings, uint max_triangles=0);
   void drawBBox(Render &render) const;
 };

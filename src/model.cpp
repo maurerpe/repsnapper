@@ -498,7 +498,7 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter) {
   vector<Matrix4d> transforms;
   objtree.get_selected_shapes(iter, sel_shapes, transforms);
 
-  gint index = 1; // pick/select index. matches computation in update_model()
+  size_t index = 1; // pick/select index. matches computation in update_model()
 
   Vector3d printOffset = settings.getPrintMargin();
   if(settings.get_boolean("Raft","Enable")) {
@@ -516,7 +516,7 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter) {
       for (uint i = 0; i < preview_shapes.size(); i++) {
 	offset = preview_shapes[i]->Center;
 	glTranslated(offset.x(), offset.y(), offset.z());
-	preview_shapes[i]->draw(render, settings, false, 2000000);
+	preview_shapes[i]->draw(render, 0, settings, false, 2000000);
       }
       return 0;
     }
@@ -527,15 +527,14 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter) {
 
     for (uint j = 0; j < object->shapes.size(); j++) {
       Shape *shape = object->shapes[j];
-      glLoadName(index); // Load select/pick index
-      index++;
 
       bool is_selected = false;
       for (uint s = 0; s < sel_shapes.size(); s++)
 	if (sel_shapes[s] == shape)
 	  is_selected = true;
 
-      shape->draw(render, settings, is_selected);
+      shape->draw(render, index, settings, is_selected);
+      index++;
     }
   }
   

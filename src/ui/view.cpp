@@ -645,8 +645,12 @@ bool View::rotate_selection(Vector3d axis, double angle) {
       transf.rotate(objects[o]->center(),axis, angle);
     }
   else if (shapes.size()>0) {
+    Vector3d center = {0, 0, 0};
     for (uint i=0; i<shapes.size() ; i++)
-      shapes[i]->Rotate(axis, angle);
+      center += shapes[i]->Center;
+    center /= shapes.size();
+    for (uint i=0; i<shapes.size() ; i++)
+      shapes[i]->Rotate(center, axis, angle);
   }
   update_scale_value();
   update_rot_value();

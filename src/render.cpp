@@ -49,7 +49,8 @@ inline GtkWidget *Render::get_widget() {
 inline Model *Render::get_model() const { return m_view->get_model(); }
 
 Render::Render(View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
-  realized(false), drawn_once(false), m_view(view), m_selection(selection) {
+  m_realized(false), m_drawn_once(false), m_get_object_mode(false),
+  m_view(view), m_selection(selection) {
 
   set_events(Gdk::POINTER_MOTION_MASK |
 	     Gdk::BUTTON_MOTION_MASK |
@@ -235,7 +236,7 @@ void Render::on_realize() {
     set_vexpand(true);
     set_auto_render(true);
 
-    realized = true;
+    m_realized = true;
   } catch (const Gdk::GLError& gle) {
     cerr << "An error occured making the context current during realize:" << endl;
     cerr << gle.domain() << "-" << gle.code() << "-" << gle.what() << endl;
@@ -285,7 +286,7 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   // cout << m_transform;
   // cout << "Zoom: " << m_zoom << endl;
   
-  if (!realized)
+  if (!m_realized)
     return Gtk::GLArea::on_draw(cr);
   
   /*glClearColor(0.5, 0.5, 0.5, 1.0);*/
@@ -330,9 +331,9 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   
   Gtk::GLArea::on_draw(cr);
 
-  if (!drawn_once)
+  if (!m_drawn_once)
     queue_draw();
-  drawn_once = true;
+  m_drawn_once = true;
   
   return false;
 }
@@ -350,7 +351,7 @@ void Render::set_default_transform(void) {
 const string font_face("Sans");
 
 void Render::draw_string(const float color[4], const Vector3d &pos, const string s, double fontheight) {
-  if (fontheight <= 0)
+  if (fontheight <= 0 || m_get_object_mode)
     return;
   fontheight *= 1.5;
 
@@ -439,9 +440,46 @@ void Render::draw_string(const float color[4], const Vector3d &pos, const string
   glDrawArrays(GL_TRIANGLES, 0, vert.len() / 3);
 }
 
-void Render::draw_triangles(const float color[4], const RenderVert &vert) {
-  //cout << "draw_triangles tranform:" << endl;
+static Vector3d GetCamera(const GLfloat *pos, const Matrix4d &trans) {
+  Vector4d model(pos[0], pos[1], pos[2], 1.0);
+  
+  return hom(trans * model);
+}
 
+void Render::draw_triangles(const float color[4], const RenderVert &vert, size_t index) {
+  //cout << "draw_triangles tranform:" << endl;
+  
+  if (m_get_object_mode) {
+    if (index == 0)
+      return;
+    
+    // cout << "Pick index: " << index << endl;
+    
+    // Slow but effective
+    for (size_t count = 0; count < vert.len() - 17; count += 18) {
+      Vector3d p0 = GetCamera(vert.data() + count, m_comb_transform);
+      Vector3d p1 = GetCamera(vert.data() + count + 6, m_comb_transform);
+      Vector3d p2 = GetCamera(vert.data() + count + 12, m_comb_transform);
+      
+      double area = 0.5 *(-p1.y()*p2.x() + p0.y()*(-p1.x() + p2.x()) + p0.x()*(p1.y() - p2.y()) + p1.x()*p2.y());
+
+      double s = 1/(2*area)*(p0.y()*p2.x() - p0.x()*p2.y() + (p2.y() - p0.y())*m_down_point.x() + (p0.x() - p2.x())*m_down_point.y());
+      double t = 1/(2*area)*(p0.x()*p1.y() - p0.y()*p1.x() + (p0.y() - p1.y())*m_down_point.x() + (p1.x() - p0.x())*m_down_point.y());
+      double u = 1 - s - t;
+      if (s < 0 || t < 0 || u < 0)
+	continue;
+
+      double z = p0.z() * s + p1.z() * t + p2.z() * u;
+      // cout << "Found z = " << z << endl;
+      if (z < m_object_z) {
+	m_object_z = z;
+	m_object_index = index;
+      }
+    }
+    
+    return;
+  }
+  
   glUseProgram(m_tri_program);
   SetUniform(m_tri_trans, m_comb_transform);
   SetUniform(m_tri_light, normalized(hom(m_inv_model * light_dir)));
@@ -469,6 +507,9 @@ void Render::draw_triangles(const float color[4], const RenderVert &vert) {
 }
 
 void Render::draw_lines(const float color[4], const RenderVert &vert, float line_width) {
+  if (m_get_object_mode)
+    return;
+  
   glUseProgram(m_line_program);
   SetUniform(m_line_trans, m_comb_transform);
   glUniform4fv(m_line_color, 1, color);
@@ -522,17 +563,6 @@ bool Render::on_key_press_event(GdkEventKey* event) {
   return ret;
 }
 
-bool Render::on_key_release_event(GdkEventKey* event) {
-  switch (event->keyval) {
-  case GDK_KEY_Up: case GDK_KEY_KP_Up:
-  case GDK_KEY_Down: case GDK_KEY_KP_Down:
-  case GDK_KEY_Left: case GDK_KEY_KP_Left:
-  case GDK_KEY_Right: case GDK_KEY_KP_Right:
-    return false;
-  }
-  return true;
-}
-
 Vector2d Render::get_scaled(double x, double y) {
   double w = get_width();
   double h = get_height();
@@ -544,21 +574,16 @@ bool Render::on_button_press_event(GdkEventButton* event) {
   m_down_point = get_scaled(event->x, event->y);
   m_down_trans = m_transform;
 
-  if ( event->button == 1 &&
-       (event->state & GDK_SHIFT_MASK || event->state & GDK_CONTROL_MASK) )  {
-    guint index = find_object_at(event->x, event->y);
+  if (event->button == 1) {
+    guint index = find_object();
+    if (!(event->state & GDK_SHIFT_MASK))
+      m_selection->unselect_all();
     if (index) {
       Gtk::TreeModel::iterator iter = get_model()->objtree.find_stl_by_index(index);
-      if (!m_selection->is_selected(iter)) {
-	m_selection->unselect_all();
-	m_selection->select(iter);
-      }
+      m_selection->select(iter);
     }
   }
-  return true;
-}
-
-bool Render::on_button_release_event(GdkEventButton* event) {
+  
   return true;
 }
 
@@ -567,7 +592,7 @@ bool Render::on_scroll_event(GdkEventScroll* event) {
   if (event->direction == GDK_SCROLL_UP)
     factor = 1.0/factor;
   
-  if (event->state & GDK_SHIFT_MASK) {
+  if (event->state & GDK_CONTROL_MASK) {
     // Scale selection
     vector<Shape*> shapes;
     vector<TreeObject*>objects;
@@ -602,27 +627,8 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
   
   if (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) {
     // Action on shape
-    if (event->state & GDK_BUTTON1_MASK) {
-      // Shape Movement
-      Vector3d movevec;
-      if (event->state & GDK_SHIFT_MASK) {
-	// Shape XY Movement
-	Vector3d mouse_down = mouse_on_plane(m_down_point);
-	Vector3d mouse_plat = mouse_on_plane(mouse);
-	
-	movevec = Vector3d(mouse_plat.x() - mouse_down.x(),
-			   mouse_plat.y() - mouse_down.y(),
-			   0);
-      } else {
-	// Shape Z Movement
-	double scale = 2 * fabs(z_center) * tan(m_zoom * M_PI / 180.0);
-	movevec = Vector3d(0, 0, scale * delta.y());
-      }
-      
-      m_view->move_selection(movevec.x(), movevec.y(), movevec.z());
-      queue_draw();
-    } else if (event->state & GDK_BUTTON3_MASK) {
-      if (event->state & GDK_SHIFT_MASK) {
+    if (event->state & GDK_BUTTON2_MASK) {
+      if (event->state & GDK_CONTROL_MASK) {
 	vector<Shape*> shapes;
 	vector<TreeObject*>objects;
 	if (!m_view->get_selected_objects(objects, shapes))
@@ -643,6 +649,25 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
 	  queue_draw();
 	}
       }
+    } else if (event->state & GDK_BUTTON3_MASK) {
+      // Shape Movement
+      Vector3d movevec;
+      if (event->state & GDK_CONTROL_MASK) {
+	// Shape XY Movement
+	Vector3d mouse_down = mouse_on_plane(m_down_point);
+	Vector3d mouse_plat = mouse_on_plane(mouse);
+	
+	movevec = Vector3d(mouse_plat.x() - mouse_down.x(),
+			   mouse_plat.y() - mouse_down.y(),
+			   0);
+      } else {
+	// Shape Z Movement
+	double scale = fabs(z_center) * tan(m_zoom * M_PI / 180.0 / 2.0);
+	movevec = Vector3d(0, 0, scale * delta.y());
+      }
+      
+      m_view->move_selection(movevec.x(), movevec.y(), movevec.z());
+      queue_draw();
     }
     
     m_down_point = mouse;
@@ -650,16 +675,17 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
   }
   
   // Adjust View
-  if (event->state & (GDK_BUTTON1_MASK | GDK_BUTTON3_MASK)) {
+  if (event->state & (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK)) {
     Transform3D trans;
-    if (event->state & GDK_BUTTON1_MASK) {
-      // Translate view
-      double scale = 2 * fabs(z_center) * tan(m_zoom * M_PI / 180.0);
-      trans.move(Vector3d(scale * delta.x(), scale * delta.y()));
-    } else {
+    if (event->state & GDK_BUTTON2_MASK) {
       // Rotate view
       trans.rotate(Vector3d(0, 0, z_center), Vector3d(1, 0, 0), -delta.y());
       trans.rotate(Vector3d(0, 0, z_center), Vector3d(0, 1, 0), delta.x());
+    } else {
+      // Translate view
+      double scale_y = fabs(z_center) * tan(m_zoom * M_PI / 180.0 / 2.0);
+      double scale_x = scale_y * get_width() / get_height();
+      trans.move(Vector3d(scale_x * delta.x(), scale_y * delta.y()));
     }
     m_transform = trans.getTransform() * m_down_trans;
     queue_draw();
@@ -668,15 +694,18 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
   return true;
 }
 
-void Render::CenterView() {
-  /* FIXME */
-  /* Vector3d c = get_model()->GetViewCenter(); */
-}
-
-guint Render::find_object_at(gdouble x, gdouble y) {
-  /* FIXME */
+guint Render::find_object(void) {
+  RenderGetObjectMode gom(this);
   
-  return 0;
+  // cout << "Finding object" << endl;
+  
+  m_object_z = 10;
+  m_object_index = 0;
+  
+  vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
+  m_view->Draw(selpath);  
+  
+  return m_object_index;
 }
 
 Vector3d Render::mouse_on_plane(Vector2d scaled) const {

@@ -26,7 +26,6 @@
 
 class View;
 class Model;
-class Settings;
 
 class RenderVert {
  private:
@@ -49,8 +48,13 @@ class RenderVert {
 
 class Render : public Gtk::GLArea {
  private:
-  bool realized;
-  bool drawn_once;
+  bool m_realized;
+  bool m_drawn_once;
+
+  bool m_get_object_mode;
+  double m_object_z;
+  size_t m_object_index;
+  
   Matrix4d m_transform;
   Matrix4d m_full_transform;  
   Matrix4d m_comb_transform;
@@ -82,9 +86,8 @@ class Render : public Gtk::GLArea {
   GLuint m_str_program;
   
   float m_zoom;
-  void CenterView();
   void selection_changed() {queue_draw();};
-  guint find_object_at(gdouble x, gdouble y);
+  guint find_object(void);
   Vector3d mouse_on_plane(Vector2d scaled) const;
   Vector2d get_scaled(double x, double y);
   
@@ -98,18 +101,18 @@ class Render : public Gtk::GLArea {
   void set_default_transform(void);
   
   void draw_string(const float color[4], const Vector3d &pos, const string s, double fontheight);
-  void draw_triangles(const float color[4], const RenderVert &vert);
+  void draw_triangles(const float color[4], const RenderVert &vert, size_t index);
   void draw_lines(const float color[4], const RenderVert &vert, float line_width);
 
+  void object_mode(bool mode) {m_get_object_mode = mode;};
+  
   virtual void on_realize();
   virtual bool on_configure_event(GdkEventConfigure* event);
   virtual bool on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr);
   virtual bool on_motion_notify_event(GdkEventMotion* event);
   virtual bool on_button_press_event(GdkEventButton* event);
-  virtual bool on_button_release_event(GdkEventButton* event);
   virtual bool on_scroll_event(GdkEventScroll* event);
   virtual bool on_key_press_event(GdkEventKey* event);
-  virtual bool on_key_release_event(GdkEventKey* event);
 };
 
 class RenderModelTrans {
@@ -119,4 +122,13 @@ class RenderModelTrans {
  public:
   RenderModelTrans(Render &render, const Matrix4f &trans) {m_render = &render; m_render->set_model_transform(trans);};
   ~RenderModelTrans() {m_render->set_default_transform();};
+};
+
+class RenderGetObjectMode {
+ private:
+  Render *r;
+  
+ public:
+  RenderGetObjectMode(Render *render) : r(render) {r->object_mode(true);};
+  ~RenderGetObjectMode() {r->object_mode(false);};
 };
