@@ -31,21 +31,21 @@ class View;
 class RSFilechooser
 {
  public:
-  RSFilechooser(View * view);
+  RSFilechooser(View *view);
   ~RSFilechooser();
 
   void do_action();
-
-  vector< Glib::RefPtr < Gio::File > > get_files() { return chooser->get_files(); };
+  void set_path(string path) {chooser->set_current_folder(path);};
+  
+  vector< Glib::RefPtr < Gio::File > > get_files() {return chooser->get_files();};
 
  private:
-
-  View * view;
+  View *view;
   Gtk::FileChooserWidget *chooser;
   Glib::RefPtr<Gtk::Builder> builder;
 
   Glib::RefPtr< Gtk::FileFilter > allfiles, modelfiles, gcodefiles, settingsfiles;
-
+  
   void on_filechooser_preview(Gtk::FileChooserWidget *chooser);
   bool on_filechooser_key(GdkEventKey* event);
   void on_controlnotebook_switch(Gtk::Widget* page, guint page_num);

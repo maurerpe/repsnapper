@@ -152,27 +152,6 @@ void Shape::invertNormals() {
     triangles[i].invertNormal();
 }
 
-// doesn't work
-void Shape::repairNormals(double sqdistance) {
-  for (uint i = 0; i < triangles.size(); i++) {
-    vector<uint> adjacent;
-    uint numadj=0, numwrong=0;
-    for (uint j = i+1; j < triangles.size(); j++) {
-      if (i!=j) {
-	if (triangles[i].isConnectedTo(triangles[j], sqdistance)) {
-	  numadj++;
-	  if (triangles[i].wrongOrientationWith(triangles[j], sqdistance)) {
-	    numwrong++;
-	    triangles[j].invertNormal();
-	  }
-	}
-      }
-    }
-    //cerr << i<< ": " << numadj << " - " << numwrong  << endl;
-    //if (numwrong > numadj/2) triangles[i].invertNormal();
-  }
-}
-
 void Shape::mirror() {
   const Vector3d mCenter = transform3D.getInverse() * Center;
   for (uint i = 0; i < triangles.size(); i++)
@@ -211,17 +190,6 @@ vector<Triangle> Shape::getTriangles(const Matrix4d &T) const {
   return tr;
 }
 
-vector<Triangle> Shape::trianglesSteeperThan(double angle) const {
-  vector<Triangle> tr;
-  for (uint i = 0; i < triangles.size(); i++) {
-    // negative angles are triangles facing downwards
-    const double tangle = -triangles[i].slopeAngle(transform3D.getTransform());
-    if (tangle >= angle)
-      tr.push_back(triangles[i]);
-  }
-  return tr;
-}
-
 void Shape::FitToVolume(const Vector3d &vol) {
   Vector3d diag = Max-Min;
   const double sc_x = diag.x() / vol.x();
@@ -240,14 +208,17 @@ void Shape::Scale(double in_scale_factor, bool calcbbox) {
 
 void Shape::ScaleX(double x) {
   transform3D.scale_x(x);
+  CalcBBox();
 }
 
 void Shape::ScaleY(double x) {
   transform3D.scale_y(x);
+  CalcBBox();
 }
 
 void Shape::ScaleZ(double x) {
   transform3D.scale_z(x);
+  CalcBBox();
 }
 
 void Shape::CalcBBox() {
@@ -260,12 +231,6 @@ void Shape::CalcBBox() {
   Center = (Max + Min) / 2;
 }
 
-struct SNorm {
-  Vector3d normal;
-  double area;
-  bool operator<(const SNorm &other) const {return (area<other.area);};
-};
-
 void Shape::PlaceOnPlatform() {
   transform3D.move(Vector3d(0,0,-Min.z()));
   CalcBBox();
@@ -274,25 +239,6 @@ void Shape::PlaceOnPlatform() {
 void Shape::Rotate(const Vector3d &center, const Vector3d &axis, const double & angle) {
   transform3D.rotate(center, axis, angle);
   CalcBBox();
-}
-
-int find_vertex(const vector<Vector2d> &vertices,
-		const Vector2d &v, double delta = 0.0001) {
-  int found = -1;
-  int count = (int)vertices.size();
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif
-  for (int i=0; i<count; i++) {
-    if (found != -1) continue;
-    if ( (v-vertices[i]).squared_length() < delta ) {
-      found = i;
-#ifndef _OPENMP
-      break;
-#endif
-    }
-  }
-  return found;
 }
 
 // called from Model::draw

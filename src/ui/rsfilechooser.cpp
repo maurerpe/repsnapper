@@ -31,7 +31,7 @@ RSFilechooser::RSFilechooser(View * view_)
     cerr << "no 'filechooser' in GUI!" << endl;
     return;
   }
-
+  
   chooser->signal_update_preview().connect_notify
     ( sigc::bind(sigc::mem_fun
 		 (*this, &RSFilechooser::on_filechooser_preview), chooser) );

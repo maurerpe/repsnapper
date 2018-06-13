@@ -150,6 +150,7 @@ void View::do_load_stl() {
   for (uint i= 0; i < files.size(); i++)
     m_model->Read(files[i]);
 
+  m_filechooser->set_path(m_model->settings.STLPath);
   show_notebooktab("model_tab", "controlnotebook");
 }
 
@@ -1221,7 +1222,7 @@ void View::setModel(Model *model) {
   m_model->settings.connect_to_ui(m_builder);
 
   m_printer->setModel(m_model);
-
+  
   // 3D preview of the bed
   Gtk::Box *pBox = NULL;
   m_builder->get_widget("viewarea", pBox);

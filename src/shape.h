@@ -71,13 +71,10 @@ class Shape {
 
   Vector3d Min, Max, Center;
 
-  vector<Triangle> trianglesSteeperThan(double angle) const;
-
   string getSTLsolid() const;
   double volume() const;
 
   void invertNormals();
-  void repairNormals(double sqdistance);
   virtual void mirror();
   virtual void splitshapes(vector<Shape*> &shapes, ViewProgress *progress=NULL);
 

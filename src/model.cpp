@@ -158,6 +158,7 @@ void Model::SaveStl(Glib::RefPtr<Gio::File> file) {
     Shape single = GetCombinedShape();
     single.saveBinarySTL(file->get_path());
   }
+  
   settings.STLPath = file->get_parent()->get_path();
 }
 
@@ -171,6 +172,7 @@ Shape Model::GetCombinedShape() const {
       shape.addTriangles(tr);
     }
   }
+  
   return shape;
 }
 
@@ -191,7 +193,8 @@ void Model::Read(Glib::RefPtr<Gio::File> file) {
       return;
     }
   }
-  ReadStl (file);
+  
+  ReadStl(file);
   settings.STLPath = directory_path;
 }
 
