@@ -23,14 +23,12 @@
 #include "progress.h"
 
 ViewProgress::ViewProgress(Gtk::Box *box, Gtk::ProgressBar *bar, Gtk::Label *label) :
-  m_box (box), m_bar(bar), m_label(label), to_terminal(true)
-{
+  m_box (box), m_bar(bar), m_label(label), to_terminal(true) {
   m_bar_max = 0.0;
   box->hide();
 }
 
-void ViewProgress::start (const char *label, double max)
-{
+void ViewProgress::start(const char *label, double max) {
   do_continue = true;
   m_box->show();
   m_bar_max = max;
@@ -41,8 +39,8 @@ void ViewProgress::start (const char *label, double max)
   start_time.assign_current_time();
   Gtk::Main::iteration(false);
 }
-bool ViewProgress::restart (const char *label, double max)
-{
+
+bool ViewProgress::restart(const char *label, double max) {
   if (!do_continue) return false;
   //m_box->show();
   if (to_terminal) {
@@ -62,8 +60,7 @@ bool ViewProgress::restart (const char *label, double max)
   return true;
 }
 
-void ViewProgress::stop (const char *label)
-{
+void ViewProgress::stop(const char *label) {
   if (to_terminal) {
     Glib::TimeVal now;
     now.assign_current_time();
@@ -94,8 +91,7 @@ string timeleft_str(long seconds) {
 }
 
 
-bool ViewProgress::update (const double value, bool take_priority, double time_left)
-{
+bool ViewProgress::update(const double value, bool take_priority, double time_left) {
   // Don't allow progress to go backward
   if (value < m_bar_cur)
     return do_continue;
@@ -126,14 +122,13 @@ bool ViewProgress::update (const double value, bool take_priority, double time_l
   }
 
   if (take_priority)
-    while( gtk_events_pending () )
-      gtk_main_iteration ();
+    while(gtk_events_pending())
+      gtk_main_iteration();
   Gtk::Main::iteration(false);
   return do_continue;
 }
 
-void ViewProgress::set_label (const std::string label)
-{
+void ViewProgress::set_label(const std::string label) {
   std::string old = m_label->get_label();
   this->label = label;
   if (old != label)
@@ -141,8 +136,6 @@ void ViewProgress::set_label (const std::string label)
   Gtk::Main::iteration(false);
 }
 
-void ViewProgress::set_terminal_output (bool terminal)
-{
+void ViewProgress::set_terminal_output(bool terminal) {
   to_terminal=terminal;
 }
-

@@ -16,14 +16,13 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-#ifndef PROGRESS_H
-#define PROGRESS_H
+
+#pragma once
 
 #include <string>
 #include <gtkmm.h>
 
 class Progress {
-
  public:
   // Progress reporting
   sigc::signal< void, const char *, double > m_signal_progress_start;
@@ -32,20 +31,19 @@ class Progress {
   sigc::signal< void, const char * >         m_signal_progress_label;
 
   // helpers
-  void start (const char *label, double max) const
-  {
+  void start (const char *label, double max) const {
     m_signal_progress_start.emit (label, max);
   }
-  void stop (const char *label) const
-  {
+  
+  void stop (const char *label) const {
     m_signal_progress_stop.emit (label);
   }
-  void update (const double value) const
-  {
+  
+  void update (const double value) const {
     m_signal_progress_update.emit (value);
   }
-  void set_label (const char * label) const
-  {
+  
+  void set_label (const char * label) const {
     m_signal_progress_label.emit (label);
   }
 };
@@ -62,13 +60,13 @@ class ViewProgress {
   string label;
 
  public:
-  void start (const char *label, double max);
-  bool restart (const char *label, double max);
-  void stop (const char *label = "");
-  bool update (const double value, bool take_priority=true, double time_left = -1);
+  void start(const char *label, double max);
+  bool restart(const char *label, double max);
+  void stop(const char *label = "");
+  bool update(const double value, bool take_priority=true, double time_left = -1);
   ViewProgress(){};
   ViewProgress(Gtk::Box *box, Gtk::ProgressBar *bar, Gtk::Label *label);
-  void set_label (std::string label);
+  void set_label(std::string label);
   double maximum() { return m_bar_max; }
   double value() { return m_bar_cur; }
   bool to_terminal;
@@ -76,5 +74,3 @@ class ViewProgress {
   bool do_continue;
   void stop_running(){do_continue = false;};
 };
-
-#endif // PROGRESS_H

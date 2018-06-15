@@ -22,8 +22,7 @@
 #include "types.h"
 #include "view.h"
 
-class View::TranslationSpinRow
-{
+class View::TranslationSpinRow {
   // apply values to objects
   void spin_value_changed (int axis);
  public:
@@ -40,9 +39,7 @@ class View::TranslationSpinRow
 
 };
 
-class View::TempRow : public Gtk::Box
-{
-
+class View::TempRow : public Gtk::Box {
  public:
   TempRow(Model *model, Printer *printer, TempType type);
   ~TempRow();
@@ -62,9 +59,7 @@ class View::TempRow : public Gtk::Box
 
 };
 
-class View::AxisRow : public Gtk::Box
-{
-
+class View::AxisRow : public Gtk::Box {
  public:
   AxisRow(Model *model, Printer *printer, int axis);
 
@@ -81,10 +76,7 @@ class View::AxisRow : public Gtk::Box
 
 };
 
-
-
-class View::ExtruderRow : public Gtk::Box
-{
+class View::ExtruderRow : public Gtk::Box {
  public:
   ExtruderRow(Printer *printer);
   ~ExtruderRow();
