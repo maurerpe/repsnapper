@@ -368,17 +368,6 @@ void GCode::drawCommands(Render &render,
   if (end > cmds.size())
     end = cmds.size();
   
-  // glEnable(GL_BLEND);
-  // glDisable(GL_CULL_FACE);
-  // glDisable(GL_LIGHTING);
-
-  // if (start < cmds.size()) {
-  //   glPointSize(20);
-  //   glBegin(GL_POINTS);
-  //   glVertex3dv((GLdouble*)&cmds[start].start);
-  //   glEnd();
-  // }
-  
   for (count = start; count < end; count++) {
     cmd = &cmds[count];
     if (cmd->spec_e)

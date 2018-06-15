@@ -501,29 +501,15 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter) {
   vector<Matrix4d> transforms;
   objtree.get_selected_shapes(iter, sel_shapes, transforms);
 
-  size_t index = 1; // pick/select index. matches computation in update_model()
-
-  Vector3d printOffset = settings.getPrintMargin();
-  if(settings.get_boolean("Raft","Enable")) {
-    const double rsize = settings.get_double("Raft","Size");
-    printOffset += Vector3d(rsize, rsize, 0);
-  }
-  Vector3d translation = objtree.transform3D.getTranslation();
-  Vector3d offset = printOffset + translation;
-  
   // draw preview shapes and nothing else
-  if (settings.get_boolean("Display","PreviewLoad"))
-    if (preview_shapes.size() > 0) {
-      Vector3d v_center = GetViewCenter() - offset;
-      glTranslated( v_center.x(), v_center.y(), v_center.z());
-      for (uint i = 0; i < preview_shapes.size(); i++) {
-	offset = preview_shapes[i]->Center;
-	glTranslated(offset.x(), offset.y(), offset.z());
-	preview_shapes[i]->draw(render, 0, settings, false, 2000000);
-      }
-      return 0;
-    }
+  if (settings.get_boolean("Display","PreviewLoad") && preview_shapes.size() > 0) {
+    for (uint i = 0; i < preview_shapes.size(); i++)
+      preview_shapes[i]->draw(render, 0, settings, false, 2000000);
+    
+    return 0;
+  }
   
+  size_t index = 1; // pick/select index. matches computation in update_model()
   for (uint i = 0; i < objtree.Objects.size(); i++) {
     TreeObject *object = objtree.Objects[i];
     index++;
