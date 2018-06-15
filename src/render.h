@@ -65,6 +65,7 @@ class Render : public Gtk::GLArea {
   
   Vector2d m_down_point;
   Matrix4d m_down_trans;
+  double   m_down_rot;
   
   void init_buffers();
   void init_shaders();

@@ -573,6 +573,7 @@ bool Render::on_button_press_event(GdkEventButton* event) {
   grab_focus();
   m_down_point = get_scaled(event->x, event->y);
   m_down_trans = m_transform;
+  m_down_rot   = 0;
 
   if (event->button == 1) {
     guint index = find_object();
@@ -588,7 +589,13 @@ bool Render::on_button_press_event(GdkEventButton* event) {
 }
 
 bool Render::on_scroll_event(GdkEventScroll* event) {
-  double factor = 1.05;
+  double factor;
+
+  if (event->state & GDK_SHIFT_MASK)
+    factor = 1.01;
+  else
+    factor = 1.05;
+  
   if (event->direction == GDK_SCROLL_UP)
     factor = 1.0/factor;
   
@@ -643,9 +650,16 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
 	  Vector3d start = mouse_down - center;
 	  Vector3d stop = mouse_plat - center;
 	  double angle = atan2(stop.y(), stop.x()) - atan2(start.y(), start.x());
+	  
+	  if (event->state & GDK_SHIFT_MASK) {
+	    double quant = 15.0 * M_PI / 180.0;
+	    angle = round(angle / quant) * quant;
+	  }
+	  
 	  // cout << "Center: " << center << endl;
 	  // cout << "Angle: " << angle << endl;
-	  m_view->rotate_selection(axis, angle);
+	  m_view->rotate_selection(axis, angle - m_down_rot);
+	  m_down_rot = angle;
 	  queue_draw();
 	}
       }
@@ -667,10 +681,10 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
       }
       
       m_view->move_selection(movevec.x(), movevec.y(), movevec.z());
+      m_down_point = mouse;
       queue_draw();
     }
     
-    m_down_point = mouse;
     return true;
   }
   
