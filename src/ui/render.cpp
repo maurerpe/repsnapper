@@ -49,7 +49,7 @@ inline GtkWidget *Render::get_widget() {
 inline Model *Render::get_model() const { return m_view->get_model(); }
 
 Render::Render(View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
-  m_realized(false), m_drawn_once(false), m_get_object_mode(false),
+  m_realized(false), m_get_object_mode(false),
   m_view(view), m_selection(selection) {
 
   set_events(Gdk::POINTER_MOTION_MASK |
@@ -245,12 +245,6 @@ void Render::on_realize() {
   cout << "Render Initialized" << endl;
 }
 
-bool Render::on_configure_event(GdkEventConfigure* event) {
-  cout << "on_configure_event" << endl;
-  
-  return true;
-}
-
 static void SetUniform(GLuint mat, const Matrix4d &trans) {
   GLfloat val[16], *cur = val;
   
@@ -280,14 +274,14 @@ static void computeProjection(Matrix4d &mat, double fov, double aspect, double z
   mat(3,3) = 0;
 }
 
-bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
-  // cout << "Render::on_draw" << endl;
+bool Render::on_render(const Glib::RefPtr< Gdk::GLContext > &ctx) {
+  // cout << "Render::on_render" << endl;
   // cout << "Transform:" << endl;
   // cout << m_transform;
   // cout << "Zoom: " << m_zoom << endl;
   
   if (!m_realized)
-    return Gtk::GLArea::on_draw(cr);
+    return Gtk::GLArea::on_render(ctx);
   
   /*glClearColor(0.5, 0.5, 0.5, 1.0);*/
   make_current();
@@ -313,7 +307,7 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
 		    1.5 * fabs(z_center));
   m_full_transform = camera_mat * view_mat;
   
-  // cout << "on_draw: m_full_transform" << endl << m_full_transform << endl;
+  // cout << "on_render: m_full_transform" << endl << m_full_transform << endl;
 
   set_default_transform();
   
@@ -329,12 +323,8 @@ bool Render::on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr) {
   
   glFlush();
   
-  Gtk::GLArea::on_draw(cr);
+  Gtk::GLArea::on_render(ctx);
 
-  if (!m_drawn_once)
-    queue_draw();
-  m_drawn_once = true;
-  
   return false;
 }
 
@@ -557,7 +547,7 @@ bool Render::on_key_press_event(GdkEventKey* event) {
   }
   if (ret) {
     m_view->get_model()->ModelChanged();
-    queue_draw();
+    queue_render();
   }
   grab_focus();
   return ret;
@@ -610,7 +600,7 @@ bool Render::on_scroll_event(GdkEventScroll* event) {
       for (uint s=0; s<shapes.size(); s++)
 	shapes[s]->Scale(shapes[s]->getScaleFactor()*factor, true);
       m_view->update_scale_value();
-      queue_draw();
+      queue_render();
     }
   } else {
     // Zoom view
@@ -624,7 +614,7 @@ bool Render::on_scroll_event(GdkEventScroll* event) {
   
   // cout << "Render::on_scroll_event: " << m_zoom << endl;
 
-  queue_draw();
+  queue_render();
   return true;
 }
 
@@ -660,7 +650,7 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
 	  // cout << "Angle: " << angle << endl;
 	  m_view->rotate_selection(axis, angle - m_down_rot);
 	  m_down_rot = angle;
-	  queue_draw();
+	  queue_render();
 	}
       }
     } else if (event->state & GDK_BUTTON3_MASK) {
@@ -682,7 +672,7 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
       
       m_view->move_selection(movevec.x(), movevec.y(), movevec.z());
       m_down_point = mouse;
-      queue_draw();
+      queue_render();
     }
     
     return true;
@@ -702,7 +692,7 @@ bool Render::on_motion_notify_event(GdkEventMotion* event) {
       trans.move(Vector3d(scale_x * delta.x(), scale_y * delta.y()));
     }
     m_transform = trans.getTransform() * m_down_trans;
-    queue_draw();
+    queue_render();
   }
 
   return true;

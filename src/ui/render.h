@@ -49,7 +49,6 @@ class RenderVert {
 class Render : public Gtk::GLArea {
  private:
   bool m_realized;
-  bool m_drawn_once;
 
   bool m_get_object_mode;
   double m_object_z;
@@ -108,8 +107,7 @@ class Render : public Gtk::GLArea {
   void object_mode(bool mode) {m_get_object_mode = mode;};
   
   virtual void on_realize();
-  virtual bool on_configure_event(GdkEventConfigure* event);
-  virtual bool on_draw(const ::Cairo::RefPtr< ::Cairo::Context >& cr);
+  virtual bool on_render(const Glib::RefPtr< Gdk::GLContext > &ctx);
   virtual bool on_motion_notify_event(GdkEventMotion* event);
   virtual bool on_button_press_event(GdkEventButton* event);
   virtual bool on_scroll_event(GdkEventScroll* event);
