@@ -21,8 +21,8 @@
 #include "shape.h"
 #include "files.h"
 #include "ui/progress.h"
+#include "ui/render.h"
 #include "settings.h"
-#include "render.h"
 #include "geometry.h"
 
 #ifdef _OPENMP

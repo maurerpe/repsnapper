@@ -171,7 +171,7 @@ am__objects_1 = src/repsnapper-geometry.$(OBJEXT) \
 	src/repsnapper-model_slice.$(OBJEXT) \
 	src/repsnapper-shape.$(OBJEXT) src/repsnapper-gcode.$(OBJEXT) \
 	src/repsnapper-triangle.$(OBJEXT) \
-	src/repsnapper-render.$(OBJEXT) src/repsnapper-files.$(OBJEXT) \
+	src/repsnapper-files.$(OBJEXT) \
 	src/repsnapper-settings.$(OBJEXT) \
 	src/ui/repsnapper-widgets.$(OBJEXT) \
 	src/ui/repsnapper-view.$(OBJEXT) \
@@ -179,6 +179,7 @@ am__objects_1 = src/repsnapper-geometry.$(OBJEXT) \
 	src/ui/repsnapper-connectview.$(OBJEXT) \
 	src/ui/repsnapper-rsfilechooser.$(OBJEXT) \
 	src/ui/repsnapper-progress.$(OBJEXT) \
+	src/ui/repsnapper-render.$(OBJEXT) \
 	src/ui/repsnapper-filters.$(OBJEXT) \
 	src/printer/repsnapper-printer_serial.$(OBJEXT) \
 	src/printer/repsnapper-thread_buffer.$(OBJEXT) \
@@ -595,22 +596,21 @@ repsnapper_CPPFLAGS = \
 
 SHARED_SRC = src/geometry.cpp src/transform3d.cpp src/platform.cpp \
 	src/objtree.cpp src/model.cpp src/model_slice.cpp \
-	src/shape.cpp src/gcode.cpp src/triangle.cpp src/render.cpp \
-	src/files.cpp src/settings.cpp src/ui/widgets.cpp \
-	src/ui/view.cpp src/ui/prefs_dlg.cpp src/ui/connectview.cpp \
-	src/ui/rsfilechooser.cpp src/ui/progress.cpp \
+	src/shape.cpp src/gcode.cpp src/triangle.cpp src/files.cpp \
+	src/settings.cpp src/ui/widgets.cpp src/ui/view.cpp \
+	src/ui/prefs_dlg.cpp src/ui/connectview.cpp \
+	src/ui/rsfilechooser.cpp src/ui/progress.cpp src/ui/render.cpp \
 	src/ui/filters.cpp src/printer/printer_serial.cpp \
 	src/printer/thread_buffer.cpp \
 	src/printer/threaded_printer_serial.cpp \
 	src/printer/printer.cpp src/printer/custom_baud.cpp
 SHARED_INC = src/geometry.h src/transform3d.h src/model.h \
 	src/objtree.h src/shape.h src/gcode.h src/triangle.h \
-	src/files.h src/stdafx.h src/platform.h src/render.h \
-	src/settings.h src/types.h src/ui/widgets.h src/ui/view.h \
-	src/ui/prefs_dlg.h src/ui/connectview.h src/ui/rsfilechooser.h \
-	src/ui/progress.h src/ui/filters.h \
-	src/printer/printer_serial.h src/printer/thread.h \
-	src/printer/thread_buffer.h \
+	src/files.h src/stdafx.h src/platform.h src/settings.h \
+	src/types.h src/ui/widgets.h src/ui/view.h src/ui/prefs_dlg.h \
+	src/ui/connectview.h src/ui/rsfilechooser.h src/ui/progress.h \
+	src/ui/render.h src/ui/filters.h src/printer/printer_serial.h \
+	src/printer/thread.h src/printer/thread_buffer.h \
 	src/printer/threaded_printer_serial.h src/printer/printer.h \
 	src/printer/custom_baud.h
 repsnapper_SOURCES = $(SHARED_SRC) $(SHARED_INC) src/repsnapper.cpp
@@ -760,8 +760,6 @@ src/repsnapper-gcode.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/repsnapper-triangle.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
-src/repsnapper-render.$(OBJEXT): src/$(am__dirstamp) \
-	src/$(DEPDIR)/$(am__dirstamp)
 src/repsnapper-files.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/repsnapper-settings.$(OBJEXT): src/$(am__dirstamp) \
@@ -783,6 +781,8 @@ src/ui/repsnapper-connectview.$(OBJEXT): src/ui/$(am__dirstamp) \
 src/ui/repsnapper-rsfilechooser.$(OBJEXT): src/ui/$(am__dirstamp) \
 	src/ui/$(DEPDIR)/$(am__dirstamp)
 src/ui/repsnapper-progress.$(OBJEXT): src/ui/$(am__dirstamp) \
+	src/ui/$(DEPDIR)/$(am__dirstamp)
+src/ui/repsnapper-render.$(OBJEXT): src/ui/$(am__dirstamp) \
 	src/ui/$(DEPDIR)/$(am__dirstamp)
 src/ui/repsnapper-filters.$(OBJEXT): src/ui/$(am__dirstamp) \
 	src/ui/$(DEPDIR)/$(am__dirstamp)
@@ -829,7 +829,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-model_slice.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-objtree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-platform.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-render.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-repsnapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-settings.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-shape.Po@am__quote@
@@ -844,6 +843,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-filters.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-prefs_dlg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-progress.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-render.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-rsfilechooser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-widgets.Po@am__quote@
@@ -998,20 +998,6 @@ src/repsnapper-triangle.obj: src/triangle.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-triangle.obj `if test -f 'src/triangle.cpp'; then $(CYGPATH_W) 'src/triangle.cpp'; else $(CYGPATH_W) '$(srcdir)/src/triangle.cpp'; fi`
 
-src/repsnapper-render.o: src/render.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-render.o -MD -MP -MF src/$(DEPDIR)/repsnapper-render.Tpo -c -o src/repsnapper-render.o `test -f 'src/render.cpp' || echo '$(srcdir)/'`src/render.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-render.Tpo src/$(DEPDIR)/repsnapper-render.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/render.cpp' object='src/repsnapper-render.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-render.o `test -f 'src/render.cpp' || echo '$(srcdir)/'`src/render.cpp
-
-src/repsnapper-render.obj: src/render.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-render.obj -MD -MP -MF src/$(DEPDIR)/repsnapper-render.Tpo -c -o src/repsnapper-render.obj `if test -f 'src/render.cpp'; then $(CYGPATH_W) 'src/render.cpp'; else $(CYGPATH_W) '$(srcdir)/src/render.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-render.Tpo src/$(DEPDIR)/repsnapper-render.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/render.cpp' object='src/repsnapper-render.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-render.obj `if test -f 'src/render.cpp'; then $(CYGPATH_W) 'src/render.cpp'; else $(CYGPATH_W) '$(srcdir)/src/render.cpp'; fi`
-
 src/repsnapper-files.o: src/files.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-files.o -MD -MP -MF src/$(DEPDIR)/repsnapper-files.Tpo -c -o src/repsnapper-files.o `test -f 'src/files.cpp' || echo '$(srcdir)/'`src/files.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-files.Tpo src/$(DEPDIR)/repsnapper-files.Po
@@ -1123,6 +1109,20 @@ src/ui/repsnapper-progress.obj: src/ui/progress.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/ui/progress.cpp' object='src/ui/repsnapper-progress.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/ui/repsnapper-progress.obj `if test -f 'src/ui/progress.cpp'; then $(CYGPATH_W) 'src/ui/progress.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ui/progress.cpp'; fi`
+
+src/ui/repsnapper-render.o: src/ui/render.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/ui/repsnapper-render.o -MD -MP -MF src/ui/$(DEPDIR)/repsnapper-render.Tpo -c -o src/ui/repsnapper-render.o `test -f 'src/ui/render.cpp' || echo '$(srcdir)/'`src/ui/render.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/ui/$(DEPDIR)/repsnapper-render.Tpo src/ui/$(DEPDIR)/repsnapper-render.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/ui/render.cpp' object='src/ui/repsnapper-render.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/ui/repsnapper-render.o `test -f 'src/ui/render.cpp' || echo '$(srcdir)/'`src/ui/render.cpp
+
+src/ui/repsnapper-render.obj: src/ui/render.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/ui/repsnapper-render.obj -MD -MP -MF src/ui/$(DEPDIR)/repsnapper-render.Tpo -c -o src/ui/repsnapper-render.obj `if test -f 'src/ui/render.cpp'; then $(CYGPATH_W) 'src/ui/render.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ui/render.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/ui/$(DEPDIR)/repsnapper-render.Tpo src/ui/$(DEPDIR)/repsnapper-render.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/ui/render.cpp' object='src/ui/repsnapper-render.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/ui/repsnapper-render.obj `if test -f 'src/ui/render.cpp'; then $(CYGPATH_W) 'src/ui/render.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ui/render.cpp'; fi`
 
 src/ui/repsnapper-filters.o: src/ui/filters.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/ui/repsnapper-filters.o -MD -MP -MF src/ui/$(DEPDIR)/repsnapper-filters.Tpo -c -o src/ui/repsnapper-filters.o `test -f 'src/ui/filters.cpp' || echo '$(srcdir)/'`src/ui/filters.cpp

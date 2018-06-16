@@ -30,7 +30,7 @@
 #include "stdafx.h"
 #include "transform3d.h"
 #include "triangle.h"
-#include "render.h"
+#include "ui/render.h"
 
 class Shape {
  public:

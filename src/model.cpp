@@ -30,8 +30,8 @@
 #include "objtree.h"
 #include "settings.h"
 #include "ui/progress.h"
+#include "ui/render.h"
 #include "shape.h"
-#include "render.h"
 
 Model::Model() :
   currentprintingline(0),

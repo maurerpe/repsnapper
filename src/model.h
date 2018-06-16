@@ -31,7 +31,7 @@
 #include "objtree.h"
 #include "gcode.h"
 #include "settings.h"
-#include "render.h"
+#include "ui/render.h"
 
 #ifdef _MSC_VER // Visual C++ compiler
 #  pragma warning( disable : 4244 4267)

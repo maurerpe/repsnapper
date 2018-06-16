@@ -37,7 +37,6 @@ SHARED_SRC= \
 	src/shape.cpp \
 	src/gcode.cpp \
 	src/triangle.cpp \
-	src/render.cpp \
 	src/files.cpp \
 	src/settings.cpp
 
@@ -52,7 +51,6 @@ SHARED_INC= \
 	src/files.h \
 	src/stdafx.h \
 	src/platform.h \
-	src/render.h \
 	src/settings.h \
 	src/types.h
 

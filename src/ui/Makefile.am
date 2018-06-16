@@ -16,6 +16,7 @@ SHARED_SRC += \
 	src/ui/connectview.cpp \
 	src/ui/rsfilechooser.cpp \
 	src/ui/progress.cpp \
+	src/ui/render.cpp \
 	src/ui/filters.cpp
 
 SHARED_INC += \
@@ -25,4 +26,5 @@ SHARED_INC += \
 	src/ui/connectview.h \
 	src/ui/rsfilechooser.h \
 	src/ui/progress.h \
+	src/ui/render.h \
 	src/ui/filters.h
