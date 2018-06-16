@@ -22,55 +22,38 @@
 #include <string>
 #include <gtkmm.h>
 
-class Progress {
- public:
-  // Progress reporting
-  sigc::signal< void, const char *, double > m_signal_progress_start;
-  sigc::signal< void, double >               m_signal_progress_update;
-  sigc::signal< void, const char * >         m_signal_progress_stop;
-  sigc::signal< void, const char * >         m_signal_progress_label;
-
-  // helpers
-  void start (const char *label, double max) const {
-    m_signal_progress_start.emit (label, max);
-  }
-  
-  void stop (const char *label) const {
-    m_signal_progress_stop.emit (label);
-  }
-  
-  void update (const double value) const {
-    m_signal_progress_update.emit (value);
-  }
-  
-  void set_label (const char * label) const {
-    m_signal_progress_label.emit (label);
-  }
-};
-
-
 class ViewProgress {
   Gtk::Box *m_box;
   Gtk::ProgressBar *m_bar;
-  Gtk::Label *m_label;
   double m_bar_max;
   double m_bar_cur;
 
   Glib::TimeVal start_time;
   string label;
 
+  bool do_continue;
+  bool to_terminal;
  public:
   void start(const char *label, double max);
   bool restart(const char *label, double max);
   void stop(const char *label = "");
   bool update(const double value, bool take_priority=true, double time_left = -1);
   ViewProgress(){};
-  ViewProgress(Gtk::Box *box, Gtk::ProgressBar *bar, Gtk::Label *label);
-  void set_label(std::string label);
-  double maximum() { return m_bar_max; }
-  double value() { return m_bar_cur; }
-  bool to_terminal;
-  void set_terminal_output(bool terminal);
-  bool do_continue;
+  ViewProgress(Gtk::Box *box, Gtk::ProgressBar *bar);
+  void set_terminal_output(bool terminal) {to_terminal=terminal;};
   void stop_running(){do_continue = false;};
+};
+
+class Prog {
+ private:
+  static const char *stopText;
+  
+  ViewProgress *vp;
+  
+ public:
+ Prog(ViewProgress *prog, const char *label, double max) : vp(prog) {if (vp) vp->start(label, max);};
+  ~Prog() {if (vp) vp->stop(stopText);};
+
+  bool restart(const char *label, double max) {return vp ? vp->restart(label, max) : false;};
+  bool update(const double value, bool take_priority=true, double time_left=-1) {return vp ? vp->update(value, take_priority, time_left) : false;};
 };

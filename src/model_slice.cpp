@@ -29,6 +29,7 @@
 
 #include "model.h"
 #include "shape.h"
+#include "ui/progress.h"
 
 extern string materials[];
 
@@ -129,6 +130,9 @@ void Psf::close(void) {
 }
 
 void Model::ConvertToGCode() {
+  Prog prog(m_progress, _("Slicing Model"), 100.0);
+  prog.update(0);
+  
   Psv search(PS_NewList());
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/definitions"));
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/extruders"));  
@@ -197,4 +201,6 @@ void Model::ConvertToGCode() {
   istringstream iss(string(PS_OStreamContents(gcode_stream())));
   gcode.Parse(this, settings.get_extruder_letters(), m_progress, iss);
   cout << "Slicing complete" << endl;
+  
+  prog.update(100);
 }

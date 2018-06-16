@@ -1152,14 +1152,11 @@ void View::setModel(Model *model) {
 
   // Main view progress bar
   Gtk::Box *box = NULL;
-  Gtk::Label *label = NULL;
   Gtk::ProgressBar *bar = NULL;
   m_builder->get_widget("progress_box", box);
   m_builder->get_widget("progress_bar", bar);
-  m_builder->get_widget("progress_label", label);
   // Create ViewProgress widget and inform model about it
-  m_progress = new ViewProgress (box, bar, label);
-
+  m_progress = new ViewProgress(box, bar);
   m_model->SetViewProgress(m_progress);
   
   Gtk::Statusbar *sbar = NULL;

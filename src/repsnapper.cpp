@@ -240,7 +240,7 @@ int main(int argc, char **argv)
       if (opts.settings_path.size() > 0)
         model->LoadConfig(Gio::File::create_for_path(opts.settings_path));
 
-      ViewProgress vprog(new Gtk::HBox(),new Gtk::ProgressBar(),new Gtk::Label());
+      ViewProgress vprog(new Gtk::Box(),new Gtk::ProgressBar());
       vprog.set_terminal_output(true);
       model->SetViewProgress(&vprog);
       model->statusbar=NULL;

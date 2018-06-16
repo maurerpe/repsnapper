@@ -80,13 +80,12 @@ void addtoshape(uint i, const vector< vector<uint> > &adj,
 
 void Shape::splitshapes(vector<Shape*> &shapes, ViewProgress *progress) {
   int n_tr = (int)triangles.size();
-  if (progress) progress->start(_("Split Shapes"), n_tr);
+  Prog prog(progress, _("Split: Sorting Triangles"), n_tr);  
   int progress_steps = max(1,(int)(n_tr/100));
   vector<bool> done(n_tr);
   bool cont = true;
   // make list of adjacent triangles for each triangle
   vector< vector<uint> > adj(n_tr);
-  if (progress) progress->set_label(_("Split: Sorting Triangles ..."));
 #ifdef _OPENMP
   omp_lock_t progress_lock;
   omp_init_lock(&progress_lock);
@@ -97,7 +96,7 @@ void Shape::splitshapes(vector<Shape*> &shapes, ViewProgress *progress) {
 #ifdef _OPENMP
       omp_set_lock(&progress_lock);
 #endif
-      cont = progress->update(i);
+      cont = prog.update(i);
 #ifdef _OPENMP
       omp_unset_lock(&progress_lock);
 #endif
@@ -120,8 +119,7 @@ void Shape::splitshapes(vector<Shape*> &shapes, ViewProgress *progress) {
     if (!cont) i=n_tr;
   }
 
-  if (progress) progress->set_label(_("Split: Building shapes ..."));
-
+  prog.restart(_("Split: Building shapes"), n_tr);
 
   // triangle indices of shapes
   vector< vector<uint> > shape_tri;
@@ -129,7 +127,7 @@ void Shape::splitshapes(vector<Shape*> &shapes, ViewProgress *progress) {
   for (int i = 0; i < n_tr; i++) done[i] = false;
   for (int i = 0; i < n_tr; i++) {
     if (progress && i%progress_steps==0)
-      cont = progress->update(i);
+      cont = prog.update(i);
     if (!done[i]){
       cerr << _("Shape ") << shapes.size()+1 << endl;
       vector<uint> current;
@@ -143,8 +141,6 @@ void Shape::splitshapes(vector<Shape*> &shapes, ViewProgress *progress) {
     }
     if (!cont) i=n_tr;
   }
-
-  if (progress) progress->stop("_(Done)");
 }
 
 void Shape::invertNormals() {

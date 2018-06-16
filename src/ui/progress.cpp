@@ -22,8 +22,8 @@
 #include "model.h"
 #include "progress.h"
 
-ViewProgress::ViewProgress(Gtk::Box *box, Gtk::ProgressBar *bar, Gtk::Label *label) :
-  m_box (box), m_bar(bar), m_label(label), to_terminal(true) {
+ViewProgress::ViewProgress(Gtk::Box *box, Gtk::ProgressBar *bar) :
+  m_box (box), m_bar(bar), do_continue(false), to_terminal(true) {
   m_bar_max = 0.0;
   box->hide();
 }
@@ -33,7 +33,6 @@ void ViewProgress::start(const char *label, double max) {
   m_box->show();
   m_bar_max = max;
   this->label = label;
-  m_label->set_label (label);
   m_bar_cur = 0.0;
   m_bar->set_fraction(0.0);
   start_time.assign_current_time();
@@ -42,20 +41,18 @@ void ViewProgress::start(const char *label, double max) {
 
 bool ViewProgress::restart(const char *label, double max) {
   if (!do_continue) return false;
-  //m_box->show();
   if (to_terminal) {
     Glib::TimeVal now;
     now.assign_current_time();
     const int time_used = (int) round((now - start_time).as_double()); // seconds
-    cerr << m_label->get_label() << " -- " << _(" done in ") << time_used << _(" seconds") << "       " << endl;
+    cerr << this->label << " -- " << _(" done in ") << time_used << _(" seconds") << "       " << endl;
   }
+  m_box->show();
   m_bar_max = max;
   this->label = label;
-  m_label->set_label (label);
   m_bar_cur = 0.0;
   m_bar->set_fraction(0.0);
   start_time.assign_current_time();
-  //g_main_context_iteration(NULL,false);
   Gtk::Main::iteration(false);
   return true;
 }
@@ -65,10 +62,9 @@ void ViewProgress::stop(const char *label) {
     Glib::TimeVal now;
     now.assign_current_time();
     const int time_used = (int) round((now - start_time).as_double()); // seconds
-    cerr << m_label->get_label() << " -- " << _(" done in ") << time_used << _(" seconds") << "       " << endl;
+    cerr << this->label << " -- " << _(" done in ") << time_used << _(" seconds") << "       " << endl;
   }
   this->label = label;
-  m_label->set_label (label);
   m_bar_cur = m_bar_max;
   m_bar->set_fraction(1.0);
   m_box->hide();
@@ -99,16 +95,6 @@ bool ViewProgress::update(const double value, bool take_priority, double time_le
   m_bar_cur = CLAMP(value, 0, 1.0);
   m_bar->set_fraction(value / m_bar_max);
   ostringstream o;
-  if(floor(value) != value && floor(m_bar_max) != m_bar_max)
-    o.precision(1);
-  else
-    o.precision(0);
-  o << fixed << value <<"/"<< m_bar_max;
-  m_bar->set_text(o.str());
-  if (to_terminal) {
-    int perc = (int(m_bar->get_fraction()*100));
-    cerr << m_label->get_label() << " " << o.str() << " -- " << perc << "%              \r";
-  }
 
   if (value > 0) {
     if (time_left < 0) {
@@ -118,9 +104,18 @@ bool ViewProgress::update(const double value, bool take_priority, double time_le
       const double total = used * m_bar_max  / value;
       time_left = (long)(total-used);
     }
-    m_label->set_label(label+" ("+timeleft_str(time_left)+")");
+    o << (label+" ("+timeleft_str(time_left)+")");
+  } else {
+    o << label;
   }
 
+  o << ": " << ((int) round(100.0 * value / m_bar_max)) << '%';
+  m_bar->set_text(o.str());
+  if (to_terminal) {
+    int perc = (int(m_bar->get_fraction()*100));
+    cerr << this->label << " " << o.str() << " -- " << perc << "%              \r";
+  }
+  
   if (take_priority)
     while(gtk_events_pending())
       gtk_main_iteration();
@@ -128,14 +123,4 @@ bool ViewProgress::update(const double value, bool take_priority, double time_le
   return do_continue;
 }
 
-void ViewProgress::set_label(const std::string label) {
-  std::string old = m_label->get_label();
-  this->label = label;
-  if (old != label)
-    m_label->set_label (label);
-  Gtk::Main::iteration(false);
-}
-
-void ViewProgress::set_terminal_output(bool terminal) {
-  to_terminal=terminal;
-}
+const char *Prog::stopText = _("Done");
