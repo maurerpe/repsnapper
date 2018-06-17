@@ -123,7 +123,8 @@ class Model {
   ObjectsTree objtree;
   Glib::RefPtr<Gtk::TextBuffer> errlog, echolog;
 
-  int draw(Render &render, vector<Gtk::TreeModel::Path> &selected);
+  int drawShapes(Render &render, vector<Gtk::TreeModel::Path> &selected);
+  int drawBBoxes(Render &render);
 
   sigc::signal< void, Gtk::MessageType, const char *, const char * > signal_alert;
   void alert (const char *message);

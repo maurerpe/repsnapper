@@ -237,21 +237,11 @@ void Shape::Rotate(const Vector3d &center, const Vector3d &axis, const double & 
   CalcBBox();
 }
 
-// called from Model::draw
-void Shape::draw(Render &render, size_t index, const Settings &settings, bool highlight, uint max_triangles) {
-  //cerr << "Shape::draw" <<  endl;
-
-  if (settings.get_boolean("Display","DisplayPolygons")) {
-    draw_geometry(render, index, highlight, settings, max_triangles);
-  }
-  
-  if (settings.get_boolean("Display","DisplayBBox")) {
-    drawBBox(render);
-  }
-}
-
 // the bounding box is in real coordinates (not transformed)
-void Shape::drawBBox(Render &render) const {
+void Shape::drawBBox(Render &render, Settings &settings) const {
+  if (!settings.get_boolean("Display","DisplayBBox"))
+    return;
+  
   const double minz = max(0.,Min.z()); // draw above zero plane only
 
   // Draw bbox
@@ -313,6 +303,9 @@ void Shape::drawBBox(Render &render) const {
 }
 
 void Shape::draw_geometry(Render &render, size_t index, bool highlight, const Settings &settings, uint max_triangles) {
+  if (!settings.get_boolean("Display","DisplayPolygons"))
+    return;
+  
   RenderVert vert;
   float color[4] = {1.0, 1.0, 1.0, 0};
   if (highlight) 

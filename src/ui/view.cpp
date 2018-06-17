@@ -1453,7 +1453,7 @@ void View::update_scale_value() {
   toggle_block = false;
 }
 
-void View::DrawGrid() {
+void View::DrawGrid(void) {
   if (!m_renderer)
     return;
   
@@ -1513,13 +1513,9 @@ void View::DrawGrid() {
   // Vector3d pM = m_model->settings.getPrintMargin();  
 }
 
-// called from Render::on_draw
-void View::Draw(vector<Gtk::TreeModel::Path> selected) {
+void View::DrawGCode(void) {
   if (!m_renderer)
     return;
-  
-  // Draw the grid
-  DrawGrid();
   
   // Draw GCode
   if (!m_model->isCalculating()) {
@@ -1531,9 +1527,20 @@ void View::Draw(vector<Gtk::TreeModel::Path> selected) {
       m_model->GlDrawGCode(*m_renderer, m_model->settings.get_double("Display", "GCodeLayer"));
     }
   }
+}
 
-  // Draw models
-  m_model->draw(*m_renderer, selected);
+void View::DrawShapes(vector<Gtk::TreeModel::Path> selected) {
+  if (!m_renderer)
+    return;
+  
+  m_model->drawShapes(*m_renderer, selected);
+}
+
+void View::DrawBBoxes(void) {
+  if (!m_renderer)
+    return;
+  
+  m_model->drawBBoxes(*m_renderer);
 }
 
 void View::showCurrentPrinting(unsigned long lineno) {

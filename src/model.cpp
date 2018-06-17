@@ -495,8 +495,7 @@ Vector3d Model::GetViewCenter() {
   return printOffset + Center;
 }
 
-// called from View::Draw
-int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter) {
+int Model::drawShapes(Render &render, vector<Gtk::TreeModel::Path> &iter) {
   vector<Shape*> sel_shapes;
   vector<Matrix4d> transforms;
   objtree.get_selected_shapes(iter, sel_shapes, transforms);
@@ -504,7 +503,7 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter) {
   // draw preview shapes and nothing else
   if (settings.get_boolean("Display","PreviewLoad") && preview_shapes.size() > 0) {
     for (uint i = 0; i < preview_shapes.size(); i++)
-      preview_shapes[i]->draw(render, 0, settings, false, 2000000);
+      preview_shapes[i]->draw_geometry(render, 0, false, settings, 2000000);
     
     return 0;
   }
@@ -522,8 +521,29 @@ int Model::draw(Render &render, vector<Gtk::TreeModel::Path> &iter) {
 	if (sel_shapes[s] == shape)
 	  is_selected = true;
 
-      shape->draw(render, index, settings, is_selected);
+      shape->draw_geometry(render, index, is_selected, settings);
       index++;
+    }
+  }
+  
+  return -1;
+}
+
+int Model::drawBBoxes(Render &render) {
+  // draw preview shapes and nothing else
+  if (settings.get_boolean("Display","PreviewLoad") && preview_shapes.size() > 0) {
+    for (uint i = 0; i < preview_shapes.size(); i++)
+      preview_shapes[i]->drawBBox(render, settings);
+    
+    return 0;
+  }
+  
+  for (uint i = 0; i < objtree.Objects.size(); i++) {
+    TreeObject *object = objtree.Objects[i];
+    for (uint j = 0; j < object->shapes.size(); j++) {
+      Shape *shape = object->shapes[j];
+
+      shape->drawBBox(render, settings);
     }
   }
   

@@ -181,9 +181,9 @@ class View : public Gtk::ApplicationWindow
   void mirror_selection ();
   void placeonplatform_selection ();
   void stl_added (Gtk::TreePath &path);
-  void model_changed ();
+  void model_changed();
 
-  void gcode_changed ();
+  void gcode_changed();
   void set_SliderBBox(double max_z);
 
   void show_notebooktab (string name, string notebookname) const;
@@ -202,16 +202,18 @@ class View : public Gtk::ApplicationWindow
   sigc::connection logprint_timeout;
   void set_logging(bool);
   bool logprint_timeout_cb();
-
-  void Draw(vector<Gtk::TreeModel::Path> selected);
-  void DrawGrid();
+  
+  void DrawGrid(void);
+  void DrawGCode(void);
+  void DrawShapes(vector<Gtk::TreeModel::Path> selected);
+  void DrawBBoxes(void);
+  
   void showCurrentPrinting(unsigned long line);
-
+  
   Glib::Mutex mutex;
 
   Glib::RefPtr<Gio::File> iconfile;
   void set_icon_file(Glib::RefPtr<Gio::File> iconfile);
-
 };
 
 #ifdef MODEL_IMPLEMENTATION

@@ -287,9 +287,6 @@ bool Render::on_render(const Glib::RefPtr< Gdk::GLContext > &ctx) {
   make_current();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  //define blending factors
-
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_ALWAYS);
   
@@ -311,9 +308,14 @@ bool Render::on_render(const Glib::RefPtr< Gdk::GLContext > &ctx) {
 
   set_default_transform();
   
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  m_view->DrawGrid();
+  m_view->DrawGCode();
   vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
-  m_view->Draw(selpath);
-
+  m_view->DrawShapes(selpath);
+  m_view->DrawBBoxes();
+  
   // set_default_transform();
   // float color[4] = {0, 1, 1, 1};
   // draw_string(color, Vector3d(150, 110, 300), string("01234.56789"), 70);
@@ -707,7 +709,7 @@ guint Render::find_object(void) {
   m_object_index = 0;
   
   vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
-  m_view->Draw(selpath);  
+  m_view->DrawShapes(selpath);  
   
   return m_object_index;
 }

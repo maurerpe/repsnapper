@@ -45,11 +45,6 @@ class Shape {
 
   virtual void clear();
   
-  void draw(Render &render,
-	    size_t index,
-	    const Settings &settings,
-	    bool highlight=false, uint max_triangles=0);
-
   virtual void CalcBBox();
 
   virtual void Rotate(const Vector3d &center, const Vector3d &axis, const double &angle);
@@ -89,10 +84,10 @@ class Shape {
 
   uint size() const {return triangles.size();}
 
+  virtual void draw_geometry(Render &render, size_t index, bool highlight, const Settings &settings, uint max_triangles=0);  
+  void drawBBox(Render &render, Settings &settings) const;
+  
  private:
   vector<Triangle> triangles;
   void calcPolygons();
-
-  virtual void draw_geometry(Render &render, size_t index, bool highlight, const Settings &settings, uint max_triangles=0);
-  void drawBBox(Render &render) const;
 };
