@@ -51,7 +51,9 @@ inline Model *Render::get_model() const { return m_view->get_model(); }
 Render::Render(View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
   m_realized(false), m_get_object_mode(false),
   m_view(view), m_selection(selection) {
-
+  
+  set_has_depth_buffer(true);
+  
   set_events(Gdk::POINTER_MOTION_MASK |
 	     Gdk::BUTTON_MOTION_MASK |
 	     Gdk::BUTTON_PRESS_MASK |
@@ -181,7 +183,7 @@ void Render::init_shaders() {
     "out vec4 frag_color;"
     "uniform vec4 color;"
     "void main() {"
-    "  frag_color = vec4(color.rgb * brightness, color.a);"
+    "  frag_color = vec4(color.rgb * brightness * color.a, color.a);"
     "}");
   
   m_tri_trans = glGetUniformLocation(m_tri_program, "trans");
@@ -206,6 +208,8 @@ void Render::init_shaders() {
     "uniform sampler2D textr;"
     "void main() {"
     "  frag_color = texture(textr, textr_uv);"
+    "  if (frag_color.a < 0.1)"
+    "    discard;"
     "}");
   
   m_str_trans = glGetUniformLocation(m_str_program, "trans");
@@ -283,17 +287,6 @@ bool Render::on_render(const Glib::RefPtr< Gdk::GLContext > &ctx) {
   if (!m_realized)
     return Gtk::GLArea::on_render(ctx);
   
-  /*glClearColor(0.5, 0.5, 0.5, 1.0);*/
-  make_current();
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_ALWAYS);
-  
-  glDisable(GL_CULL_FACE);
-  
-  glEnable(GL_LINE_SMOOTH);
-  
   Matrix4d view_mat = m_transform;
   
   Matrix4d camera_mat;
@@ -303,22 +296,93 @@ bool Render::on_render(const Glib::RefPtr< Gdk::GLContext > &ctx) {
 		    0.5 * fabs(z_center),
 		    1.5 * fabs(z_center));
   m_full_transform = camera_mat * view_mat;
+  m_text.clear();
+  m_invert_color = false;
+  m_no_text = false;
   
   // cout << "on_render: m_full_transform" << endl << m_full_transform << endl;
 
   set_default_transform();
-  
+
+  /* Clear to white (will be inverted to black later) */
+  make_current();
+  glClearColor(1.0, 1.0, 1.0, 1.0);
+  glClearDepth(1.0);
+  glDepthMask(GL_TRUE);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glEnable(GL_DEPTH_TEST);
+  glDisable(GL_CULL_FACE);  
+  glEnable(GL_LINE_SMOOTH);
   glEnable(GL_BLEND);
+
+  /* Draw Grid, GCode, and BBoxes */
+  glDepthMask(GL_TRUE);
+  glDepthFunc(GL_LESS);
+  glBlendEquation(GL_FUNC_ADD);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  m_invert_color = true;
   m_view->DrawGrid();
   m_view->DrawGCode();
-  vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
-  m_view->DrawShapes(selpath);
   m_view->DrawBBoxes();
+  m_invert_color = false;
   
-  // set_default_transform();
-  // float color[4] = {0, 1, 1, 1};
-  // draw_string(color, Vector3d(150, 110, 300), string("01234.56789"), 70);
+  /* Determine shape obscuration, but do NOT draw */
+  glDepthMask(GL_TRUE);
+  glDepthFunc(GL_LESS);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_ZERO, GL_ONE);
+  vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
+  m_shape_mode = true;
+  m_view->DrawShapes(selpath);
+  m_shape_mode = false;
+  
+  /* Draw shapes in negative with multiplicitive blending */
+  glDepthMask(GL_FALSE);
+  glDepthFunc(GL_ALWAYS);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+  m_shape_mode = true;
+  m_view->DrawShapes(selpath);
+  m_shape_mode = false;
+
+  /* Invert entire scene by drawing white rectangle and subtracting */
+  glDepthMask(GL_FALSE);
+  glDepthFunc(GL_ALWAYS);
+  glBlendEquation(GL_FUNC_SUBTRACT);
+  glBlendFunc(GL_ONE, GL_ONE);
+  RenderVert vert;
+  vert.add(-1, -1, 1);
+  vert.add(-1,  1, 1);
+  vert.add( 1, -1, 1);
+  vert.add( 1,  1, 1);
+  vert.add(-1,  1, 1);
+  vert.add( 1, -1, 1);
+  float color[4] = {1.0, 1.0, 1.0, 1.0};
+  m_comb_transform = Matrix4d::IDENTITY;
+  draw_triangles(color, vert);
+  set_default_transform();
+
+  /* Redraw unobscured grid, gcode, and bboxes */
+  glDepthMask(GL_FALSE);
+  glDepthFunc(GL_LEQUAL);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  m_no_text = true;
+  m_view->DrawGrid();
+  m_view->DrawGCode();
+  m_view->DrawBBoxes();
+  m_no_text = false;
+  
+  /* Draw text */
+  glDepthMask(GL_TRUE);
+  glClear(GL_DEPTH_BUFFER_BIT);
+  glDepthFunc(GL_LESS);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  m_text.sort();
+  for (const TextInfo &ti : m_text)
+    draw_string_raw(ti);
   
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glUseProgram(0);
@@ -326,7 +390,7 @@ bool Render::on_render(const Glib::RefPtr< Gdk::GLContext > &ctx) {
   glFlush();
   
   Gtk::GLArea::on_render(ctx);
-
+  
   return false;
 }
 
@@ -342,23 +406,19 @@ void Render::set_default_transform(void) {
 
 const string font_face("Sans");
 
-void Render::draw_string(const float color[4], const Vector3d &pos, const string s, double fontheight) {
-  if (fontheight <= 0 || m_get_object_mode)
-    return;
-  fontheight *= 1.5;
-
+void Render::draw_string_raw(const TextInfo &ti) {
   // Determine text size
   Cairo::RefPtr<Cairo::ImageSurface> dummy_surface =
     Cairo::ImageSurface::create(Cairo::FORMAT_A1, 1, 1);
   Cairo::RefPtr< Cairo::Context > dummy = Cairo::Context::create(dummy_surface);
   Cairo::TextExtents te;
   dummy->select_font_face(font_face, Cairo::FONT_SLANT_NORMAL, Cairo::FONT_WEIGHT_BOLD);
-  dummy->set_font_size(fontheight);
-  dummy->get_text_extents(s, te);
+  dummy->set_font_size(ti.height);
+  dummy->get_text_extents(ti.str, te);
   
-  //cout << "Fontheight: " << fontheight << ", " << te.height << endl;  
+  //cout << "ti.height: " << ti.height << ", " << te.height << endl;  
   
-  size_t border = max(fontheight / 5.0, 3.0);
+  size_t border = max(ti.height / 5.0, 3.0);
   size_t width  = te.width + 2 * border;
   size_t height = te.height + 2 * border;
   size_t radius = 2*border;
@@ -370,7 +430,7 @@ void Render::draw_string(const float color[4], const Vector3d &pos, const string
     Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, width, height);
   Cairo::RefPtr< Cairo::Context > cr = Cairo::Context::create(surface); 
   cr->select_font_face(font_face, Cairo::FONT_SLANT_NORMAL, Cairo::FONT_WEIGHT_BOLD);
-  cr->set_font_size(fontheight);
+  cr->set_font_size(ti.height);
   cr->set_source_rgba(0.0, 0.0, 0.0, 0.0);
   cr->paint();
   cr->set_source_rgba(0.0, 0.0, 0.0, 0.5);
@@ -381,10 +441,10 @@ void Render::draw_string(const float color[4], const Vector3d &pos, const string
   cr->arc(        radius, height - radius, radius,  M_PI/2.0,  M_PI);
   cr->close_path();
   cr->fill();
-  cr->set_source_rgba(1.0, 0.0, 0.0, 1.0);
+  cr->set_source_rgba(ti.color[0], ti.color[1], ti.color[2], ti.color[3]);
   cr->move_to(border - te.x_bearing,
 	      border - te.y_bearing);
-  cr->show_text(s);
+  cr->show_text(ti.str);
   const uint32_t *data = (const uint32_t *) surface->get_data();
 
   // Convert to rgba for use as a texture
@@ -396,15 +456,12 @@ void Render::draw_string(const float color[4], const Vector3d &pos, const string
     *icur++ = *dcur;
     *icur++ = *dcur++ >> 24;
   }
-
+  
   // Map texture
   double w = 2.0 * ((double) width) / get_width();
   double h = 2.0 * ((double) height) / get_height();
-  Vector4d pos4 = {pos.x(), pos.y(), pos.z(), 1};
-  Vector3d tpos = hom(m_comb_transform * pos4);
-
   Transform3D trans;
-  trans.move(Vector3d(tpos.x() - w/2, tpos.y() - h/2, 1));
+  trans.move(Vector3d(ti.pos.x() - w/2, ti.pos.y() - h/2, ti.pos.z()));
   trans.scale_x(w);
   trans.scale_y(h);
 
@@ -430,6 +487,25 @@ void Render::draw_string(const float color[4], const Vector3d &pos, const string
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
   
   glDrawArrays(GL_TRIANGLES, 0, vert.len() / 3);
+}
+
+void Render::draw_string(const float color[4], const Vector3d &pos, const string s, double fontheight) {
+  if (m_no_text || fontheight <= 0 || m_get_object_mode)
+    return;
+
+  Vector4d pos4 = {pos.x(), pos.y(), pos.z(), 1};
+  Vector3d tpos = hom(m_comb_transform * pos4);
+  
+  TextInfo ti;
+  ti.str = s;
+  ti.color[0] = color[0];
+  ti.color[1] = color[1];
+  ti.color[2] = color[2];
+  ti.color[3] = color[3];
+  ti.pos = tpos;
+  ti.height = fontheight;
+  
+  m_text.push_back(ti);
 }
 
 static Vector3d GetCamera(const GLfloat *pos, const Matrix4d &trans) {
@@ -471,31 +547,55 @@ void Render::draw_triangles(const float color[4], const RenderVert &vert, size_t
     
     return;
   }
-  
-  glUseProgram(m_tri_program);
-  SetUniform(m_tri_trans, m_comb_transform);
-  SetUniform(m_tri_light, normalized(hom(m_inv_model * light_dir)));
-  glUniform4fv(m_tri_color, 1, color);
 
+  float cc[4];
+  if (m_invert_color) {
+    cc[0] = 1.0 - color[0];
+    cc[1] = 1.0 - color[1];
+    cc[2] = 1.0 - color[2];
+    cc[3] = color[3];
+  } else {
+    cc[0] = color[0];
+    cc[1] = color[1];
+    cc[2] = color[2];
+    cc[3] = color[3];
+  }
+  
+  size_t step;
+  if (m_shape_mode) {
+    step = 6;
+    glUseProgram(m_tri_program);
+    SetUniform(m_tri_trans, m_comb_transform);
+    SetUniform(m_tri_light, normalized(hom(m_inv_model * light_dir)));
+    glUniform4fv(m_tri_color, 1, cc);
+  } else {
+    step = 3;
+    glUseProgram(m_line_program);
+    SetUniform(m_line_trans, m_comb_transform);
+    glUniform4fv(m_line_color, 1, cc);
+  }
+  
   glBindBuffer(GL_ARRAY_BUFFER, m_vao);
   glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
   glBufferData(GL_ARRAY_BUFFER, vert.size(), vert.data(), GL_STREAM_DRAW);
-  
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
-  
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), BUFFER_OFFSET(3 * sizeof(GLfloat)));
 
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, step * sizeof(GLfloat), nullptr);
+  
+  if (m_shape_mode) {
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, step * sizeof(GLfloat), BUFFER_OFFSET(3 * sizeof(GLfloat)));
+  }
+  
   // cout << endl << "Drawing triangls:" << endl;
-  // for (size_t i = 0; i < vert.len(); i += 6) {
+  // for (size_t i = 0; i < vert.len(); i += step) {
   //   const GLfloat *pos = vert.data() + i;
   //   Vector4d model(pos[0], pos[1], pos[2], 1.0);
   //   Vector3d camera = hom(m_comb_transform * model);
   //   cout << model << " -> " << camera << endl;
   // }
   
-  glDrawArrays(GL_TRIANGLES, 0, vert.len() / 6);  
+  glDrawArrays(GL_TRIANGLES, 0, vert.len() / step);
 }
 
 void Render::draw_lines(const float color[4], const RenderVert &vert, float line_width) {
@@ -504,9 +604,18 @@ void Render::draw_lines(const float color[4], const RenderVert &vert, float line
   
   glUseProgram(m_line_program);
   SetUniform(m_line_trans, m_comb_transform);
-  glUniform4fv(m_line_color, 1, color);
+  if (m_invert_color) {
+    float invc[4];
+    invc[0] = 1.0 - color[0];
+    invc[1] = 1.0 - color[1];
+    invc[2] = 1.0 - color[2];
+    invc[3] = color[3];
+    glUniform4fv(m_line_color, 1, invc);
+  } else {
+    glUniform4fv(m_line_color, 1, color);
+  }
   glLineWidth(line_width);
-
+  
   glBindBuffer(GL_ARRAY_BUFFER, m_vao);
   glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
   glBufferData(GL_ARRAY_BUFFER, vert.size(), vert.data(), GL_STREAM_DRAW);

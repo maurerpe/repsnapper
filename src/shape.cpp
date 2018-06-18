@@ -30,7 +30,7 @@
 #endif
 
 // Constructor
-Shape::Shape() {
+Shape::Shape() : vert_valid(false) {
   Min.set(0,0,0);
   Max.set(200,200,200);
   CalcBBox();
@@ -42,7 +42,9 @@ void Shape::clear() {
 
 void Shape::setTriangles(const vector<Triangle> &triangles_) {
   triangles = triangles_;
-
+  
+  vert_valid = false;
+  
   CalcBBox();
   double vol = volume();
   if (vol < 0) {
@@ -79,6 +81,7 @@ void addtoshape(uint i, const vector< vector<uint> > &adj,
 }
 
 void Shape::splitshapes(vector<Shape*> &shapes, ViewProgress *progress) {
+  vert_valid = false;
   int n_tr = (int)triangles.size();
   Prog prog(progress, _("Split: Sorting Triangles"), n_tr);  
   int progress_steps = max(1,(int)(n_tr/100));
@@ -176,6 +179,7 @@ string Shape::getSTLsolid() const {
 void Shape::addTriangles(const vector<Triangle> &tr) {
   triangles.insert(triangles.end(), tr.begin(), tr.end());
   CalcBBox();
+  vert_valid = false;
 }
 
 vector<Triangle> Shape::getTriangles(const Matrix4d &T) const {
@@ -306,25 +310,28 @@ void Shape::draw_geometry(Render &render, size_t index, bool highlight, const Se
   if (!settings.get_boolean("Display","DisplayPolygons"))
     return;
   
-  RenderVert vert;
   float color[4] = {1.0, 1.0, 1.0, 0};
   if (highlight) 
     color[0] = 0.5;
   
   color[3] = settings.get_double("Display","PolygonOpacity");
-  
-  for(size_t i = 0; i < triangles.size(); i++) {
-    Triangle *tri = &triangles[i];
-    //Vector3d norm = normalized((tri->C - tri->A).cross(tri->B - tri->A));
-    Vector3d norm = tri->Normal;
-    vert.add(tri->A);
-    vert.add(norm);
-    vert.add(tri->B);
-    vert.add(norm);
-    vert.add(tri->C);
-    vert.add(norm);
-  }
 
+  if (!vert_valid) {
+    vert.clear();
+    for(size_t i = 0; i < triangles.size(); i++) {
+      Triangle *tri = &triangles[i];
+      //Vector3d norm = normalized((tri->C - tri->A).cross(tri->B - tri->A));
+      Vector3d norm = tri->Normal;
+      vert.add(tri->A);
+      vert.add(norm);
+      vert.add(tri->B);
+      vert.add(norm);
+      vert.add(tri->C);
+      vert.add(norm);
+    }
+    vert_valid = true;
+  }
+  
   RenderModelTrans mt(render, transform3D.getTransform());
   render.draw_triangles(color, vert, index);
 }

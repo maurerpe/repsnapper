@@ -85,11 +85,26 @@ class Render : public Gtk::GLArea {
   GLuint m_str_textr;
   GLuint m_str_program;
   
+  bool m_shape_mode;
+  bool m_invert_color;
+  bool m_no_text;
+  class TextInfo {
+  public:
+    string str;
+    float color[4];
+    Vector3d pos;
+    double height;
+    bool operator<(const TextInfo &a) {return pos.z() < a.pos.z();};
+  };
+  list< TextInfo > m_text;
+  
   float m_zoom;
   void selection_changed() {queue_draw();};
   guint find_object(void);
   Vector3d mouse_on_plane(Vector2d scaled) const;
   Vector2d get_scaled(double x, double y);
+
+  void draw_string_raw(const TextInfo &ti);
   
  public:
   Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection);
@@ -101,7 +116,7 @@ class Render : public Gtk::GLArea {
   void set_default_transform(void);
   
   void draw_string(const float color[4], const Vector3d &pos, const string s, double fontheight);
-  void draw_triangles(const float color[4], const RenderVert &vert, size_t index);
+  void draw_triangles(const float color[4], const RenderVert &vert, size_t index = 0);
   void draw_lines(const float color[4], const RenderVert &vert, float line_width);
 
   void object_mode(bool mode) {m_get_object_mode = mode;};

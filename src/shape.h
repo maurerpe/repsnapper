@@ -90,4 +90,6 @@ class Shape {
  private:
   vector<Triangle> triangles;
   void calcPolygons();
+  bool vert_valid;
+  RenderVert vert;
 };
