@@ -59,7 +59,6 @@ class Render : public Gtk::GLArea {
   Matrix4d m_comb_transform;
   Matrix4d m_inv_model;
   View *m_view;
-  Model *get_model() const;
   Glib::RefPtr<Gtk::TreeSelection> m_selection;
   
   Vector2d m_down_point;
@@ -85,8 +84,6 @@ class Render : public Gtk::GLArea {
   GLuint m_str_textr;
   GLuint m_str_program;
   
-  bool m_shape_mode;
-  bool m_invert_color;
   bool m_no_text;
   class TextInfo {
   public:
@@ -110,13 +107,12 @@ class Render : public Gtk::GLArea {
   Render (View *view, Glib::RefPtr<Gtk::TreeSelection> selection);
   ~Render();
 
-  GtkWidget *get_widget();
-
   void set_model_transform(const Matrix4d &trans);
   void set_default_transform(void);
   
   void draw_string(const float color[4], const Vector3d &pos, const string s, double fontheight);
-  void draw_triangles(const float color[4], const RenderVert &vert, size_t index = 0);
+  void draw_triangles(const float color[4], const RenderVert &vert);
+  void draw_triangles_with_normals(const float color[4], const RenderVert &vert, size_t index = 0);
   void draw_lines(const float color[4], const RenderVert &vert, float line_width);
 
   void object_mode(bool mode) {m_get_object_mode = mode;};

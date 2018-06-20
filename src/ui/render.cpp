@@ -42,12 +42,6 @@ static Vector3d hom(Vector4d v) {
   return Vector3d(v[0]/v[3], v[1]/v[3], v[2]/v[3]);
 }
 
-inline GtkWidget *Render::get_widget() {
-  return GTK_WIDGET(gobj());
-}
-
-inline Model *Render::get_model() const { return m_view->get_model(); }
-
 Render::Render(View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
   m_realized(false), m_get_object_mode(false),
   m_view(view), m_selection(selection) {
@@ -104,7 +98,7 @@ static GLuint create_shader(int type, const char *src) {
     string log_space(log_len+1, ' ');
     glGetShaderInfoLog(shader, log_len, nullptr, (GLchar *) log_space.c_str());
 
-    cerr << "Compile failure int " <<
+    cerr << "Compile failure in " <<
       (type == GL_VERTEX_SHADER ? "vertex" : "fragment") <<
       " shader: " << log_space << endl;
     
@@ -297,7 +291,6 @@ bool Render::on_render(const Glib::RefPtr< Gdk::GLContext > &ctx) {
 		    1.5 * fabs(z_center));
   m_full_transform = camera_mat * view_mat;
   m_text.clear();
-  m_invert_color = false;
   m_no_text = false;
   
   // cout << "on_render: m_full_transform" << endl << m_full_transform << endl;
@@ -321,11 +314,9 @@ bool Render::on_render(const Glib::RefPtr< Gdk::GLContext > &ctx) {
   glDepthFunc(GL_LESS);
   glBlendEquation(GL_FUNC_ADD);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  m_invert_color = true;
   m_view->DrawGrid();
   m_view->DrawGCode();
   m_view->DrawBBoxes();
-  m_invert_color = false;
   
   /* Determine shape obscuration, but do NOT draw */
   glDepthMask(GL_TRUE);
@@ -333,19 +324,28 @@ bool Render::on_render(const Glib::RefPtr< Gdk::GLContext > &ctx) {
   glBlendEquation(GL_FUNC_ADD);
   glBlendFunc(GL_ZERO, GL_ONE);
   vector<Gtk::TreeModel::Path> selpath = m_selection->get_selected_rows();
-  m_shape_mode = true;
   m_view->DrawShapes(selpath);
-  m_shape_mode = false;
+  m_view->DrawMargins();
   
   /* Draw shapes in negative with multiplicitive blending */
   glDepthMask(GL_FALSE);
   glDepthFunc(GL_ALWAYS);
   glBlendEquation(GL_FUNC_ADD);
   glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-  m_shape_mode = true;
   m_view->DrawShapes(selpath);
-  m_shape_mode = false;
+  m_view->DrawMargins();
 
+  /* Redraw unobscured grid, gcode, and bboxes */
+  glDepthMask(GL_FALSE);
+  glDepthFunc(GL_LEQUAL);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  m_no_text = true;
+  m_view->DrawGrid();
+  m_view->DrawGCode();
+  m_view->DrawBBoxes();
+  m_no_text = false;
+  
   /* Invert entire scene by drawing white rectangle and subtracting */
   glDepthMask(GL_FALSE);
   glDepthFunc(GL_ALWAYS);
@@ -363,17 +363,6 @@ bool Render::on_render(const Glib::RefPtr< Gdk::GLContext > &ctx) {
   draw_triangles(color, vert);
   set_default_transform();
 
-  /* Redraw unobscured grid, gcode, and bboxes */
-  glDepthMask(GL_FALSE);
-  glDepthFunc(GL_LEQUAL);
-  glBlendEquation(GL_FUNC_ADD);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  m_no_text = true;
-  m_view->DrawGrid();
-  m_view->DrawGCode();
-  m_view->DrawBBoxes();
-  m_no_text = false;
-  
   /* Draw text */
   glDepthMask(GL_TRUE);
   glClear(GL_DEPTH_BUFFER_BIT);
@@ -514,9 +503,26 @@ static Vector3d GetCamera(const GLfloat *pos, const Matrix4d &trans) {
   return hom(trans * model);
 }
 
-void Render::draw_triangles(const float color[4], const RenderVert &vert, size_t index) {
-  //cout << "draw_triangles tranform:" << endl;
+void Render::draw_triangles(const float color[4], const RenderVert &vert) {
+  if (m_get_object_mode)
+    return;
   
+  size_t step = 3;
+  glUseProgram(m_line_program);
+  SetUniform(m_line_trans, m_comb_transform);
+  glUniform4fv(m_line_color, 1, color);
+  
+  glBindBuffer(GL_ARRAY_BUFFER, m_vao);
+  glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+  glBufferData(GL_ARRAY_BUFFER, vert.size(), vert.data(), GL_STREAM_DRAW);
+
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, step * sizeof(GLfloat), nullptr);
+  
+  glDrawArrays(GL_TRIANGLES, 0, vert.len() / step);
+}
+
+void Render::draw_triangles_with_normals(const float color[4], const RenderVert &vert, size_t index) {
   if (m_get_object_mode) {
     if (index == 0)
       return;
@@ -548,52 +554,21 @@ void Render::draw_triangles(const float color[4], const RenderVert &vert, size_t
     return;
   }
 
-  float cc[4];
-  if (m_invert_color) {
-    cc[0] = 1.0 - color[0];
-    cc[1] = 1.0 - color[1];
-    cc[2] = 1.0 - color[2];
-    cc[3] = color[3];
-  } else {
-    cc[0] = color[0];
-    cc[1] = color[1];
-    cc[2] = color[2];
-    cc[3] = color[3];
-  }
-  
-  size_t step;
-  if (m_shape_mode) {
-    step = 6;
-    glUseProgram(m_tri_program);
-    SetUniform(m_tri_trans, m_comb_transform);
-    SetUniform(m_tri_light, normalized(hom(m_inv_model * light_dir)));
-    glUniform4fv(m_tri_color, 1, cc);
-  } else {
-    step = 3;
-    glUseProgram(m_line_program);
-    SetUniform(m_line_trans, m_comb_transform);
-    glUniform4fv(m_line_color, 1, cc);
-  }
+  size_t step = 6;
+  glUseProgram(m_tri_program);
+  SetUniform(m_tri_trans, m_comb_transform);
+  SetUniform(m_tri_light, normalized(hom(m_inv_model * light_dir)));
+  glUniform4fv(m_tri_color, 1, color);
   
   glBindBuffer(GL_ARRAY_BUFFER, m_vao);
   glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
   glBufferData(GL_ARRAY_BUFFER, vert.size(), vert.data(), GL_STREAM_DRAW);
-
+  
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, step * sizeof(GLfloat), nullptr);
   
-  if (m_shape_mode) {
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, step * sizeof(GLfloat), BUFFER_OFFSET(3 * sizeof(GLfloat)));
-  }
-  
-  // cout << endl << "Drawing triangls:" << endl;
-  // for (size_t i = 0; i < vert.len(); i += step) {
-  //   const GLfloat *pos = vert.data() + i;
-  //   Vector4d model(pos[0], pos[1], pos[2], 1.0);
-  //   Vector3d camera = hom(m_comb_transform * model);
-  //   cout << model << " -> " << camera << endl;
-  // }
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, step * sizeof(GLfloat), BUFFER_OFFSET(3 * sizeof(GLfloat)));
   
   glDrawArrays(GL_TRIANGLES, 0, vert.len() / step);
 }
@@ -603,18 +578,16 @@ void Render::draw_lines(const float color[4], const RenderVert &vert, float line
     return;
   
   glUseProgram(m_line_program);
-  SetUniform(m_line_trans, m_comb_transform);
-  if (m_invert_color) {
-    float invc[4];
-    invc[0] = 1.0 - color[0];
-    invc[1] = 1.0 - color[1];
-    invc[2] = 1.0 - color[2];
-    invc[3] = color[3];
-    glUniform4fv(m_line_color, 1, invc);
-  } else {
-    glUniform4fv(m_line_color, 1, color);
-  }
   glLineWidth(line_width);
+  SetUniform(m_line_trans, m_comb_transform);
+
+  // Invert colors so proper color appears after scene inversion
+  float invc[4];
+  invc[0] = 1.0 - color[0];
+  invc[1] = 1.0 - color[1];
+  invc[2] = 1.0 - color[2];
+  invc[3] = color[3];
+  glUniform4fv(m_line_color, 1, invc);
   
   glBindBuffer(GL_ARRAY_BUFFER, m_vao);
   glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
@@ -681,7 +654,7 @@ bool Render::on_button_press_event(GdkEventButton* event) {
     if (!(event->state & GDK_SHIFT_MASK))
       m_selection->unselect_all();
     if (index) {
-      Gtk::TreeModel::iterator iter = get_model()->objtree.find_stl_by_index(index);
+      Gtk::TreeModel::iterator iter = m_view->get_model()->objtree.find_stl_by_index(index);
       m_selection->select(iter);
     }
   }

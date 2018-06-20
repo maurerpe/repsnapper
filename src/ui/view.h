@@ -204,6 +204,7 @@ class View : public Gtk::ApplicationWindow
   bool logprint_timeout_cb();
   
   void DrawGrid(void);
+  void DrawMargins(void);
   void DrawGCode(void);
   void DrawShapes(vector<Gtk::TreeModel::Path> selected);
   void DrawBBoxes(void);

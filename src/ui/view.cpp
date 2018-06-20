@@ -281,7 +281,7 @@ View *View::create(Model *model) {
         continue;
 
       default:
-        Gtk::MessageDialog dialog (_("Error reading UI description!!"), false,
+        Gtk::MessageDialog dialog(_("Error reading UI description!!"), false,
                                   Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
         dialog.set_secondary_text(e.what());
         dialog.run();
@@ -291,7 +291,7 @@ View *View::create(Model *model) {
   }
 
   if(ui.empty()) {
-    Gtk::MessageDialog dialog (_("Couldn't find UI description!"), false,
+    Gtk::MessageDialog dialog(_("Couldn't find UI description!"), false,
                               Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
     dialog.set_secondary_text (_("Check that repsnapper has been correctly installed."));
     dialog.run();
@@ -304,7 +304,7 @@ View *View::create(Model *model) {
   }
   catch(const Gtk::BuilderError& ex)
   {
-    Gtk::MessageDialog dialog (_("Error loading UI!"), false,
+    Gtk::MessageDialog dialog(_("Error loading UI!"), false,
                               Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
     dialog.set_secondary_text(ex.what());
     dialog.run();
@@ -332,16 +332,16 @@ void View::printing_changed() {
     m_pause_button->set_active( false );
 }
 
-void View::enable_logging_toggled (Gtk::ToggleButton *button) {
+void View::enable_logging_toggled(Gtk::ToggleButton *button) {
   m_model->settings.set_boolean("Printer","Logging", button->get_active());
 }
 
-void View::temp_monitor_enabled_toggled (Gtk::ToggleButton *button) {
+void View::temp_monitor_enabled_toggled(Gtk::ToggleButton *button) {
   m_model->settings.set_boolean("Misc","TempReadingEnabled", button->get_active());
   m_printer->UpdateTemperatureMonitor();
 }
 
-void View::fan_enabled_toggled (Gtk::ToggleButton *button) {
+void View::fan_enabled_toggled(Gtk::ToggleButton *button) {
   if (toggle_block)
     return;
   
@@ -362,7 +362,7 @@ void View::fan_enabled_toggled (Gtk::ToggleButton *button) {
   }
 }
 
-void View::run_extruder () {
+void View::run_extruder() {
   double amount = m_extruder_length->get_value();
   m_printer->RunExtruder(m_extruder_speed->get_value() * 60,
 			 amount,
@@ -1507,10 +1507,46 @@ void View::DrawGrid(void) {
     vert.add(0.0f, y, 0.0f);
     vert.add(volume.x(), y, 0.0f);
   }
-  m_renderer->draw_lines(color, vert, 1.0);
+  m_renderer->draw_lines(color, vert, 1.0);  
+}
+
+void AddRectangle(RenderVert &vert, double x1, double y1, double x2, double y2, double z) {
+  vert.add(x1, y1, 0);
+  vert.add(x1, y2, 0);
+  vert.add(x2, y1, 0);
   
-  // FIXME: Draw print margin in faint red
-  // Vector3d pM = m_model->settings.getPrintMargin();  
+  vert.add(x1, y2, 0);
+  vert.add(x2, y1, 0);
+  vert.add(x2, y2, 0);
+  
+  vert.add(x1, y1, z);
+  vert.add(x1, y2, z);
+  vert.add(x2, y1, z);
+  
+  vert.add(x1, y2, z);
+  vert.add(x2, y1, z);
+  vert.add(x2, y2, z);
+}
+
+void View::DrawMargins(void) {
+  Vector3d margin = m_model->settings.getPrintMargin();
+  Vector3d volume = m_model->settings.getPrintVolume();
+  
+  // cout << "View::DrawMargins m: " << margin << " v: " << volume << endl;
+  
+  RenderVert vert;
+  if (margin.x()) {
+    AddRectangle(vert, 0, 0, margin.x(), volume.y(), volume.z());
+    AddRectangle(vert, volume.x() - margin.x(), 0, volume.x(), volume.y(), volume.z());
+  }
+  
+  if (margin.y()) {
+    AddRectangle(vert, margin.x(), 0, volume.x() - margin.x(), margin.y(), volume.z());
+    AddRectangle(vert, margin.x(), volume.y() - margin.y(), volume.x() - margin.x(), volume.y(), volume.z());
+  }
+  
+  float color[4] = {0.3, 0, 0, 1};
+  m_renderer->draw_triangles(color, vert);
 }
 
 void View::DrawGCode(void) {

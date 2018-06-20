@@ -333,7 +333,7 @@ void Shape::draw_geometry(Render &render, size_t index, bool highlight, const Se
   }
   
   RenderModelTrans mt(render, transform3D.getTransform());
-  render.draw_triangles(color, vert, index);
+  render.draw_triangles_with_normals(color, vert, index);
 }
 
 string Shape::info() const {
