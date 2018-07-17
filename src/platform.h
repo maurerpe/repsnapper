@@ -28,7 +28,6 @@
 
 class Platform {
   public:
-	static unsigned long getTickCount();
 	static void setBinaryPath(const char *apparg);
 	static std::vector<std::string> getConfigPaths();
 	static bool has_extension(const std::string &fname, const char *extn);

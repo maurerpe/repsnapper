@@ -27,39 +27,25 @@
 #endif
 #include <gdkmm.h>
 
-unsigned long Platform::getTickCount()
-{
-#ifdef WIN32
-  return GetTickCount();
-#else
-  struct timeval now;
-  gettimeofday (&now, NULL);
-  return now.tv_sec * 1000 + now.tv_usec / 1000;
-#endif
-}
-
 static char *binary_path = NULL;
 
-void Platform::setBinaryPath (const char *apparg)
-{
+void Platform::setBinaryPath (const char *apparg) {
   const char *p;
 
-  if (!(p = strrchr (apparg, G_DIR_SEPARATOR)))
+  if (!(p = strrchr(apparg, G_DIR_SEPARATOR)))
     return;
 
-  binary_path = g_strndup (apparg, p - apparg);
+  binary_path = g_strndup(apparg, p - apparg);
 }
 
-bool Platform::has_extension(const std::string &fname, const char *extn)
-{
+bool Platform::has_extension(const std::string &fname, const char *extn) {
   if (fname.find_last_of(".") == std::string::npos)
     return false;
   std::string this_extn = fname.substr(fname.find_last_of(".") + 1);
   return this_extn == extn;
 }
 
-std::vector<std::string> Platform::getConfigPaths()
-{
+std::vector<std::string> Platform::getConfigPaths() {
   const gchar * const *datadirs = g_get_system_data_dirs();
   std::vector<std::string> dirs;
 
@@ -83,8 +69,6 @@ std::vector<std::string> Platform::getConfigPaths()
 
   return dirs;
 }
-
-
 
 std::string str(double r, int prec) {
   ostringstream o;
