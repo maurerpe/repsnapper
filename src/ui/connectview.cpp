@@ -82,7 +82,7 @@ void ConnectView::signal_entry_changed() {
 }
 
 void ConnectView::find_ports() {
-  m_combo.clear();
+  m_combo.remove_all();
 
   string port_setting = m_settings->get_string("Hardware","PortName");
 
@@ -98,25 +98,18 @@ void ConnectView::find_ports() {
   }
 }
 
-ConnectView::ConnectView (Printer *printer,
-                          Settings *settings,
-			  bool show_connect)
-  : Gtk::Box(Gtk::ORIENTATION_VERTICAL), m_hbox(Gtk::ORIENTATION_HORIZONTAL),
-  m_connect(), m_port_label(_("Port:")),
-  m_combo(true), m_settings(settings), m_printer(printer)
-{
-  m_port_align.set_padding(0, 0, 6, 0);
-  m_port_align.add (m_port_label);
-
+ConnectView::ConnectView(Printer *printer,
+			 Settings *settings,
+			 bool show_connect)
+  : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL), m_connect(), m_port_label(_("Port:")),
+  m_combo(true), m_settings(settings), m_printer(printer) {
   m_setting_state = false;
 
-  add(m_hbox);
-  m_hbox.set_spacing(2);
-  m_hbox.set_orientation(Gtk::ORIENTATION_HORIZONTAL);
-  m_hbox.add(m_image);
-  m_hbox.add(m_connect);
-  m_hbox.add(m_port_align);
-  m_hbox.add(m_combo);
+  set_spacing(2);
+  add(m_image);
+  add(m_connect);
+  add(m_port_label);
+  add(m_combo);
 
   m_connect.signal_toggled().connect(sigc::mem_fun(*this, &ConnectView::connect_toggled));
   m_combo.signal_changed().connect(sigc::mem_fun(*this, &ConnectView::signal_entry_changed));
