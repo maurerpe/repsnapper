@@ -28,106 +28,11 @@
 #include <printer_settings.h>
 
 #include "model.h"
+#include "ps_helper.h"
 #include "shape.h"
 #include "ui/progress.h"
 
 extern string materials[];
-
-class Psv {
-protected:
-  ps_value_t *v;
-  void Set(const char *ext, const char *setting, ps_value_t *val);
-public:
-  Psv(ps_value_t *val);
-  ~Psv();
-  
-  ps_value_t *operator()(void) {return v;};
-  const ps_value_t *Get(const char *ext, const char *set);
-  void Set(const char *ext, const char *setting, int val);
-  void Set(const char *ext, const char *setting, double val);
-  void Set(const char *ext, const char *setting, const char *val);
-};
-  
-Psv::Psv(ps_value_t *val) : v(val) {
-  if (val == NULL)
-    throw invalid_argument(string("ps_value was null"));
-}
-  
-  Psv::~Psv() {
-  PS_FreeValue(v);
-}
-
-const ps_value_t *Psv::Get(const char *ext, const char *setting) {
-  const ps_value_t *gg = PS_GetMember(PS_GetMember(v, ext, NULL), setting, NULL);
-  if (gg == NULL)
-    throw invalid_argument(string("Unknown setting ") + string(ext) + "->" + string(setting));
-  
-  return gg;
-}
-
-void Psv::Set(const char *ext, const char *setting, ps_value_t *val) {
-  if (PS_AddSetting(v, ext, setting, val) < 0) {
-    PS_FreeValue(val);
-    throw invalid_argument(string("Could not set ") + string(ext) + "->" + string(setting));
-  }
-}
-
-void Psv::Set(const char *ext, const char *setting, int val) {
-  Set(ext, setting, PS_NewInteger(val));
-}
-
-void Psv::Set(const char *ext, const char *setting, double val) {
-  Set(ext, setting, PS_NewFloat(val));
-}
-
-void Psv::Set(const char *ext, const char *setting, const char *val) {
-  Set(ext, setting, PS_NewString(val));
-}
-
-class Pso {
-protected:
-  ps_ostream_t *os;
-public:
-  Pso(ps_ostream_t *ostream);
-  ~Pso();
-
-  ps_ostream_t *operator()(void) {return os;};
-};
-
-Pso::Pso(ps_ostream_t *ostream) : os(ostream) {
-  if (os == NULL)
-    throw invalid_argument(string("ps_ostream was null"));
-}
-
-Pso::~Pso() {
-  PS_FreeOStream(os);
-}
-
-class Psf {
-protected:
-  FILE *file;
-public:
-  Psf(const char *name);
-  ~Psf();
-
-  void close(void);
-  FILE *operator()(void) {return file;};
-};
-
-Psf::Psf(const char *name) {
-  if ((file = fopen(name, "r")) == NULL)
-    throw invalid_argument(string("Could not open file \"") + string(name) + string("\""));
-}
-
-Psf::~Psf() {  
-  close();
-}
-
-void Psf::close(void) {
-  if (file)
-    fclose(file);
-  file = NULL;
-}
 
 void Model::ConvertToGCode() {
   Prog prog(m_progress, _("Slicing Model"), 100.0);
@@ -142,7 +47,7 @@ void Model::ConvertToGCode() {
   Psf config_file("/home/maurerpe/.config/repsnapper/cura_settings.json");
   Psv config(PS_ParseJsonFile(config_file()));
   config_file.close();
-
+  
   const ps_value_t *nn = PS_GetMember(config(), "nozzles", NULL);
   const ps_value_t *xx = PS_GetItem(PS_GetItem(nn, 0), 1);
   const ps_value_t *qual = PS_GetMember(xx, "normal", NULL);

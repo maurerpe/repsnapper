@@ -38,7 +38,8 @@ SHARED_SRC= \
 	src/gcode.cpp \
 	src/triangle.cpp \
 	src/files.cpp \
-	src/settings.cpp
+	src/settings.cpp \
+	src/ps_helper.cpp
 
 SHARED_INC= \
 	src/geometry.h \
@@ -52,7 +53,8 @@ SHARED_INC= \
 	src/stdafx.h \
 	src/platform.h \
 	src/settings.h \
-	src/types.h
+	src/types.h \
+	src/ps_helper.h
 
 include src/ui/Makefile.am
 include src/printer/Makefile.am

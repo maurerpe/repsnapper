@@ -1,0 +1,59 @@
+/*
+    This file is a part of the RepSnapper project.
+    Copyright (C) 2018  Paul Maurer
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+#include <printer_settings.h>
+
+// Helper classes for printer_settings.h
+// These allow raii in c++
+
+class Psv {
+protected:
+  ps_value_t *v;
+  void Set(const char *ext, const char *setting, ps_value_t *val);
+public:
+  Psv(ps_value_t *val);
+  ~Psv();
+  
+  ps_value_t *operator()(void) {return v;};
+  const ps_value_t *Get(const char *ext, const char *set);
+  void Set(const char *ext, const char *setting, int val);
+  void Set(const char *ext, const char *setting, double val);
+  void Set(const char *ext, const char *setting, const char *val);
+};
+  
+class Pso {
+protected:
+  ps_ostream_t *os;
+public:
+  Pso(ps_ostream_t *ostream);
+  ~Pso();
+
+  ps_ostream_t *operator()(void) {return os;};
+};
+
+class Psf {
+protected:
+  FILE *file;
+public:
+  Psf(const char *name);
+  ~Psf();
+
+  void close(void);
+  FILE *operator()(void) {return file;};
+};
