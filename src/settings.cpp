@@ -20,9 +20,9 @@
 
 #include <cstdlib>
 #include <gtkmm.h>
-#include "settings.h"
 
-#include <stdafx.h>
+#include "ps_helper.h"
+#include "settings.h"
 
 /*
  * How settings are intended to work:
@@ -57,8 +57,7 @@ bool splitpoint(const string &glade_name, string &group, string &key) {
 }
 
 
-void set_up_combobox(Gtk::ComboBox *combo, vector<string> values)
-{
+void set_up_combobox(Gtk::ComboBox *combo, vector<string> values) {
   if (combo->get_model())
     return;
   Gtk::TreeModelColumn<Glib::ustring> column;
@@ -67,82 +66,73 @@ void set_up_combobox(Gtk::ComboBox *combo, vector<string> values)
   Glib::RefPtr<Gtk::ListStore> store = Gtk::ListStore::create(record);
   combo->pack_start (column);
   combo->set_model(store);
+  
   for (uint i=0; i<values.size(); i++) {
     //cerr << " adding " << values[i] << endl;
     store->append()->set_value(0, Glib::ustring(values[i].c_str()));
   }
+  
   if (!combo->get_has_entry())
     combo->set_active(0);
   //cerr << "ok" << endl;
 }
 
 string combobox_get_active_value(Gtk::ComboBox *combo){
-  if (combo->get_has_entry())
-    {
-      Gtk::Entry *entry = combo->get_entry();
-      if (entry)
-	return string(entry->get_text());
-    } else
-    {
-      uint c = combo->get_active_row_number();
-      Glib::ustring rval;
-      combo->get_model()->children()[c].get_value(0,rval);
-      return string(rval);
-    }
+  if (combo->get_has_entry()) {
+    Gtk::Entry *entry = combo->get_entry();
+    if (entry)
+      return string(entry->get_text());
+  } else {
+    uint c = combo->get_active_row_number();
+    Glib::ustring rval;
+    combo->get_model()->children()[c].get_value(0,rval);
+    return string(rval);
+  }
+  
   cerr << "could not get combobox active value" << endl;
   return "";
 }
 
-bool combobox_set_to(Gtk::ComboBox *combo, string value)
-{
+bool combobox_set_to(Gtk::ComboBox *combo, string value) {
   Glib::ustring val(value);
   Glib::RefPtr<Gtk::TreeModel> model = combo->get_model();
   uint nch = model->children().size();
   Glib::ustring rval;
   Glib::ustring gvalue(value.c_str());
-  if (combo->get_has_entry())
-    {
-      Gtk::Entry *entry = combo->get_entry();
-      if (entry) {
-	entry->set_text(value);
+  if (combo->get_has_entry()) {
+    Gtk::Entry *entry = combo->get_entry();
+    if (entry) {
+      entry->set_text(value);
+      return true;
+    }
+  } else {
+    for (uint c=0; c < nch; c++) {
+      Gtk::TreeRow row = model->children()[c];
+      row.get_value(0,rval);
+      if (rval== gvalue) {
+	combo->set_active(c);
 	return true;
       }
     }
-  else
-    {
-      for (uint c=0; c < nch; c++) {
-	Gtk::TreeRow row = model->children()[c];
-	row.get_value(0,rval);
-	if (rval== gvalue) {
-	  combo->set_active(c);
-	  return true;
-	}
-      }
-    }
+  }
+  
   cerr << "value " << value << " not found in combobox" << endl;
   return false;
 }
 
-
-
 /////////////////////////////////////////////////////////////////
 
-
-
-Settings::Settings ()
-{
+Settings::Settings () {
   set_defaults();
   m_user_changed = false;
   inhibit_callback = false;
 }
 
-Settings::~Settings()
-{
+Settings::~Settings() {
 }
 
 // merge into current settings
-void Settings::merge (const Glib::KeyFile &keyfile)
-{
+void Settings::merge (const Glib::KeyFile &keyfile) {
   vector< Glib::ustring > groups = keyfile.get_groups();
   for (uint g = 0; g < groups.size(); g++) {
     vector< Glib::ustring > keys = keyfile.get_keys(groups[g]);
@@ -151,6 +141,7 @@ void Settings::merge (const Glib::KeyFile &keyfile)
     }
   }
 }
+
 // always merge when loading settings
 bool Settings::load_from_file (string file) {
   Glib::KeyFile k;
@@ -158,14 +149,13 @@ bool Settings::load_from_file (string file) {
   merge(k);
   return true;
 }
+
 bool Settings::load_from_data (string data) {
   Glib::KeyFile k;
   if (!k.load_from_file(data)) return false;
   merge(k);
   return true;
 }
-
-
 
 // make "ExtruderN" group, if i<0 (not given), use current selected Extruder number
 string Settings::numberedExtruder(const string &group, int num) const {
@@ -187,19 +177,14 @@ void Settings::set_colour  (const string &group, const string &name,
   Glib::KeyFile::set_double_list(group, name, value);
 }
 
-
-void
-Settings::assign_from(Settings *pSettings)
-{
+void Settings::assign_from(Settings *pSettings) {
   this->load_from_data(pSettings->to_data());
   m_user_changed = false;
   m_signal_visual_settings_changed.emit();
   m_signal_update_settings_gui.emit();
 }
 
-void Settings::set_defaults ()
-{
-
+void Settings::set_defaults () {
   filename = "";
 
   set_string("Global","SettingsName","Default Settings");
@@ -225,11 +210,6 @@ void Settings::set_defaults ()
 	     "; Adjust it to your needs.\n"
 	     "G1 X0 Y0 F2000.0 ; feed for start of next move\n"
 	     "M104 S0.0        ; heater off\n");
-
-
-
-  // Extruders.clear();
-  // Extruders.push_back(Extruder);
 
   // The vectors map each to 3 spin boxes, one per dimension
   set_double("Hardware","Volume.X", 200);
@@ -260,12 +240,9 @@ void Settings::convert_old_colour  (const string &group, const string &key) {
   }
 }
 
-void Settings::load_settings (Glib::RefPtr<Gio::File> file)
-{
+void Settings::load_settings (Glib::RefPtr<Gio::File> file) {
   inhibit_callback = true;
   filename = file->get_path();
-
-  // set_defaults();
 
   if (has_group("Extruder"))
     remove_group("Extruder"); // avoid converting old if merging new file
@@ -361,8 +338,7 @@ void Settings::load_settings (Glib::RefPtr<Gio::File> file)
 }
 
 
-void Settings::save_settings(Glib::RefPtr<Gio::File> file)
-{
+void Settings::save_settings(Glib::RefPtr<Gio::File> file) {
   inhibit_callback = true;
   set_string("Global","Version",VERSION);
 
@@ -380,8 +356,7 @@ void Settings::save_settings(Glib::RefPtr<Gio::File> file)
 }
 
 void Settings::set_to_gui (Builder &builder,
-			   const string &group, const string &key)
-{
+			   const string &group, const string &key) {
   inhibit_callback = true;
   Glib::ustring glade_name = group + "." + key;
   // inhibit warning for settings not defined in glade UI:
@@ -396,21 +371,25 @@ void Settings::set_to_gui (Builder &builder,
     std::cerr << _("Missing user interface item ") << glade_name << "\n";
     return;
   }
+  
   Gtk::CheckButton *check = dynamic_cast<Gtk::CheckButton *>(w);
   if (check) {
     check->set_active (get_boolean(group,key));
     return;
   }
+  
   Gtk::SpinButton *spin = dynamic_cast<Gtk::SpinButton *>(w);
   if (spin) {
     spin->set_value (get_double(group,key));
     return;
   }
+  
   Gtk::Range *range = dynamic_cast<Gtk::Range *>(w);
   if (range) {
     range->set_value (get_double(group,key));
     return;
   }
+  
   Gtk::ComboBox *combo = dynamic_cast<Gtk::ComboBox *>(w);
   if (combo) {
     if (glade_name == "Hardware.SerialSpeed") // has real value
@@ -419,16 +398,19 @@ void Settings::set_to_gui (Builder &builder,
       combo->set_active(get_integer(group,key));
     return;
   }
+  
   Gtk::Entry *entry = dynamic_cast<Gtk::Entry *>(w);
   if (entry) {
     entry->set_text (get_string(group,key));
     return;
   }
+  
   Gtk::Expander *exp = dynamic_cast<Gtk::Expander *>(w);
   if (exp) {
     exp->set_expanded (get_boolean(group,key));
     return;
   }
+  
   Gtk::ColorButton *col = dynamic_cast<Gtk::ColorButton *>(w);
   if(col) {
     vector<double> c = get_double_list(group,key);
@@ -438,6 +420,7 @@ void Settings::set_to_gui (Builder &builder,
     col->set_alpha(c[3] * 65535.0);
     return;
   }
+  
   Gtk::TextView *tv = dynamic_cast<Gtk::TextView *>(w);
   if (tv) {
     tv->get_buffer()->set_text(get_string(group,key));
@@ -448,13 +431,13 @@ void Settings::set_to_gui (Builder &builder,
 }
 
 
-void Settings::get_from_gui (Builder &builder, const string &glade_name)
-{
+void Settings::get_from_gui (Builder &builder, const string &glade_name) {
   if (inhibit_callback) return;
   if (!builder->get_object (glade_name)) {
     cerr << "no such object " << glade_name << endl;
     return;
   }
+  
   Gtk::Widget *w = NULL;
   builder->get_widget (glade_name, w);
   string group, key;
@@ -467,16 +450,19 @@ void Settings::get_from_gui (Builder &builder, const string &glade_name)
       set_boolean(group, key, check->get_active());
       break;
     }
+    
     Gtk::SpinButton *spin = dynamic_cast<Gtk::SpinButton *>(w);
     if (spin) {
       set_double(group, key, spin->get_value());
       break;
     }
+    
     Gtk::Range *range = dynamic_cast<Gtk::Range *>(w);
     if (range) {
       set_double(group, key, range->get_value());
       break;
     }
+    
     Gtk::ComboBox *combo = dynamic_cast<Gtk::ComboBox *>(w);
     if (combo) {
       if (glade_name == "Hardware.SerialSpeed") // has real value
@@ -485,30 +471,36 @@ void Settings::get_from_gui (Builder &builder, const string &glade_name)
 	set_integer(group,key,combo->get_active_row_number ());
       break;
     }
+    
     Gtk::Entry *e = dynamic_cast<Gtk::Entry *>(w);
     if (e) {
       set_string(group,key,e->get_text());
       break;
     }
+    
     Gtk::Expander *exp = dynamic_cast<Gtk::Expander *>(w);
     if (exp) {
       set_boolean(group,key,exp->get_expanded());
       break;
     }
+    
     Gtk::ColorButton *cb = dynamic_cast<Gtk::ColorButton *>(w);
     if (cb) {
       get_colour_from_gui(builder, glade_name);
       break;
     }
+    
     Gtk::TextView *tv = dynamic_cast<Gtk::TextView *>(w);
     if (tv) {
       set_string(group,key,tv->get_buffer()->get_text());
       break;
     }
+    
     cerr << _("Did not get setting from  ") << glade_name << endl;
     m_user_changed = false;
     break;
   }
+  
   if (m_user_changed) {
     // update currently edited extruder
     if (glade_name.substr(0,8) == "Extruder") {
@@ -526,10 +518,7 @@ void Settings::get_from_gui (Builder &builder, const string &glade_name)
   }
 }
 
-
-
-void Settings::get_colour_from_gui (Builder &builder, const string &glade_name)
-{
+void Settings::get_colour_from_gui (Builder &builder, const string &glade_name) {
   string group,key;
   if (!splitpoint(glade_name, group,key)) return;
   Gdk::Color c;
@@ -551,10 +540,8 @@ void Settings::get_colour_from_gui (Builder &builder, const string &glade_name)
   m_signal_visual_settings_changed.emit();
 }
 
-
 // whole group or all groups
-void Settings::set_to_gui (Builder &builder, const string filter)
-{
+void Settings::set_to_gui (Builder &builder, const string filter) {
   inhibit_callback = true;
   vector< Glib::ustring > groups = get_groups();
   for (uint g = 0; g < groups.size(); g++) {
@@ -596,8 +583,7 @@ void Settings::set_to_gui (Builder &builder, const string filter)
 }
 
 
-void Settings::connect_to_ui (Builder &builder)
-{
+void Settings::connect_to_ui (Builder &builder) {
   if (has_group("Ranges")) {
     vector<string> ranges = get_keys("Ranges");
     for (uint i = 0; i < ranges.size(); i++) {
@@ -610,12 +596,14 @@ void Settings::connect_to_ui (Builder &builder)
 	  std::cerr << "Missing user interface item " << ranges[i] << "\n";
 	  continue;
 	}
+	
 	Gtk::SpinButton *spin = dynamic_cast<Gtk::SpinButton *>(w);
 	if (spin) {
 	  spin->set_range (vals[0],vals[1]);
 	  spin->set_increments (vals[2],vals[3]);
 	  continue;
 	}
+	
 	Gtk::Range *range = dynamic_cast<Gtk::Range *>(w); // sliders etc.
 	if (range) {
 	  range->set_range (vals[0],vals[1]);
@@ -643,24 +631,28 @@ void Settings::connect_to_ui (Builder &builder)
 	  std::cerr << "Missing user interface item " << glade_name << "\n";
 	  continue;
 	}
+	
 	Gtk::CheckButton *check = dynamic_cast<Gtk::CheckButton *>(w);
 	if (check) {
 	  check->signal_toggled().connect
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
 	  continue;
 	}
+	
 	Gtk::SpinButton *spin = dynamic_cast<Gtk::SpinButton *>(w);
 	if (spin) {
 	  spin->signal_value_changed().connect
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder)) ;
 	  continue;
 	}
+	
 	Gtk::Range *range = dynamic_cast<Gtk::Range *>(w);
 	if (range) {
 	  range->signal_value_changed().connect
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
 	  continue;
 	}
+	
 	Gtk::ComboBox *combo = dynamic_cast<Gtk::ComboBox *>(w);
 	if (combo) {
 	  if (glade_name == "Hardware.SerialSpeed") { // Serial port speed
@@ -675,24 +667,28 @@ void Settings::connect_to_ui (Builder &builder)
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
 	  continue;
 	}
+	
 	Gtk::Entry *e = dynamic_cast<Gtk::Entry *>(w);
 	if (e) {
 	  e->signal_changed().connect
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
 	  continue;
 	}
+	
 	Gtk::Expander *exp = dynamic_cast<Gtk::Expander *>(w);
 	if (exp) {
 	  exp->property_expanded().signal_changed().connect
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
 	  continue;
 	}
+	
 	Gtk::ColorButton *cb = dynamic_cast<Gtk::ColorButton *>(w);
 	if (cb) {
 	  cb->signal_color_set().connect
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
 	  continue;
 	}
+	
 	Gtk::TextView *tv = dynamic_cast<Gtk::TextView *>(w);
 	if (tv) {
 	  tv->get_buffer()->signal_changed().connect
@@ -704,16 +700,13 @@ void Settings::connect_to_ui (Builder &builder)
     }
   }
 
-
   /* Update UI with defaults */
   m_signal_update_settings_gui.emit();
 }
 
-
 // extrusion ratio for round-edge lines
 double Settings::RoundedLinewidthCorrection(double extr_width,
-					    double layerheight)
-{
+					    double layerheight) {
   double factor = 1 + (M_PI/4.-1) * layerheight/extr_width;
   // assume 2 half circles at edges
   //    /-------------------\     //
@@ -723,8 +716,7 @@ double Settings::RoundedLinewidthCorrection(double extr_width,
   return factor;
 }
 
-double Settings::GetExtrudedMaterialWidth(double layerheight) const
-{
+double Settings::GetExtrudedMaterialWidth(double layerheight) const {
   // ExtrudedMaterialWidthRatio is preset by user
   return min(max(get_double("Extruder","MinimumLineWidth"),
 		 get_double("Extruder","ExtrudedMaterialWidthRatio") * layerheight),
@@ -734,8 +726,7 @@ double Settings::GetExtrudedMaterialWidth(double layerheight) const
 // TODO This depends whether lines are packed or not - ellipsis/rectangle
 
 // how much mm filament material per extruded line length mm -> E gcode
-double Settings::GetExtrusionPerMM(double layerheight) const
-{
+double Settings::GetExtrusionPerMM(double layerheight) const {
   double f = get_double("Extruder","ExtrusionFactor"); // overall factor
   if (get_boolean("Extruder","CalibrateInput")) {  // means we use input filament diameter
     const double matWidth = GetExtrudedMaterialWidth(layerheight); // this is the goal
@@ -748,15 +739,13 @@ double Settings::GetExtrusionPerMM(double layerheight) const
 }
 
 // return infill distance in mm
-double Settings::GetInfillDistance(double layerthickness, float percent) const
-{
+double Settings::GetInfillDistance(double layerthickness, float percent) const {
   double fullInfillDistance = GetExtrudedMaterialWidth(layerthickness);
   if (percent == 0) return 10000000;
   return fullInfillDistance * (100./percent);
 }
 
-uint Settings::getNumExtruders() const
-{
+uint Settings::getNumExtruders() const {
   vector< Glib::ustring > groups = get_groups();
   uint num=0;
   for (uint g = 0; g < groups.size(); g++)
@@ -766,8 +755,7 @@ uint Settings::getNumExtruders() const
   return num;
 }
 
-std::vector<char> Settings::get_extruder_letters() const
-{
+std::vector<char> Settings::get_extruder_letters() const {
   uint num = getNumExtruders();
   std::vector<char> letters(num);
   for (uint i = 0; i < num; i++)
@@ -775,8 +763,7 @@ std::vector<char> Settings::get_extruder_letters() const
   return letters;
 }
 
-uint Settings::GetSupportExtruder() const
-{
+uint Settings::GetSupportExtruder() const {
   uint num = getNumExtruders();
   for (uint i = 0; i < num; i++)
     if (get_boolean(numberedExtruder("Extruder",i),"UseForSupport"))
@@ -784,36 +771,32 @@ uint Settings::GetSupportExtruder() const
   return 0;
 }
 
-Vector3d Settings::get_extruder_offset(uint num) const
-{
+Vector3d Settings::get_extruder_offset(uint num) const {
   string ext = numberedExtruder("Extruder",num);
   return Vector3d(get_double(ext, "OffsetX"),
 		  get_double(ext, "OffsetY"), 0.);
 }
 
-
-void Settings::copyGroup(const string &from, const string &to)
-{
+void Settings::copyGroup(const string &from, const string &to) {
   vector<string> keys = get_keys(from);
   for (uint i = 0; i < keys.size(); i++)
     set_value(to, keys[i], get_value(from, keys[i]));
 }
 
 // create new
-void Settings::CopyExtruder(uint num)
-{
+void Settings::CopyExtruder(uint num) {
   uint total = getNumExtruders();
   string from = numberedExtruder("Extruder",num);
   string to   = numberedExtruder("Extruder",total);
   copyGroup(from, to);
 }
-void Settings::RemoveExtruder(uint num)
-{
+
+void Settings::RemoveExtruder(uint num) {
   ostringstream oss; oss << "Extruder"<<num;
   remove_group(oss.str());
 }
-void Settings::SelectExtruder(uint num, Builder *builder)
-{
+
+void Settings::SelectExtruder(uint num, Builder *builder) {
   if (num >= getNumExtruders()) return;
   selectedExtruder = num;
   copyGroup(numberedExtruder("Extruder",num),"Extruder");
@@ -823,8 +806,7 @@ void Settings::SelectExtruder(uint num, Builder *builder)
   }
 }
 
-Matrix4d Settings::getBasicTransformation(Matrix4d T) const
-{
+Matrix4d Settings::getBasicTransformation(Matrix4d T) const {
   Vector3d t;
   T.get_translation(t);
   const Vector3d margin = getPrintMargin();
@@ -834,16 +816,13 @@ Matrix4d Settings::getBasicTransformation(Matrix4d T) const
   return T;
 }
 
-
-Vector3d Settings::getPrintVolume() const
-{
+Vector3d Settings::getPrintVolume() const {
   return Vector3d (get_double("Hardware","Volume.X"),
 		   get_double("Hardware","Volume.Y"),
 		   get_double("Hardware","Volume.Z"));
-
 }
-Vector3d Settings::getPrintMargin() const
-{
+
+Vector3d Settings::getPrintMargin() const {
   Vector3d margin(get_double("Hardware","PrintMargin.X"),
 		  get_double("Hardware","PrintMargin.Y"),
 		  get_double("Hardware","PrintMargin.Z"));
@@ -867,15 +846,11 @@ Vector3d Settings::getPrintMargin() const
   return margin + maxoff;
 }
 
-
 // Locate it in relation to ourselves ...
-std::string Settings::get_image_path()
-{
+std::string Settings::get_image_path() {
   std::string basename = Glib::path_get_dirname(filename);
   return Glib::build_filename (basename, get_string("Global","Image"));
 }
-
-
 
 bool Settings::set_user_button(const string &name, const string &gcode) {
   try {
@@ -927,4 +902,3 @@ bool Settings::del_user_button(const string &name) {
   }
   return false;
 }
-

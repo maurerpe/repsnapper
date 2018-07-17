@@ -33,36 +33,21 @@ typedef Glib::RefPtr<Gtk::Builder> Builder;
 
 
 class Settings : public Glib::KeyFile {
-
   Glib::ustring filename; // where it's loaded from
 
   bool m_user_changed;
   bool inhibit_callback; // don't update settings from gui while setting to gui
 
  public:
-
   void copyGroup(const string &from, const string &to);
 
-  // overwrite to get the chance to make multiple extruder manipulations
-
-  /* int      get_integer (const string &group, const string &name) const; */
-  /* double   get_double  (const string &group, const string &name) const; */
-  /* bool     get_boolean (const string &group, const string &name) const; */
-  /* string   get_string  (const string &group, const string &name) const; */
-  Vector4f get_colour  (const string &group, const string &name) const;
-
-  /* void set_integer (const string &group, const string &name, const int value); */
-  /* void set_double  (const string &group, const string &name, const double value); */
-  /* void set_boolean (const string &group, const string &name, const bool value); */
-  /* void set_string  (const string &group, const string &name, const string &value); */
-  void set_colour  (const string &group, const string &name, const Vector4f &value);
+  Vector4f get_colour(const string &group, const string &name) const;
+  void set_colour(const string &group, const string &name, const Vector4f &value);
 
   string numberedExtruder(const string &group, int num=-1) const;
 
-
   vmml::vec3d getPrintVolume() const;
   vmml::vec3d getPrintMargin() const;
-
 
   static double RoundedLinewidthCorrection(double extr_width,
 					   double layerheight);
@@ -77,30 +62,11 @@ class Settings : public Glib::KeyFile {
   uint selectedExtruder;
   uint getNumExtruders() const;
 
-
-  /* class GCodeImpl; */
-  /* enum GCodeTextType { */
-  /*   GCODE_TEXT_START, */
-  /*   GCODE_TEXT_LAYER, */
-  /*   GCODE_TEXT_END, */
-  /*   GCODE_TEXT_TYPE_COUNT */
-  /* }; */
-  /* struct GCodeType { */
-  /*   GCodeImpl *m_impl; */
-  /*   std::string getText(GCodeTextType t) const ; */
-  /*   std::string getStartText() const { return getText (GCODE_TEXT_START); } */
-  /*   std::string getLayerText() const { return getText (GCODE_TEXT_LAYER); } */
-  /*   std::string getEndText()   const { return getText (GCODE_TEXT_END);   } */
-  /* }; */
-  /* GCodeType GCode; */
-
-
   // Paths we loaded / saved things to last time
   std::string STLPath;
   std::string RFOPath;
   std::string GCodePath;
   std::string SettingsPath;
-
 
  private:
   void set_to_gui              (Builder &builder, int i);
@@ -154,4 +120,3 @@ class Settings : public Glib::KeyFile {
   sigc::signal< void > m_signal_update_settings_gui;
   sigc::signal< void > m_signal_core_settings_changed;
 };
-

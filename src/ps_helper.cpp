@@ -31,7 +31,7 @@ Psv::Psv(ps_value_t *val) : v(val) {
   if (val == NULL)
     throw invalid_argument(string("ps_value was null"));
 }
-  
+
 Psv::~Psv() {
   PS_FreeValue(v);
 }
