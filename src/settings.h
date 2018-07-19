@@ -25,20 +25,27 @@
 #include <glibmm/keyfile.h>
 
 #include "stdafx.h"
-
+#include "ps_helper.h"
 
 // Allow passing as a pointer to something to
 // avoid including glibmm in every header.
 typedef Glib::RefPtr<Gtk::Builder> Builder;
 
-
 class Settings : public Glib::KeyFile {
   Glib::ustring filename; // where it's loaded from
-
+  
   bool m_user_changed;
   bool inhibit_callback; // don't update settings from gui while setting to gui
-
+  
+  Psv ps;
+  Psv dflt;
+  Psv config;
+  
  public:
+  const Psv *GetPs() {return &ps;};
+  const Psv *GetDflt() {return &dflt;};
+  const Psv *GetConfig() {return &config;};
+  
   void copyGroup(const string &from, const string &to);
 
   Vector4f get_colour(const string &group, const string &name) const;
@@ -80,7 +87,6 @@ class Settings : public Glib::KeyFile {
   void set_defaults ();
 
  public:
-
   Settings();
   ~Settings();
 
@@ -97,23 +103,20 @@ class Settings : public Glib::KeyFile {
   double GetInfillDistance(double layerthickness, float percent) const;
 
   // sync changed settings with the GUI eg. used post load
-  void set_to_gui (Builder &builder, const string filter="");
+  void set_to_gui(Builder &builder, const string filter="");
 
   // connect settings to relevant GUI widgets
-  void connect_to_ui (Builder &builder);
+  void connect_to_ui(Builder &builder);
 
+  void merge(const Glib::KeyFile &keyfile);
+  bool load_from_file(string file);
+  bool load_from_data(string data);
 
-  void merge (const Glib::KeyFile &keyfile);
-  bool load_from_file (string file);
-  bool load_from_data (string data);
+  void load_settings(Glib::RefPtr<Gio::File> file);
+  void save_settings(Glib::RefPtr<Gio::File> file);
 
-  void load_settings (Glib::RefPtr<Gio::File> file);
-  void load_settings_as (const Glib::ustring onlygroup = "",
-			 const Glib::ustring as_group = "");
-  void save_settings (Glib::RefPtr<Gio::File> file);
-  void save_settings_as (const Glib::ustring onlygroup = "",
-			 const Glib::ustring as_group = "");
-
+  void load_printer_settings(void);
+  
   std::string get_image_path();
 
   sigc::signal< void > m_signal_visual_settings_changed;

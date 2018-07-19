@@ -231,7 +231,8 @@ int main(int argc, char **argv)
     model->LoadConfig(global_conf);
   if (conf->query_exists())
     model->LoadConfig(conf);
-
+  model->settings.load_printer_settings();
+  
   if (opts.printerdevice_path.size() > 0) {
     model->settings.set_string("Hardware","PortName",opts.printerdevice_path);
   }

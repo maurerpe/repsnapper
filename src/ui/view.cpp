@@ -450,7 +450,6 @@ void View::custombutton_pressed(string name, Gtk::ToolButton *button) {
   }
 }
 
-
 void View::log_msg(Gtk::TextView *tview, string s) {
   //Glib::Mutex::Lock lock(mutex);
   if (!tview || s.length() == 0)
@@ -498,7 +497,6 @@ void View::set_icon_file(Glib::RefPtr<Gio::File> file) {
     set_icon_name("gtk-convert");
   }
 }
-
 
 void View::show_dialog(const char *name)
 {

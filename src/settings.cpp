@@ -122,7 +122,7 @@ bool combobox_set_to(Gtk::ComboBox *combo, string value) {
 
 /////////////////////////////////////////////////////////////////
 
-Settings::Settings () {
+Settings::Settings() {
   set_defaults();
   m_user_changed = false;
   inhibit_callback = false;
@@ -132,7 +132,7 @@ Settings::~Settings() {
 }
 
 // merge into current settings
-void Settings::merge (const Glib::KeyFile &keyfile) {
+void Settings::merge(const Glib::KeyFile &keyfile) {
   vector< Glib::ustring > groups = keyfile.get_groups();
   for (uint g = 0; g < groups.size(); g++) {
     vector< Glib::ustring > keys = keyfile.get_keys(groups[g]);
@@ -184,7 +184,7 @@ void Settings::assign_from(Settings *pSettings) {
   m_signal_update_settings_gui.emit();
 }
 
-void Settings::set_defaults () {
+void Settings::set_defaults() {
   filename = "";
 
   set_string("Global","SettingsName","Default Settings");
@@ -222,9 +222,8 @@ void Settings::set_defaults () {
   set_boolean("Misc","SpeedsAreMMperSec",true);
 }
 
-
 // make old single coordinate colours to lists
-void Settings::convert_old_colour  (const string &group, const string &key) {
+void Settings::convert_old_colour(const string &group, const string &key) {
   try {
     cerr << "converting  "<< group << "." <<key <<endl;
     const double c[5] = { get_double(group, key+"R"),
@@ -240,7 +239,7 @@ void Settings::convert_old_colour  (const string &group, const string &key) {
   }
 }
 
-void Settings::load_settings (Glib::RefPtr<Gio::File> file) {
+void Settings::load_settings(Glib::RefPtr<Gio::File> file) {
   inhibit_callback = true;
   filename = file->get_path();
 
@@ -279,6 +278,7 @@ void Settings::load_settings (Glib::RefPtr<Gio::File> file) {
     CustomButtonLabels = get_string_list("UserButtons","Labels");
     CustomButtonGCodes = get_string_list("UserButtons","GCodes");
   }
+  
   try {
     vector< Glib::ustring > keys = get_keys("CustomButtons");
     for (uint k = 0; k < keys.size(); k++) {
@@ -297,6 +297,7 @@ void Settings::load_settings (Glib::RefPtr<Gio::File> file) {
     }
     remove_group("CustomButtons");
   } catch (Glib::KeyFileError &err) {}
+  
   if (!has_group("UserButtons")) {
     set_string_list("UserButtons","Labels",CustomButtonLabels);
     set_string_list("UserButtons","GCodes",CustomButtonGCodes);
@@ -316,6 +317,7 @@ void Settings::load_settings (Glib::RefPtr<Gio::File> file) {
     }
     remove_group("Extruder");
   }
+  
   uint ne = getNumExtruders();
   for (uint k = 0; k < ne; k++) {
     if (!has_key(numberedExtruder("Extruder",k), "OffsetX"))
@@ -337,7 +339,6 @@ void Settings::load_settings (Glib::RefPtr<Gio::File> file) {
   m_signal_update_settings_gui.emit();
 }
 
-
 void Settings::save_settings(Glib::RefPtr<Gio::File> file) {
   inhibit_callback = true;
   set_string("Global","Version",VERSION);
@@ -355,8 +356,20 @@ void Settings::save_settings(Glib::RefPtr<Gio::File> file) {
   m_user_changed = false;
 }
 
-void Settings::set_to_gui (Builder &builder,
-			   const string &group, const string &key) {
+void Settings::load_printer_settings(void) {
+  Psv search(PS_NewList());
+  PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/definitions"));
+  PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/extruders"));  
+  ps.Take(PS_New("/home/maurerpe/.config/repsnapper/cr10mini.def.json", search()));
+  dflt.Take(PS_GetDefaults(ps()));
+
+  Psf config_file("/home/maurerpe/.config/repsnapper/cura_settings.json");
+  config.Take(PS_ParseJsonFile(config_file()));
+  config_file.close();
+}
+
+void Settings::set_to_gui(Builder &builder,
+			  const string &group, const string &key) {
   inhibit_callback = true;
   Glib::ustring glade_name = group + "." + key;
   // inhibit warning for settings not defined in glade UI:
@@ -431,8 +444,10 @@ void Settings::set_to_gui (Builder &builder,
 }
 
 
-void Settings::get_from_gui (Builder &builder, const string &glade_name) {
-  if (inhibit_callback) return;
+void Settings::get_from_gui(Builder &builder, const string &glade_name) {
+  if (inhibit_callback)
+    return;
+  
   if (!builder->get_object (glade_name)) {
     cerr << "no such object " << glade_name << endl;
     return;
@@ -441,7 +456,9 @@ void Settings::get_from_gui (Builder &builder, const string &glade_name) {
   Gtk::Widget *w = NULL;
   builder->get_widget (glade_name, w);
   string group, key;
-  if (!splitpoint(glade_name, group, key)) return;
+  if (!splitpoint(glade_name, group, key))
+    return;
+  
   while (w) { // for using break ...
     //cerr << "get " << group  << "." << key << " from gui"<< endl;
     m_user_changed = true; // is_changed;
@@ -518,7 +535,7 @@ void Settings::get_from_gui (Builder &builder, const string &glade_name) {
   }
 }
 
-void Settings::get_colour_from_gui (Builder &builder, const string &glade_name) {
+void Settings::get_colour_from_gui(Builder &builder, const string &glade_name) {
   string group,key;
   if (!splitpoint(glade_name, group,key)) return;
   Gdk::Color c;
@@ -541,7 +558,7 @@ void Settings::get_colour_from_gui (Builder &builder, const string &glade_name) 
 }
 
 // whole group or all groups
-void Settings::set_to_gui (Builder &builder, const string filter) {
+void Settings::set_to_gui(Builder &builder, const string filter) {
   inhibit_callback = true;
   vector< Glib::ustring > groups = get_groups();
   for (uint g = 0; g < groups.size(); g++) {
@@ -582,8 +599,7 @@ void Settings::set_to_gui (Builder &builder, const string filter) {
   inhibit_callback = false;
 }
 
-
-void Settings::connect_to_ui (Builder &builder) {
+void Settings::connect_to_ui(Builder &builder) {
   if (has_group("Ranges")) {
     vector<string> ranges = get_keys("Ranges");
     for (uint i = 0; i < ranges.size(); i++) {

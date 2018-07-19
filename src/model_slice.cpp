@@ -38,23 +38,17 @@ void Model::ConvertToGCode() {
   Prog prog(m_progress, _("Slicing Model"), 100.0);
   prog.update(0);
   
-  Psv search(PS_NewList());
-  PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/definitions"));
-  PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/extruders"));  
-  Psv ps(PS_New("/home/maurerpe/.config/repsnapper/cr10mini.def.json", search()));
-  Psv dflt(PS_GetDefaults(ps()));
+  const Psv *ps = settings.GetPs();
+  const Psv *dflt = settings.GetDflt();
+  const Psv *config = settings.GetConfig();
   
-  Psf config_file("/home/maurerpe/.config/repsnapper/cura_settings.json");
-  Psv config(PS_ParseJsonFile(config_file()));
-  config_file.close();
-  
-  const ps_value_t *nn = PS_GetMember(config(), "nozzles", NULL);
+  const ps_value_t *nn = PS_GetMember((*config)(), "nozzles", NULL);
   const ps_value_t *xx = PS_GetItem(PS_GetItem(nn, 0), 1);
   const ps_value_t *qual = PS_GetMember(xx, "normal", NULL);
   
-  double dia = PS_AsFloat(dflt.Get("#global", "material_diameter"));
-  double bedw = PS_AsFloat(dflt.Get("#global", "machine_width"));
-  double bedd = PS_AsFloat(dflt.Get("#global", "machine_depth"));
+  double dia = PS_AsFloat(dflt->Get("#global", "material_diameter"));
+  double bedw = PS_AsFloat(dflt->Get("#global", "machine_width"));
+  double bedd = PS_AsFloat(dflt->Get("#global", "machine_depth"));
   
   double noz = 0.4;
   double h = PS_AsFloat(PS_GetMember(qual, "layer-height", NULL));
@@ -69,7 +63,7 @@ void Model::ConvertToGCode() {
   double marginy = settings.get_double("Hardware", "PrintMargin.Y");
   string matname = materials[settings.get_integer("Slicing", "Material")];
   
-  const ps_value_t *mat = config.Get("materials", matname.c_str());
+  const ps_value_t *mat = config->Get("materials", matname.c_str());
   double efeed = PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(mat, "nozzle-feedrate", NULL), 0), 1));
   if (PS_GetMember(mat, "width/height", NULL))
     wh = PS_AsFloat(PS_GetMember(mat, "width/height", NULL));
@@ -78,7 +72,7 @@ void Model::ConvertToGCode() {
   if (espeed < speed)
     speed = espeed;
   
-  Psv set(PS_BlankSettings(ps()));
+  Psv set(PS_BlankSettings((*ps)()));
   set.Set("#global", "material_diameter", dia);
   set.Set("#global", "machine_nozzle_size", noz);
   
@@ -101,7 +95,12 @@ void Model::ConvertToGCode() {
   Shape comb = GetCombinedShape();
   comb.move(Vector3d(-bedw / 2.0 + marginx, -bedd / 2.0 + marginy, 0));
   string stl = comb.getSTLsolid();  
-  PS_SliceStr(gcode_stream(), ps(), set(), stl.c_str(), stl.length());
+  if (PS_SliceStr(gcode_stream(), (*ps)(), set(), stl.c_str(), stl.length()) < 0) {
+    Gtk::MessageDialog dialog(_("Error Slicing Model"), false,
+                              Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
+    dialog.run();
+    return;
+  }
   
   istringstream iss(string(PS_OStreamContents(gcode_stream())));
   gcode.Parse(this, settings.get_extruder_letters(), m_progress, iss);

@@ -17,6 +17,8 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#pragma once
+
 #include <printer_settings.h>
 
 // Helper classes for printer_settings.h
@@ -26,20 +28,26 @@ class Psv {
 protected:
   ps_value_t *v;
   void Set(const char *ext, const char *setting, ps_value_t *val);
+  
 public:
+  Psv();
   Psv(ps_value_t *val);
   ~Psv();
   
-  ps_value_t *operator()(void) {return v;};
-  const ps_value_t *Get(const char *ext, const char *set);
+  void Take(ps_value_t *val);
+  void Forget();
+  
+  ps_value_t *operator()(void) const;
+  const ps_value_t *Get(const char *ext, const char *set) const;
   void Set(const char *ext, const char *setting, int val);
   void Set(const char *ext, const char *setting, double val);
   void Set(const char *ext, const char *setting, const char *val);
 };
-  
+
 class Pso {
 protected:
   ps_ostream_t *os;
+  
 public:
   Pso(ps_ostream_t *ostream);
   ~Pso();
@@ -50,6 +58,7 @@ public:
 class Psf {
 protected:
   FILE *file;
+  
 public:
   Psf(const char *name);
   ~Psf();

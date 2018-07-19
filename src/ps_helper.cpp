@@ -27,16 +27,39 @@
 
 using namespace std;
 
+Psv::Psv() : v(NULL) {
+}
+
 Psv::Psv(ps_value_t *val) : v(val) {
-  if (val == NULL)
-    throw invalid_argument(string("ps_value was null"));
 }
 
 Psv::~Psv() {
   PS_FreeValue(v);
 }
 
-const ps_value_t *Psv::Get(const char *ext, const char *setting) {
+void Psv::Take(ps_value_t *val) {
+  Forget();
+  v = val;
+}
+
+void Psv::Forget() {
+  if (v) {
+    PS_FreeValue(v);
+    v = NULL;
+  }
+}
+
+ps_value_t *Psv::operator()(void) const {
+  if (v == NULL)
+    throw invalid_argument(string("ps_value was null"));
+  
+  return v;
+}
+
+const ps_value_t *Psv::Get(const char *ext, const char *setting) const {
+  if (v == NULL)
+    throw invalid_argument(string("ps_value was null"));
+  
   const ps_value_t *gg = PS_GetMember(PS_GetMember(v, ext, NULL), setting, NULL);
   if (gg == NULL)
     throw invalid_argument(string("Unknown setting ") + string(ext) + "->" + string(setting));
@@ -45,6 +68,9 @@ const ps_value_t *Psv::Get(const char *ext, const char *setting) {
 }
 
 void Psv::Set(const char *ext, const char *setting, ps_value_t *val) {
+  if (v == NULL)
+    throw invalid_argument(string("ps_value was null"));
+  
   if (PS_AddSetting(v, ext, setting, val) < 0) {
     PS_FreeValue(val);
     throw invalid_argument(string("Could not set ") + string(ext) + "->" + string(setting));
@@ -81,7 +107,7 @@ Psf::Psf(const char *name) {
     throw invalid_argument(string("Could not open file \"") + string(name) + string("\""));
 }
 
-Psf::~Psf() {  
+Psf::~Psf() {
   close();
 }
 
