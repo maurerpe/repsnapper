@@ -133,9 +133,8 @@ vector<Shape*> Model::ReadShapes(Glib::RefPtr<Gio::File> file,
   return shapes;
 }
 
-
 void Model::ReadStl(Glib::RefPtr<Gio::File> file) {
-  bool autoplace = settings.get_boolean("Misc","ShapeAutoplace");
+  bool autoplace = true;
   vector<Shape*> shapes = ReadShapes(file, 0);
   // do not autoplace in multishape files
   if (shapes.size() > 1)  autoplace = false;

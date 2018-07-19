@@ -55,13 +55,15 @@ void Model::ConvertToGCode() {
   double wh = PS_AsFloat(PS_GetMember(qual, "width/height", NULL));
   double speed = PS_AsFloat(PS_GetMember(qual, "speed", NULL));
   double ratio = PS_AsFloat(PS_GetMember(qual, "wall-speed-ratio", NULL));
-  
+
+  bool support = settings.get_boolean("Slicing","Support");
   double infill = settings.get_double("Slicing","InfillPercent");
   int shells = settings.get_integer("Slicing","ShellCount");
   int skins = settings.get_integer("Slicing","Skins");
   double marginx = settings.get_double("Hardware", "PrintMargin.X");
   double marginy = settings.get_double("Hardware", "PrintMargin.Y");
   string matname = materials[settings.get_integer("Slicing", "Material")];
+  bool spiralize = settings.get_boolean("Slicing","Spiralize");
   
   const ps_value_t *mat = config->Get("materials", matname.c_str());
   double efeed = PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(mat, "nozzle-feedrate", NULL), 0), 1));
@@ -87,6 +89,8 @@ void Model::ConvertToGCode() {
   set.Set("#global", "top_layers", skins);
   set.Set("#global", "bottom_layers", skins);
   set.Set("#global", "infill_sparse_density", infill);
+  set.Set("#global", "support_enable", support);
+  set.Set("#global", "magic_spiralize", spiralize);
   
   PS_MergeSettings(set(), PS_GetMember(qual, "settings", NULL));
   PS_MergeSettings(set(), PS_GetMember(mat,  "settings", NULL));

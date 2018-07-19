@@ -77,6 +77,10 @@ void Psv::Set(const char *ext, const char *setting, ps_value_t *val) {
   }
 }
 
+void Psv::Set(const char *ext, const char *setting, bool val) {
+  Set(ext, setting, PS_NewBoolean(val));
+}
+
 void Psv::Set(const char *ext, const char *setting, int val) {
   Set(ext, setting, PS_NewInteger(val));
 }

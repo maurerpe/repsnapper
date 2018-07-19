@@ -387,19 +387,25 @@ void Settings::set_to_gui(Builder &builder,
   
   Gtk::CheckButton *check = dynamic_cast<Gtk::CheckButton *>(w);
   if (check) {
-    check->set_active (get_boolean(group,key));
+    check->set_active(get_boolean(group,key));
+    return;
+  }
+  
+  Gtk::Switch *swit = dynamic_cast<Gtk::Switch *>(w);
+  if (swit) {
+    swit->set_active(get_boolean(group,key));
     return;
   }
   
   Gtk::SpinButton *spin = dynamic_cast<Gtk::SpinButton *>(w);
   if (spin) {
-    spin->set_value (get_double(group,key));
+    spin->set_value(get_double(group,key));
     return;
   }
   
   Gtk::Range *range = dynamic_cast<Gtk::Range *>(w);
   if (range) {
-    range->set_value (get_double(group,key));
+    range->set_value(get_double(group,key));
     return;
   }
   
@@ -414,13 +420,13 @@ void Settings::set_to_gui(Builder &builder,
   
   Gtk::Entry *entry = dynamic_cast<Gtk::Entry *>(w);
   if (entry) {
-    entry->set_text (get_string(group,key));
+    entry->set_text(get_string(group,key));
     return;
   }
   
   Gtk::Expander *exp = dynamic_cast<Gtk::Expander *>(w);
   if (exp) {
-    exp->set_expanded (get_boolean(group,key));
+    exp->set_expanded(get_boolean(group,key));
     return;
   }
   
@@ -448,7 +454,7 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
   if (inhibit_callback)
     return;
   
-  if (!builder->get_object (glade_name)) {
+  if (!builder->get_object(glade_name)) {
     cerr << "no such object " << glade_name << endl;
     return;
   }
@@ -465,6 +471,12 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
     Gtk::CheckButton *check = dynamic_cast<Gtk::CheckButton *>(w);
     if (check) {
       set_boolean(group, key, check->get_active());
+      break;
+    }
+    
+    Gtk::Switch *swit = dynamic_cast<Gtk::Switch *>(w);
+    if (check) {
+      set_boolean(group, key, swit->get_active());
       break;
     }
     
@@ -642,7 +654,7 @@ void Settings::connect_to_ui(Builder &builder) {
 	continue;
       Gtk::Widget *w = NULL;
       try {
-	builder->get_widget (glade_name, w);
+	builder->get_widget(glade_name, w);
 	if (!w) {
 	  std::cerr << "Missing user interface item " << glade_name << "\n";
 	  continue;
@@ -655,10 +667,17 @@ void Settings::connect_to_ui(Builder &builder) {
 	  continue;
 	}
 	
+	Gtk::Switch *swit = dynamic_cast<Gtk::Switch *>(w);
+	if (swit) {
+	  // swit->signal_state_set().connect
+	  //   (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
+	  continue;
+	}
+	
 	Gtk::SpinButton *spin = dynamic_cast<Gtk::SpinButton *>(w);
 	if (spin) {
 	  spin->signal_value_changed().connect
-	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder)) ;
+	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
 	  continue;
 	}
 	
@@ -854,10 +873,6 @@ Vector3d Settings::getPrintMargin() const {
     }
     if (offx > abs(maxoff.x())) maxoff.x() = offx;
     if (offy > abs(maxoff.y())) maxoff.y() = offy;
-  }
-  if (get_boolean("Slicing","Skirt")) {
-    double distance = get_double("Slicing","SkirtDistance");
-    maxoff += Vector3d(distance, distance, 0);
   }
   return margin + maxoff;
 }

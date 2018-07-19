@@ -39,6 +39,7 @@ public:
   
   ps_value_t *operator()(void) const;
   const ps_value_t *Get(const char *ext, const char *set) const;
+  void Set(const char *ext, const char *setting, bool val);
   void Set(const char *ext, const char *setting, int val);
   void Set(const char *ext, const char *setting, double val);
   void Set(const char *ext, const char *setting, const char *val);
