@@ -260,7 +260,9 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
   clear();
 
   set_locales("C");
-
+  
+  double h = model->settings.get_double("Slicing", "LayerHeight");
+  
   memset(&state, 0, sizeof(state));
   /* FIXME: Get initial values from printer defaults */
   state.feedrate = 3600;
@@ -273,7 +275,7 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
     alltext << s << endl;
     
     ParseCmd(s.c_str(), cmd, state, max_feedrate, home_feedrate);
-    if (cmd.stop.z() != state.layer_z && cmd.spec_e && cmd.spec_xy) {
+    if (fabs(cmd.stop.z() - state.layer_z) > 0.99 * h && cmd.spec_e && cmd.spec_xy) {
       // New layer
       state.layer_z = cmd.stop.z();
       if (layers.empty()) {

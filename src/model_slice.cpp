@@ -51,15 +51,16 @@ void Model::ConvertToGCode() {
   double bedd = PS_AsFloat(dflt->Get("#global", "machine_depth"));
   
   double noz = 0.4;
-  double h = PS_AsFloat(PS_GetMember(qual, "layer-height", NULL));
+  //double h = PS_AsFloat(PS_GetMember(qual, "layer-height", NULL));
   double wh = PS_AsFloat(PS_GetMember(qual, "width/height", NULL));
   double speed = PS_AsFloat(PS_GetMember(qual, "speed", NULL));
   double ratio = PS_AsFloat(PS_GetMember(qual, "wall-speed-ratio", NULL));
 
-  bool support = settings.get_boolean("Slicing","Support");
-  double infill = settings.get_double("Slicing","InfillPercent");
-  int shells = settings.get_integer("Slicing","ShellCount");
-  int skins = settings.get_integer("Slicing","Skins");
+  double h = settings.get_double("Slicing", "LayerHeight");
+  bool support = settings.get_boolean("Slicing", "Support");
+  double infill = settings.get_double("Slicing", "InfillPercent");
+  int shells = settings.get_integer("Slicing", "ShellCount");
+  int skins = settings.get_integer("Slicing", "Skins");
   double marginx = settings.get_double("Hardware", "PrintMargin.X");
   double marginy = settings.get_double("Hardware", "PrintMargin.Y");
   string matname = materials[settings.get_integer("Slicing", "Material")];
@@ -85,7 +86,7 @@ void Model::ConvertToGCode() {
   set.Set("#global", "line_width", h * wh);
   set.Set("#global", "speed_print", speed);
   set.Set("#global", "speed_wall", speed * ratio);
-  set.Set("#global", "wall_line_count", shells);
+  set.Set("#global", "wall_line_count", spiralize ? 1 : shells);
   set.Set("#global", "top_layers", skins);
   set.Set("#global", "bottom_layers", skins);
   set.Set("#global", "infill_sparse_density", infill);

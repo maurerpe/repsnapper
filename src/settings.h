@@ -81,6 +81,7 @@ class Settings : public Glib::KeyFile {
 				const string &group, const string &key);
   void get_from_gui_old        (Builder &builder, int i);
   void get_from_gui            (Builder &builder, const string &glade_name);
+  void get_from_gui_switch     (Gtk::StateType t, Builder &builder, const string &glade_name);
   bool get_group_and_key       (int i, Glib::ustring &group, Glib::ustring &key);
   void get_colour_from_gui     (Builder &builder, const string &glade_name);
   void convert_old_colour      (const string &group, const string &key);

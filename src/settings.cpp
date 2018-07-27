@@ -475,7 +475,7 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
     }
     
     Gtk::Switch *swit = dynamic_cast<Gtk::Switch *>(w);
-    if (check) {
+    if (swit) {
       set_boolean(group, key, swit->get_active());
       break;
     }
@@ -545,6 +545,10 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
     }
     m_signal_visual_settings_changed.emit();
   }
+}
+
+void Settings::get_from_gui_switch(Gtk::StateType t, Builder &builder, const string &glade_name) {
+  get_from_gui(builder, glade_name);
 }
 
 void Settings::get_colour_from_gui(Builder &builder, const string &glade_name) {
@@ -669,8 +673,8 @@ void Settings::connect_to_ui(Builder &builder) {
 	
 	Gtk::Switch *swit = dynamic_cast<Gtk::Switch *>(w);
 	if (swit) {
-	  // swit->signal_state_set().connect
-	  //   (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
+	  swit->signal_state_changed().connect
+	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui_switch), glade_name), builder));
 	  continue;
 	}
 	
