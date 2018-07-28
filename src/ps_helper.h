@@ -20,9 +20,13 @@
 #pragma once
 
 #include <printer_settings.h>
+#include <vector>
+#include <string>
 
 // Helper classes for printer_settings.h
 // These allow raii in c++
+
+using namespace std;
 
 class Psv {
 protected:
@@ -43,6 +47,9 @@ public:
   void Set(const char *ext, const char *setting, int val);
   void Set(const char *ext, const char *setting, double val);
   void Set(const char *ext, const char *setting, const char *val);
+  
+  vector< string > GetNames() {return GetNames(v);};
+  static vector< string > GetNames(const struct ps_value_t *v);
 };
 
 class Pso {
@@ -66,4 +73,19 @@ public:
 
   void close(void);
   FILE *operator()(void) {return file;};
+};
+
+class Psvi {
+protected:
+  ps_value_iterator_t *vi;
+
+public:
+  Psvi(const ps_value_t *v);
+  ~Psvi();
+
+  int         Next() {return PS_ValueIteratorNext(vi);};
+  const char *Key()  {return PS_ValueIteratorKey( vi);};
+  ps_value_t *Data() {return PS_ValueIteratorData(vi);};
+  
+  ps_value_iterator_t *operator()(void) {return vi;};
 };

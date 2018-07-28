@@ -93,6 +93,16 @@ void Psv::Set(const char *ext, const char *setting, const char *val) {
   Set(ext, setting, PS_NewString(val));
 }
 
+vector< string > Psv::GetNames(const struct ps_value_t *v) {
+  Psvi vi(v);
+  vector< string > str;
+  
+  while (vi.Next())
+    str.push_back(string(vi.Key()));
+  
+  return str;
+}
+
 /////////////////////////////////////////////////////////////////
 
 Pso::Pso(ps_ostream_t *ostream) : os(ostream) {
@@ -119,4 +129,15 @@ void Psf::close(void) {
   if (file)
     fclose(file);
   file = NULL;
+}
+
+/////////////////////////////////////////////////////////////////
+
+Psvi::Psvi(const ps_value_t *v) {
+  if ((vi = PS_NewValueIterator(v)) == NULL)
+    throw invalid_argument(string("ps_value_iterator was null"));
+}
+
+Psvi::~Psvi() {
+  PS_FreeValueIterator(vi);
 }

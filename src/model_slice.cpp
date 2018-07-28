@@ -32,8 +32,6 @@
 #include "shape.h"
 #include "ui/progress.h"
 
-extern string materials[];
-
 void Model::ConvertToGCode() {
   Prog prog(m_progress, _("Slicing Model"), 100.0);
   prog.update(0);
@@ -42,9 +40,11 @@ void Model::ConvertToGCode() {
   const Psv *dflt = settings.GetDflt();
   const Psv *config = settings.GetConfig();
   
+  string qualname = settings.get_string("Slicing", "Quality");
+  
   const ps_value_t *nn = PS_GetMember((*config)(), "nozzles", NULL);
   const ps_value_t *xx = PS_GetItem(PS_GetItem(nn, 0), 1);
-  const ps_value_t *qual = PS_GetMember(xx, "normal", NULL);
+  const ps_value_t *qual = PS_GetMember(xx, qualname.c_str(), NULL);
   
   double dia = PS_AsFloat(dflt->Get("#global", "material_diameter"));
   double bedw = PS_AsFloat(dflt->Get("#global", "machine_width"));
@@ -63,16 +63,19 @@ void Model::ConvertToGCode() {
   int skins = settings.get_integer("Slicing", "Skins");
   double marginx = settings.get_double("Hardware", "PrintMargin.X");
   double marginy = settings.get_double("Hardware", "PrintMargin.Y");
-  string matname = materials[settings.get_integer("Slicing", "Material")];
+  string matname = settings.get_string("Slicing", "Material");
   bool spiralize = settings.get_boolean("Slicing","Spiralize");
   
   const ps_value_t *mat = config->Get("materials", matname.c_str());
+  if (mat == NULL)
+    cout << endl << "Unknown material: " << matname << endl;
   double efeed = PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(mat, "nozzle-feedrate", NULL), 0), 1));
-  if (PS_GetMember(mat, "width/height", NULL))
-    wh = PS_AsFloat(PS_GetMember(mat, "width/height", NULL));
+  const ps_value_t *matwh = PS_GetMember(mat, "width/height", NULL);
+  if (matwh && PS_AsFloat(matwh) > 0)
+    wh = PS_AsFloat(matwh);
   
   double espeed = efeed * dia * dia / (h * h * wh);
-  if (espeed < speed)
+  if (espeed > 0 && espeed < speed)
     speed = espeed;
   
   Psv set(PS_BlankSettings((*ps)()));

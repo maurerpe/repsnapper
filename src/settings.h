@@ -27,6 +27,8 @@
 #include "stdafx.h"
 #include "ps_helper.h"
 
+using namespace std;
+
 // Allow passing as a pointer to something to
 // avoid including glibmm in every header.
 typedef Glib::RefPtr<Gtk::Builder> Builder;
@@ -60,7 +62,7 @@ class Settings : public Glib::KeyFile {
 					   double layerheight);
   double GetExtrudedMaterialWidth(const double layerheight) const;
   double GetExtrusionPerMM(double layerheight) const;
-  std::vector<char> get_extruder_letters() const;
+  vector<char> get_extruder_letters() const;
   Vector3d get_extruder_offset(uint num) const;
   uint GetSupportExtruder() const;
   void CopyExtruder(uint num);
@@ -70,10 +72,10 @@ class Settings : public Glib::KeyFile {
   uint getNumExtruders() const;
 
   // Paths we loaded / saved things to last time
-  std::string STLPath;
-  std::string RFOPath;
-  std::string GCodePath;
-  std::string SettingsPath;
+  string STLPath;
+  string RFOPath;
+  string GCodePath;
+  string SettingsPath;
 
  private:
   void set_to_gui              (Builder &builder, int i);
@@ -84,8 +86,7 @@ class Settings : public Glib::KeyFile {
   void get_from_gui_switch     (Gtk::StateType t, Builder &builder, const string &glade_name);
   bool get_group_and_key       (int i, Glib::ustring &group, Glib::ustring &key);
   void get_colour_from_gui     (Builder &builder, const string &glade_name);
-  void convert_old_colour      (const string &group, const string &key);
-  void set_defaults ();
+  void set_defaults();
 
  public:
   Settings();
@@ -118,7 +119,7 @@ class Settings : public Glib::KeyFile {
 
   void load_printer_settings(void);
   
-  std::string get_image_path();
+  string get_image_path();
 
   sigc::signal< void > m_signal_visual_settings_changed;
   sigc::signal< void > m_signal_update_settings_gui;
