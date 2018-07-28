@@ -77,7 +77,8 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   }
   
   if (isfinite(codes['F']))
-    state.feedrate = codes['F'] * state.scale;
+    // Feedrate is specified per minute: convert to per second
+    state.feedrate = codes['F'] * state.scale / 60;
 
   cmd.spec_xy = 0;
   if (isfinite(codes['X'])) {
@@ -243,9 +244,17 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     }
   }
 
-  /* FIXME: Factor acceleration into time */
-  state.time += length / this_feed * 60;
+  /* FIXME: Factor jerk into time */
+  double accel_time = this_feed / state.accel;
+  double accel_len = 0.5 * state.accel * accel_time * accel_time;
+  double time = 0;
+  if (length > 2 * accel_len) {
+    time = 2 * accel_time + (length - 2 * accel_len) / this_feed;
+  } else {
+    time = 2 * sqrt(length / state.accel);
+  }
   
+  state.time += time;
   cmd.center = center;
   cmd.t_stop = state.time;
 }
@@ -265,7 +274,7 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
   
   memset(&state, 0, sizeof(state));
   /* FIXME: Get initial values from printer defaults */
-  state.feedrate = 3600;
+  state.feedrate = 3600 / 60;
   state.accel = 1000;
   state.scale = 1.0;
   double max_feedrate = 6000;
