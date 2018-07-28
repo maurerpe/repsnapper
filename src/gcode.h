@@ -66,6 +66,7 @@ class GCode {
     double ext_offset;
     double feedrate;
     double accel;
+    double jerk;
     double scale;
     double time;
     int e_no;

@@ -276,6 +276,7 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
   /* FIXME: Get initial values from printer defaults */
   state.feedrate = 3600 / 60;
   state.accel = 1000;
+  state.jerk = 10;
   state.scale = 1.0;
   double max_feedrate = 6000;
   double home_feedrate = 1200;
