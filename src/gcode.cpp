@@ -267,21 +267,44 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
   stringstream alltext;
   
   clear();
-
+  
   set_locales("C");
   
   double h = model->settings.get_double("Slicing", "LayerHeight");
+  const Psv *dflt = model->settings.GetDflt();
   
   memset(&state, 0, sizeof(state));
-  /* FIXME: Get initial values from printer defaults */
-  state.feedrate = 3600 / 60;
-  state.accel = 1000;
-  state.jerk = 10;
   state.scale = 1.0;
-  double max_feedrate = 6000;
-  double home_feedrate = 1200;
   
-  while(getline(is,s)) {
+  double max_feedrate;
+  try {
+    max_feedrate = min(PS_AsFloat(dflt->Get("#global", "machine_max_feedrate_x")),
+		       PS_AsFloat(dflt->Get("#global", "machine_max_feedrate_y"))); // mm/s
+  } catch (exception &e) {
+    cout << "Cannot determine printer max feedrate" << endl;
+    max_feedrate = 200;
+  }
+  
+  state.feedrate = max_feedrate;
+
+  try {
+    state.accel = min(PS_AsFloat(dflt->Get("#global", "machine_max_acceleration_x")),
+		      PS_AsFloat(dflt->Get("#global", "machine_max_acceleration_y")));
+  } catch (exception &e) {
+    cout << "Cannot determine printer max acceleration" << endl;
+    state.accel = 9000;
+  }
+  
+  // jerk = min speed change that requires acceleration
+  try {
+    state.jerk = PS_AsFloat(dflt->Get("#global", "machine_max_jerk_xy")); // mm/s
+  } catch (exception &e) {
+    cout << "Cannot determine printer max jerk" << endl;
+    state.jerk = 10;
+  }
+  double home_feedrate = 20; // mm/s
+  
+  while (getline(is,s)) {
     alltext << s << endl;
     
     ParseCmd(s.c_str(), cmd, state, max_feedrate, home_feedrate);
