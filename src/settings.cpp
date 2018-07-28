@@ -364,6 +364,12 @@ void Settings::set_to_gui(Builder &builder,
     return;
   }
   
+  Gtk::Paned *paned = dynamic_cast<Gtk::Paned *>(w);
+  if (paned) {
+    paned->set_position(get_integer(group,key));
+    return;
+  }
+  
   Gtk::ColorButton *col = dynamic_cast<Gtk::ColorButton *>(w);
   if(col) {
     vector<double> c = get_double_list(group,key);
@@ -453,6 +459,12 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
       break;
     }
     
+    Gtk::Paned *paned = dynamic_cast<Gtk::Paned *>(w);
+    if (paned) {
+      set_integer(group,key,paned->get_position());
+      break;
+    }
+	
     Gtk::ColorButton *cb = dynamic_cast<Gtk::ColorButton *>(w);
     if (cb) {
       get_colour_from_gui(builder, glade_name);
@@ -485,10 +497,6 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
     }
     m_signal_visual_settings_changed.emit();
   }
-}
-
-void Settings::get_from_gui_switch(Gtk::StateType t, Builder &builder, const string &glade_name) {
-  get_from_gui(builder, glade_name);
 }
 
 void Settings::get_colour_from_gui(Builder &builder, const string &glade_name) {
@@ -613,8 +621,8 @@ void Settings::connect_to_ui(Builder &builder) {
 	
 	Gtk::Switch *swit = dynamic_cast<Gtk::Switch *>(w);
 	if (swit) {
-	  swit->signal_state_changed().connect
-	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui_switch), glade_name), builder));
+	  swit->property_active().signal_changed().connect
+	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
 	  continue;
 	}
 	
@@ -661,6 +669,13 @@ void Settings::connect_to_ui(Builder &builder) {
 	Gtk::Entry *e = dynamic_cast<Gtk::Entry *>(w);
 	if (e) {
 	  e->signal_changed().connect
+	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
+	  continue;
+	}
+
+	Gtk::Paned *paned = dynamic_cast<Gtk::Paned *>(w);
+	if (paned) {
+	  paned->property_position().signal_changed().connect
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
 	  continue;
 	}

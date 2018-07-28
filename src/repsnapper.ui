@@ -6158,7 +6158,7 @@ Paul Maurer</property>
           </packing>
         </child>
         <child>
-          <object class="GtkPaned">
+          <object class="GtkPaned" id="Misc.3DWidth">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="position">300</property>
