@@ -271,6 +271,7 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
   set_locales("C");
   
   double h = model->settings.get_double("Slicing", "LayerHeight");
+  double home_feedrate = model->settings.get_double("Hardware", "HomeSpeed.XY"); // mm/s
   const Psv *dflt = model->settings.GetDflt();
   
   memset(&state, 0, sizeof(state));
@@ -302,7 +303,6 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
     cout << "Cannot determine printer max jerk" << endl;
     state.jerk = 10;
   }
-  double home_feedrate = 20; // mm/s
   
   while (getline(is,s)) {
     alltext << s << endl;

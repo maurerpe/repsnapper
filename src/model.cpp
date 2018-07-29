@@ -224,8 +224,9 @@ Vector3d Model::FindEmptyLocation(const vector<Shape*> &shapes,
 				  const Shape *shape) {
   // Offset that puts object in center of bed, on platform
   double d = 5.0; // Minimum spacing between objects
-  double bedx = settings.get_double("Hardware", "Volume.X");
-  double bedy = settings.get_double("Hardware", "Volume.Y");
+  Vector3d bed = settings.getPrintVolume();
+  double bedx = bed.x();
+  double bedy = bed.y();
   Vector3d offset = {bedx / 2 - shape->Center.x(),
 		     bedy / 2 - shape->Center.y(),
 		     -shape->Min.z()};

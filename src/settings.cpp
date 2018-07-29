@@ -55,7 +55,6 @@ bool splitpoint(const string &glade_name, string &group, string &key) {
   return true;
 }
 
-
 void set_up_combobox(Gtk::ComboBox *combo, vector<string> values) {
   if (combo->get_model())
     return;
@@ -222,13 +221,8 @@ void Settings::set_defaults() {
 
   set_string("Global","Version",VERSION);
 
-  // The vectors map each to 3 spin boxes, one per dimension
-  set_double("Hardware","Volume.X", 200);
-  set_double("Hardware","Volume.Y", 200);
-  set_double("Hardware","Volume.Z", 140);
   set_double("Hardware","PrintMargin.X", 10);
   set_double("Hardware","PrintMargin.Y", 10);
-  set_double("Hardware","PrintMargin.Z", 0);
 }
 
 void Settings::load_settings(Glib::RefPtr<Gio::File> file) {
@@ -343,15 +337,6 @@ void Settings::set_to_gui(Builder &builder,
     return;
   }
   
-  Gtk::ComboBox *combo = dynamic_cast<Gtk::ComboBox *>(w);
-  if (combo) {
-    if (glade_name == "Hardware.SerialSpeed") // has real value
-      combobox_set_to(combo, get_string(group,key));
-    else // has index
-      combo->set_active(get_integer(group,key));
-    return;
-  }
-  
   Gtk::Entry *entry = dynamic_cast<Gtk::Entry *>(w);
   if (entry) {
     entry->set_text(get_string(group,key));
@@ -435,15 +420,6 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
     Gtk::ComboBoxText *combot = dynamic_cast<Gtk::ComboBoxText *>(w);
     if (combot) {
       set_string(group,key,combobox_get_active_value(combot));
-      break;
-    }
-    
-    Gtk::ComboBox *combo = dynamic_cast<Gtk::ComboBox *>(w);
-    if (combo) {
-      if (glade_name == "Hardware.SerialSpeed") // has real value
-	set_string(group,key,combobox_get_active_value(combo));
-      else
-	set_integer(group,key,combo->get_active_row_number ());
       break;
     }
     
@@ -551,8 +527,8 @@ void Settings::set_to_gui(Builder &builder, const string filter) {
 
   // Set serial speed. Find the row that holds this value
   if (filter == "" || filter == "Hardware") {
-    Gtk::ComboBox *portspeed = NULL;
-    builder->get_widget ("Hardware.SerialSpeed", portspeed);
+    Gtk::ComboBoxText *portspeed = NULL;
+    builder->get_widget("Hardware.SerialSpeed", portspeed);
     if (portspeed) {
       ostringstream ostr;
       ostr << get_integer("Hardware","SerialSpeed");
@@ -568,10 +544,11 @@ void Settings::connect_to_ui(Builder &builder) {
     vector<string> ranges = get_keys("Ranges");
     for (uint i = 0; i < ranges.size(); i++) {
       // get min, max, increment, page-incr.
+      cout << "Ranging " << ranges[i] << endl;
       vector<double> vals = get_double_list("Ranges", ranges[i]);
       Gtk::Widget *w = NULL;
       try {
-	builder->get_widget (ranges[i], w);
+	builder->get_widget(ranges[i], w);
 	if (!w) {
 	  cerr << "Missing user interface item " << ranges[i] << "\n";
 	  continue;
@@ -579,15 +556,15 @@ void Settings::connect_to_ui(Builder &builder) {
 	
 	Gtk::SpinButton *spin = dynamic_cast<Gtk::SpinButton *>(w);
 	if (spin) {
-	  spin->set_range (vals[0],vals[1]);
-	  spin->set_increments (vals[2],vals[3]);
+	  spin->set_range(vals[0],vals[1]);
+	  spin->set_increments(vals[2],vals[3]);
 	  continue;
 	}
 	
 	Gtk::Range *range = dynamic_cast<Gtk::Range *>(w); // sliders etc.
 	if (range) {
-	  range->set_range (vals[0],vals[1]);
-	  range->set_increments (vals[2],vals[3]);
+	  range->set_range(vals[0],vals[1]);
+	  range->set_increments(vals[2],vals[3]);
 	  continue;
 	}
       } catch (Glib::Exception &ex) {
@@ -602,7 +579,8 @@ void Settings::connect_to_ui(Builder &builder) {
     vector< Glib::ustring > keys = get_keys(groups[g]);
     for (uint k = 0; k < keys.size(); k++) {
       string glade_name = groups[g] + "." + keys[k];
-      if (!builder->get_object (glade_name))
+      cout << "Connecting " << glade_name << endl;
+      if (!builder->get_object(glade_name))
 	continue;
       Gtk::Widget *w = NULL;
       try {
@@ -642,7 +620,11 @@ void Settings::connect_to_ui(Builder &builder) {
 	
 	Gtk::ComboBoxText *combot = dynamic_cast<Gtk::ComboBoxText *>(w);
 	if (combot) {
-	  if (glade_name == "Slicing.Quality") {
+	  if (glade_name == "Hardware.SerialSpeed") {
+	    vector<string> speeds(serialspeeds,
+				  serialspeeds+sizeof(serialspeeds)/sizeof(string));
+	    set_up_combobox(combot, speeds);
+	  } else if (glade_name == "Slicing.Quality") {
 	    set_up_combobox(combot, Psv::GetNames(PS_GetItem(PS_GetItem(PS_GetMember(config(), "nozzles", NULL), 0), 1)));
 	  } else if (glade_name == "Slicing.Material") {
 	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(config(), "materials", NULL)));
@@ -652,20 +634,6 @@ void Settings::connect_to_ui(Builder &builder) {
 	  continue;
 	}
 	
-	Gtk::ComboBox *combo = dynamic_cast<Gtk::ComboBox *>(w);
-	if (combo) {
-	  if (glade_name == "Hardware.SerialSpeed") { // Serial port speed
-	    vector<string> speeds(serialspeeds,
-				  serialspeeds+sizeof(serialspeeds)/sizeof(string));
-	    set_up_combobox(combo, speeds);
-	  } else if (glade_name == "Slicing.Material") {
-	    set_up_combobox(combo, Psv::GetNames(PS_GetMember(config(), "materials", NULL)));
-	  }
-	  combo->signal_changed().connect
-	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
-	  continue;
-	}
-
 	Gtk::Entry *e = dynamic_cast<Gtk::Entry *>(w);
 	if (e) {
 	  e->signal_changed().connect
@@ -822,15 +790,15 @@ Matrix4d Settings::getBasicTransformation(Matrix4d T) const {
 }
 
 Vector3d Settings::getPrintVolume() const {
-  return Vector3d (get_double("Hardware","Volume.X"),
-		   get_double("Hardware","Volume.Y"),
-		   get_double("Hardware","Volume.Z"));
+  return Vector3d(PS_AsFloat(dflt.Get("#global", "machine_width")),
+		  PS_AsFloat(dflt.Get("#global", "machine_depth")),
+		  PS_AsFloat(dflt.Get("#global", "machine_height")));
 }
 
 Vector3d Settings::getPrintMargin() const {
   Vector3d margin(get_double("Hardware","PrintMargin.X"),
 		  get_double("Hardware","PrintMargin.Y"),
-		  get_double("Hardware","PrintMargin.Z"));
+		  0);
   Vector3d maxoff = Vector3d::ZERO;
   uint num = getNumExtruders();
   for (uint i = 0; i < num ; i++) {

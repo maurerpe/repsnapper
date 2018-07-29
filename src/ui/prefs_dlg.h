@@ -16,19 +16,17 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-#ifndef SETTINGS_UI_H
-#define SETTINGS_UI_H
+
+#pragma once
 
 #include "settings.h"
 #include <gtkmm.h>
 
 class PrefsDlg {
   Gtk::Dialog *m_preferences_dlg;
-  Gtk::VBox *m_settings_overview;
-  Gtk::Notebook *m_settings_notebook;
-  Gtk::ScrolledWindow *m_settings_icons;
 
-  void handle_response(int, Gtk::Dialog *dialog);
+  void handle_response(Gtk::Dialog *dialog);
+  void handle_response_int(int, Gtk::Dialog *dialog);
 
   std::vector<Settings *> m_settings;
   bool load_settings();
@@ -39,5 +37,3 @@ class PrefsDlg {
   void show(Gtk::Window &trans);
   void set_icon_from_file(const string path) {m_preferences_dlg->set_icon_from_file(path);}
 };
-
-#endif // SETTINGS_UI_H

@@ -62,9 +62,10 @@ Render::Render(View *view, Glib::RefPtr<Gtk::TreeSelection> selection) :
   set_can_focus(true);
 
   Transform3D trans;
-  double bedw = view->m_model->settings.get_double("Hardware", "Volume.X");
-  double bedd = view->m_model->settings.get_double("Hardware", "Volume.Y");
-  double bedh = view->m_model->settings.get_double("Hardware", "Volume.Z");
+  Vector3d bed = view->m_model->settings.getPrintVolume();
+  double bedw = bed.x();
+  double bedd = bed.y();
+  double bedh = bed.z();
   trans.move(Vector3d(-bedw/2, -bedd/2, 0));
   m_transform = trans.getTransform();
 

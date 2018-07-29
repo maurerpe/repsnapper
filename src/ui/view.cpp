@@ -87,12 +87,12 @@ void View::connect_tooltoggled(const char *name, const sigc::slot<void, Gtk::Tog
 void View::convert_to_gcode() {
   extruder_selected(); // be sure to get extruder settings from gui
   PrintInhibitor inhibitPrint(m_printer);
-  if (m_printer->IsPrinting())
-    {
-      m_printer->error (_("Complete print before converting"),
-		     _("Converting to GCode while printing will abort the print"));
-      return;
-    }
+  if (m_printer->IsPrinting()) {
+    m_printer->error (_("Complete print before converting"),
+		      _("Converting to GCode while printing will abort the print"));
+    return;
+  }
+  
   m_model->ConvertToGCode();
 
   gcode_status();
@@ -110,8 +110,9 @@ void View::preview_file (Glib::RefPtr< Gio::File > file) {
   if (m_model->preview_shapes.size()>0) {
     Vector3d pMax = Vector3d(G_MINDOUBLE, G_MINDOUBLE, G_MINDOUBLE);
     Vector3d pMin = Vector3d(G_MAXDOUBLE, G_MAXDOUBLE, G_MAXDOUBLE);
-    double bedx = m_model->settings.get_double("Hardware", "Volume.X");
-    double bedy = m_model->settings.get_double("Hardware", "Volume.Y");
+    Vector3d bed = m_model->settings.getPrintVolume();
+    double bedx = bed.x();
+    double bedy = bed.y();
     Vector3d trans = {bedx/2, bedy/2, 0};
     for (uint i = 0; i < m_model->preview_shapes.size(); i++) {
       m_model->preview_shapes[i]->move(trans);
@@ -1025,13 +1026,13 @@ View::View(BaseObjectType* cobject,
 }
 
 void View::extruder_selected() {
-  vector< Gtk::TreeModel::Path > path =
-    extruder_treeview->get_selection()->get_selected_rows();
-  if(path.size()>0 && path[0].size()>0) {
-    // copy selected extruder from Extruders to current Extruder
-    m_model->settings.SelectExtruder(path[0][0], &m_builder);
-  }
-  queue_draw();
+  // vector< Gtk::TreeModel::Path > path =
+  //   extruder_treeview->get_selection()->get_selected_rows();
+  // if(path.size()>0 && path[0].size()>0) {
+  //   // copy selected extruder from Extruders to current Extruder
+  //   m_model->settings.SelectExtruder(path[0][0], &m_builder);
+  // }
+  // queue_draw();
 }
 
 void View::copy_extruder() {
