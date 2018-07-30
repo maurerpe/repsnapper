@@ -410,27 +410,40 @@ void GCode::drawCommands(Render &render,
 
     addSeg(vert, cmd);
   }
-  render.draw_lines(settings.get_colour("Display","GCodeMoveColour"), vert, 1.0);
+  render.draw_lines(settings.get_colour("Display","GCodeMoveColor"), vert, 1.0);
 
-  /* FIXME: More colors for multiple extruders */
   vert.clear();
   float *color;
   if (liveprinting) {
-    color = settings.get_colour("Display","GCodePrintingColour");
-  } else {
-    string extrudername =
-      settings.numberedExtruder("Extruder", 0);
-    color = settings.get_colour(extrudername,"DisplayColour");
-  }
-  for (count = start; count < end; count++) {
-    cmd = &cmds[count];
-    if (!cmd->spec_e)
-      continue;
+    for (count = start; count < end; count++) {
+      cmd = &cmds[count];
+      if (!cmd->spec_e)
+	continue;
+      
+      addSeg(vert, cmd);
+    }
     
-    addSeg(vert, cmd);
+    color = settings.get_colour("Display","GCodePrintingColor");
+    render.draw_lines(color, vert, linewidth);
+  } else {
+    int num = settings.getNumExtruders();
+    for (int e_no = 0; e_no < num; e_no++) {
+      for (count = start; count < end; count++) {
+	cmd = &cmds[count];
+	if (!cmd->spec_e)
+	  continue;
+	if (cmd->e_no != e_no)
+	  continue;
+
+	/* FIXME: account for extruder offsets */
+	addSeg(vert, cmd);
+      }
+      
+      string colorname = "E" + to_string(e_no) + "Color";
+      color = settings.get_colour("Display", colorname);
+      render.draw_lines(color, vert, linewidth);
+    }
   }
-  
-  render.draw_lines(color, vert, linewidth);
 }
 
 double GCode::GetTotalExtruded(void) const {

@@ -544,7 +544,6 @@ void Settings::connect_to_ui(Builder &builder) {
     vector<string> ranges = get_keys("Ranges");
     for (uint i = 0; i < ranges.size(); i++) {
       // get min, max, increment, page-incr.
-      cout << "Ranging " << ranges[i] << endl;
       vector<double> vals = get_double_list("Ranges", ranges[i]);
       Gtk::Widget *w = NULL;
       try {
@@ -579,7 +578,6 @@ void Settings::connect_to_ui(Builder &builder) {
     vector< Glib::ustring > keys = get_keys(groups[g]);
     for (uint k = 0; k < keys.size(); k++) {
       string glade_name = groups[g] + "." + keys[k];
-      cout << "Connecting " << glade_name << endl;
       if (!builder->get_object(glade_name))
 	continue;
       Gtk::Widget *w = NULL;

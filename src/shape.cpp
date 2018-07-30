@@ -286,10 +286,9 @@ void Shape::drawBBox(Render &render, Settings &settings) const {
   vert.add(Max.x(), Min.y(), minz);
   vert.add(Max.x(), Min.y(), Max.z());
   
-  //RenderModelTrans mt(render, transform3D.getTransform());
-  float color[4] = {1, 0.2, 0.2, 1};
+  float *color = settings.get_colour("Display", "BoundingBoxColor");
   render.draw_lines(color, vert, 1.0);
-
+  
   ostringstream val;
   val.precision(1);
   Vector3d pos;
@@ -311,9 +310,15 @@ void Shape::draw_geometry(Render &render, size_t index, bool highlight, const Se
     return;
   
   float color[4] = {1.0, 1.0, 1.0, 0};
-  if (highlight) 
-    color[0] = 0.5;
+  float *c;
+  if (highlight)
+    c = settings.get_colour("Display", "SelectedModelColor");
+  else
+    c = settings.get_colour("Display", "UnselectedModelColor");
   
+  color[0] = c[0];
+  color[1] = c[1];
+  color[2] = c[2];
   color[3] = settings.get_double("Display","PolygonOpacity");
 
   if (!vert_valid) {

@@ -1543,8 +1543,8 @@ void View::DrawMargins(void) {
     AddRectangle(vert, margin.x(), 0, volume.x() - margin.x(), margin.y(), volume.z());
     AddRectangle(vert, margin.x(), volume.y() - margin.y(), volume.x() - margin.x(), volume.y(), volume.z());
   }
-  
-  float color[4] = {0.3, 0, 0, 1};
+
+  float *color = m_model->settings.get_colour("Display","MarginColor");
   m_renderer->draw_triangles(color, vert);
 }
 
