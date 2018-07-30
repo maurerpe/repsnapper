@@ -276,6 +276,7 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
   
   memset(&state, 0, sizeof(state));
   state.scale = 1.0;
+  state.e_no = 1;
   
   double max_feedrate;
   try {
@@ -427,7 +428,7 @@ void GCode::drawCommands(Render &render,
     render.draw_lines(color, vert, linewidth);
   } else {
     int num = settings.getNumExtruders();
-    for (int e_no = 0; e_no < num; e_no++) {
+    for (int e_no = 1; e_no <= num; e_no++) {
       for (count = start; count < end; count++) {
 	cmd = &cmds[count];
 	if (!cmd->spec_e)
