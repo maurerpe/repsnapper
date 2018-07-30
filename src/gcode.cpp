@@ -440,7 +440,7 @@ void GCode::drawCommands(Render &render,
 	addSeg(vert, cmd);
       }
       
-      string colorname = "E" + to_string(e_no) + "Color";
+      string colorname = "E" + to_string(((e_no - 1) % 5) + 1) + "Color";
       color = settings.get_colour("Display", colorname);
       render.draw_lines(color, vert, linewidth);
     }
