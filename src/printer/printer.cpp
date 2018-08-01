@@ -220,7 +220,15 @@ bool Printer::SelectExtruder( int extruder_no ) {
 
   ostringstream os;
   os << "T" << extruder_no;
-  return SendAsync( os.str() );
+  bool ret = SendAsync( os.str() );
+  if (ret)
+    active_extruder = extruder_no;
+  
+  return ret;
+}
+
+int Printer::GetActiveExtruder( void ) {
+  return active_extruder;
 }
 
 bool Printer::SetTemp( TempType type, float value, int extruder_no ) {

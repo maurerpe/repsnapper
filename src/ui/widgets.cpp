@@ -21,7 +21,7 @@
 #include "objtree.h"
 #include "model.h"
 
-static const char *axis_names[] = { "X", "Y", "Z" };
+static const char *axis_names[] = {"X", "Y", "Z"};
 
 /************************** TranslationSpinRow ****************************/
 
@@ -116,88 +116,6 @@ View::TranslationSpinRow::TranslationSpinRow(View *view, Gtk::TreeView *treeview
 View::TranslationSpinRow::~TranslationSpinRow() {
   for (uint i = 0; i < 3; i++)
     delete m_xyz[i];
-}
-
-/************************** TempRow ***********************************/
-
-View::TempRow::TempRow(Model *model, Printer *printer, TempType type) :
-  m_model(model), m_printer(printer), m_type(type) {
-  static const char *names[] = { _("Nozzle:"), _("Bed:") };
-  set_homogeneous(true);
-  add(*manage(new Gtk::Label(names[type])));
-  
-  m_temp = new Gtk::Label(_("-- °C"));
-  add(*m_temp);
-  
-  add(*manage(new Gtk::Label(_("Target:"))));
-  m_target = new Gtk::SpinButton();
-  m_target->set_increments (1, 5);
-  switch (type) {
-  case TEMP_NOZZLE:
-  default:
-    m_target->set_range(0, 350.0);
-    m_target->set_value(m_model->settings.get_double("Printer","NozzleTemp"));
-    break;
-  case TEMP_BED:
-    m_target->set_range(0, 250.0);
-    m_target->set_value(m_model->settings.get_double("Printer","BedTemp"));
-    break;
-  }
-  add(*m_target);
-  
-  m_button = manage (new Gtk::ToggleButton(_("Off")));
-  m_button->signal_toggled().connect
-    (sigc::mem_fun (*this, &TempRow::button_toggled));
-  add(*m_button);
-  
-  m_target->signal_value_changed().connect
-    (sigc::mem_fun (*this, &TempRow::heat_changed));
-  show_all();
-}
-
-View::TempRow::~TempRow() {
-  delete m_temp;
-  delete m_target;
-  delete m_button;
-}
-
-void View::TempRow::button_toggled() {
-  if (m_button->get_active())
-    m_button->set_label(_("On"));
-  else
-    m_button->set_label(_("Off"));
-  
-  if (toggle_block) return;
-  float value = 0;
-  if (m_button->get_active()) {
-    value = m_target->get_value();
-  }
-  if (!m_printer->SetTemp(m_type, value)) {
-    toggle_block = true;
-    m_button->set_active(!m_button->get_active());
-    toggle_block = false;
-  }
-}
-
-void View::TempRow::heat_changed() {
-  float value = m_target->get_value();
-  switch (m_type) {
-  case TEMP_NOZZLE:
-  default:
-    m_model->settings.set_double("Printer","NozzleTemp", value);
-    break;
-  case TEMP_BED:
-    m_model->settings.set_double("Printer","BedTemp", value);
-  }
-  if (m_button->get_active())
-    m_printer->SetTemp(m_type, value);
-}
-
-void View::TempRow::update_temp (double value) {
-  ostringstream oss;
-  oss.precision(1);
-  oss << fixed << value << " °C";
-  m_temp->set_text(oss.str());
 }
 
 /************************** AxisRow ***********************************/

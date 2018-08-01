@@ -40,6 +40,7 @@ public:
   
   void Take(ps_value_t *val);
   void Forget();
+  void Disown() {v = NULL;};
   
   ps_value_t *operator()(void) const;
   const ps_value_t *Get(const char *ext, const char *set) const;

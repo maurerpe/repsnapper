@@ -55,69 +55,6 @@ bool splitpoint(const string &glade_name, string &group, string &key) {
   return true;
 }
 
-void set_up_combobox(Gtk::ComboBox *combo, vector<string> values) {
-  if (combo->get_model())
-    return;
-  Gtk::TreeModelColumn<Glib::ustring> column;
-  Gtk::TreeModelColumnRecord record;
-  record.add(column);
-  Glib::RefPtr<Gtk::ListStore> store = Gtk::ListStore::create(record);
-  combo->pack_start (column);
-  combo->set_model(store);
-  
-  for (uint i=0; i<values.size(); i++) {
-    //cerr << " adding " << values[i] << endl;
-    store->append()->set_value(0, Glib::ustring(values[i].c_str()));
-  }
-  
-  if (!combo->get_has_entry())
-    combo->set_active(0);
-  //cerr << "ok" << endl;
-}
-
-string combobox_get_active_value(Gtk::ComboBox *combo){
-  if (combo->get_has_entry()) {
-    Gtk::Entry *entry = combo->get_entry();
-    if (entry)
-      return string(entry->get_text());
-  } else {
-    uint c = combo->get_active_row_number();
-    Glib::ustring rval;
-    combo->get_model()->children()[c].get_value(0,rval);
-    return string(rval);
-  }
-  
-  cerr << "could not get combobox active value" << endl;
-  return "";
-}
-
-bool combobox_set_to(Gtk::ComboBox *combo, string value) {
-  Glib::ustring val(value);
-  Glib::RefPtr<Gtk::TreeModel> model = combo->get_model();
-  uint nch = model->children().size();
-  Glib::ustring rval;
-  Glib::ustring gvalue(value.c_str());
-  if (combo->get_has_entry()) {
-    Gtk::Entry *entry = combo->get_entry();
-    if (entry) {
-      entry->set_text(value);
-      return true;
-    }
-  } else {
-    for (uint c=0; c < nch; c++) {
-      Gtk::TreeRow row = model->children()[c];
-      row.get_value(0,rval);
-      if (rval== gvalue) {
-	combo->set_active(c);
-	return true;
-      }
-    }
-  }
-  
-  cerr << "value " << value << " not found in combobox" << endl;
-  return false;
-}
-
 void set_up_combobox(Gtk::ComboBoxText *combo, vector<string> values) {
   combo->remove_all();
   
@@ -201,8 +138,8 @@ Vector4f Settings::get_colour(const string &group, const string &name) const {
   return Vector4f(s[0],s[1],s[2],s[3]);
 }
 
-void Settings::set_colour  (const string &group, const string &name,
-			    const Vector4f &value) {
+void Settings::set_colour(const string &group, const string &name,
+			  const Vector4f &value) {
   Glib::KeyFile::set_double_list(group, name, value);
 }
 
@@ -301,7 +238,7 @@ void Settings::set_to_gui(Builder &builder,
   }
 
   Gtk::Widget *w = NULL;
-  builder->get_widget (glade_name, w);
+  builder->get_widget(glade_name, w);
   if (!w) {
     cerr << _("Missing user interface item ") << glade_name << "\n";
     return;
@@ -385,14 +322,14 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
   }
   
   Gtk::Widget *w = NULL;
-  builder->get_widget (glade_name, w);
+  builder->get_widget(glade_name, w);
   string group, key;
-  if (!splitpoint(glade_name, group, key))
+  if (w == NULL || !splitpoint(glade_name, group, key))
     return;
   
-  while (w) { // for using break ...
+  do { // for using break ...
     //cerr << "get " << group  << "." << key << " from gui"<< endl;
-    m_user_changed = true; // is_changed;
+    m_user_changed = true;
     Gtk::CheckButton *check = dynamic_cast<Gtk::CheckButton *>(w);
     if (check) {
       set_boolean(group, key, check->get_active());
@@ -456,23 +393,16 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
     cerr << _("Did not get setting from  ") << glade_name << endl;
     m_user_changed = false;
     break;
-  }
+  } while (0);
   
-  if (m_user_changed) {
-    // update currently edited extruder
-    if (glade_name.substr(0,8) == "Extruder") {
-      copyGroup("Extruder",numberedExtruder("Extruder", selectedExtruder));
-      // if selected for support, disable support for other extruders
-      if (key == "UseForSupport" && get_boolean(group,key) ) {
-        for (uint i = 0; i < getNumExtruders(); i++) {
-          if (i != selectedExtruder) {
-            set_boolean(numberedExtruder("Extruder", i), key, false);
-          }
-        }
-      }
-    }
-    m_signal_visual_settings_changed.emit();
-  }
+  // update currently edited extruder
+  if (glade_name.substr(0,8) == "Extruder")
+    copyGroup("Extruder",numberedExtruder("Extruder", selectedExtruder));
+  
+  if (key == "Material")
+    SetTargetTemps(builder);
+  
+  m_signal_visual_settings_changed.emit();
 }
 
 void Settings::get_colour_from_gui(Builder &builder, const string &glade_name) {
@@ -670,7 +600,9 @@ void Settings::connect_to_ui(Builder &builder) {
       }
     }
   }
-
+  
+  SetTargetTemps(builder);
+  
   /* Update UI with defaults */
   m_signal_update_settings_gui.emit();
 }
@@ -868,4 +800,86 @@ bool Settings::del_user_button(const string &name) {
   } catch (const Glib::KeyFileError &err) {
   }
   return false;
+}
+
+ps_value_t *Settings::FullSettings() {
+  string qualname = get_string("Slicing", "Quality");
+  
+  const ps_value_t *nn = PS_GetMember(config(), "nozzles", NULL);
+  const ps_value_t *xx = PS_GetItem(PS_GetItem(nn, 0), 1);
+  const ps_value_t *qual = PS_GetMember(xx, qualname.c_str(), NULL);
+  
+  double dia = PS_AsFloat(dflt.Get("#global", "material_diameter"));
+  
+  double noz = 0.4;
+  //double h = PS_AsFloat(PS_GetMember(qual, "layer-height", NULL));
+  double wh = PS_AsFloat(PS_GetMember(qual, "width/height", NULL));
+  double speed = PS_AsFloat(PS_GetMember(qual, "speed", NULL));
+  double ratio = PS_AsFloat(PS_GetMember(qual, "wall-speed-ratio", NULL));
+
+  double h = get_double("Slicing", "LayerHeight");
+  bool support = get_boolean("Slicing", "Support");
+  double infill = get_double("Slicing", "InfillPercent");
+  int shells = get_integer("Slicing", "ShellCount");
+  int skins = get_integer("Slicing", "Skins");
+  string matname = get_string("Slicing", "Material");
+  bool spiralize = get_boolean("Slicing","Spiralize");
+  
+  const ps_value_t *mat = config.Get("materials", matname.c_str());
+  if (mat == NULL)
+    cout << endl << "Unknown material: " << matname << endl;
+  double efeed = PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(mat, "nozzle-feedrate", NULL), 0), 1));
+  const ps_value_t *matwh = PS_GetMember(mat, "width/height", NULL);
+  if (matwh && PS_AsFloat(matwh) > 0)
+    wh = PS_AsFloat(matwh);
+  
+  double espeed = efeed * dia * dia / (h * h * wh);
+  if (espeed > 0 && espeed < speed)
+    speed = espeed;
+  
+  Psv set(PS_BlankSettings(ps()));
+  set.Set("#global", "material_diameter", dia);
+  set.Set("#global", "machine_nozzle_size", noz);
+  
+  set.Set("0", "material_diameter", dia);
+  set.Set("0", "machine_nozzle_size", noz);
+  
+  set.Set("#global", "layer_height", h);
+  set.Set("#global", "line_width", h * wh);
+  set.Set("#global", "speed_print", speed);
+  set.Set("#global", "speed_wall", speed * ratio);
+  set.Set("#global", "wall_line_count", spiralize ? 1 : shells);
+  set.Set("#global", "top_layers", skins);
+  set.Set("#global", "bottom_layers", skins);
+  set.Set("#global", "infill_sparse_density", infill);
+  set.Set("#global", "support_enable", support);
+  set.Set("#global", "magic_spiralize", spiralize);
+  
+  PS_MergeSettings(set(), PS_GetMember(qual, "settings", NULL));
+  PS_MergeSettings(set(), PS_GetMember(mat,  "settings", NULL));
+  
+  return PS_EvalAll(ps(), set());
+}
+
+void Settings::SetTargetTemps(Builder &builder) {
+  Psv set(FullSettings());
+  
+  Gtk::SpinButton *sp = NULL;
+  
+  builder->get_widget("E1Target", sp);
+  if (sp) {
+    try {
+      sp->set_value(PS_AsFloat(set.Get("#global", "material_print_temperature_layer_0")));
+    } catch (exception &e) {
+      cerr << "Could not set Extruder 1 target" << endl;
+    }
+  }
+  builder->get_widget("BedTarget", sp);
+  if (sp) {
+    try {
+      sp->set_value(PS_AsFloat(set.Get("#global", "material_bed_temperature")));
+    } catch (exception &e) {
+      cerr << "Could not set bed target" << endl;
+    }
+  }
 }

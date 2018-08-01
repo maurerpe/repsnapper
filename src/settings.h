@@ -120,6 +120,9 @@ class Settings : public Glib::KeyFile {
   
   string get_image_path();
 
+  ps_value_t *FullSettings();
+  void SetTargetTemps(Builder &builder);
+  
   sigc::signal< void > m_signal_visual_settings_changed;
   sigc::signal< void > m_signal_update_settings_gui;
   sigc::signal< void > m_signal_core_settings_changed;

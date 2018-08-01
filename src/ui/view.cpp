@@ -790,7 +790,6 @@ void View::home_all() {
     m_axis_rows[i]->notify_homed();
 }
 
-
 void View::update_settings_gui() {
   // awful cast-ness to avoid having glibmm headers everywhere.
   m_model->settings.set_to_gui(m_builder);
@@ -821,9 +820,105 @@ void View::handle_ui_settings_changed() {
 }
 
 
+static string ename(int e_no) {
+  if (e_no == 0)
+    return string("Bed");
+
+  return "E" + to_string(e_no);
+}
+
+void View::temp_button(int e_no) {
+  Gtk::Switch *swit = NULL;
+  m_builder->get_widget(ename(e_no) + "TempEnable", swit);
+  if (swit == NULL)
+    return;
+  
+  float value = 0;
+  
+  if (swit->get_active()) {
+    Gtk::SpinButton *spin = NULL;
+    m_builder->get_widget(ename(e_no) + "Target", spin);
+    if (spin == NULL)
+      return;
+    
+    value = spin->get_value();
+  }
+
+  if (e_no > 0)
+    m_printer->SetTemp(TEMP_NOZZLE, value, e_no);
+  else
+    m_printer->SetTemp(TEMP_BED, value);
+}
+
+static void set_temp(Glib::RefPtr<Gtk::Builder> &builder, string name, double value) {
+  Gtk::Label *label = NULL;
+  builder->get_widget(name, label);
+  if (label == NULL)
+    return;
+
+  if (value < 0) {
+    label->set_text("-- °C");
+    return;
+  }
+  
+  ostringstream oss;
+  oss.precision(1);
+  oss << fixed << value << " °C";
+  label->set_text(oss.str());
+}
+
 void View::temp_changed() {
-  for (int i = 0; i < TEMP_LAST; i++)
-    m_temps[i]->update_temp (m_printer->get_temp((TempType) i));
+  int e_no = m_printer->GetActiveExtruder();
+  
+  set_temp(m_builder, "BedTemp", m_printer->get_temp(TEMP_BED));
+  
+  for (int i = 1; i <= 5; i++)
+    set_temp(m_builder,
+	     ename(i) + "Temp",
+	     i != e_no ? -1 : m_printer->get_temp(TEMP_NOZZLE));
+}
+
+static void update_extruder_combo(Glib::RefPtr<Gtk::Builder> &builder, string name, uint num_extruders, bool include_model = true) {
+  Gtk::ComboBoxText *w = NULL;
+  builder->get_widget(name, w);
+  if (w == NULL) {
+    cerr << "Cannot find extruder combo box " << name << endl;
+    return;
+  }
+  
+  w->remove_all();
+  if (include_model)
+    w->append("Model Specific");
+  for (uint i = 1; i <= num_extruders; i++) {
+    w->append("Extruder " + to_string(i));
+  }
+}
+
+void View::num_extruders_changed() {
+  uint num = m_model->settings.getNumExtruders();
+
+  // Show correct number of temp row extruders
+  for (uint i = 1; i <= 5; i++) {
+    Gtk::Widget *w = NULL;
+    m_builder->get_widget("E" + to_string(i) + "TempRow", w);
+    
+    if (w == NULL) {
+      cerr << "Cannot find temp row for extruder " << i << endl;
+      continue;
+    }
+    
+    if (i <= num)
+      w->show_all();
+    else
+      w->hide();
+  }
+  
+  // Update drop downs
+  update_extruder_combo(m_builder, "Extruder.Shell", num);
+  update_extruder_combo(m_builder, "Extruder.Skin", num);
+  update_extruder_combo(m_builder, "Extruder.Infill", num);
+  update_extruder_combo(m_builder, "Extruder.Support", num);
+  update_extruder_combo(m_builder, "m_extruder", num, false);
 }
 
 bool View::move_selection(float x, float y, float z) {
@@ -1100,8 +1195,6 @@ View::~View() {
     delete m_axis_rows[i];
   }
   delete m_extruder_row;
-  delete m_temps[TEMP_NOZZLE];
-  delete m_temps[TEMP_BED];
   delete m_cnx_view;
   delete m_progress; m_progress = NULL;
   delete m_printer;
@@ -1185,13 +1278,6 @@ void View::setModel(Model *model) {
   m_builder->get_widget ("p_connect_button_box", connect_box);
   connect_box->add (*m_cnx_view);
 
-  Gtk::Box *temp_box;
-  m_builder->get_widget ("i_temp_box", temp_box);
-  m_temps[TEMP_NOZZLE] = new TempRow(m_model, m_printer, TEMP_NOZZLE);
-  m_temps[TEMP_BED] = new TempRow(m_model, m_printer, TEMP_BED);
-  temp_box->add (*m_temps[TEMP_NOZZLE]);
-  temp_box->add (*m_temps[TEMP_BED]);
-
   Gtk::Box *axis_box;
   m_builder->get_widget ("i_axis_controls", axis_box);
   for (uint i = 0; i < 3; i++) {
@@ -1199,9 +1285,22 @@ void View::setModel(Model *model) {
     axis_box->add (*m_axis_rows[i]);
   }
   axis_box->show_all();
+
+  num_extruders_changed();
+  for (int i = 0; i <= 5; i++) {
+    Gtk::Switch *swit = NULL;
+    m_builder->get_widget(ename(i) + "TempEnable", swit);
+    if (swit == NULL) {
+      cerr << "Cannot find temp enable button for " << ename(i);
+      continue;
+    }
+    
+    swit->property_active().signal_changed().connect
+      (sigc::bind<int>(sigc::mem_fun(*this, &View::temp_button), i));
+  }
   
   Gtk::Box *extruder_box;
-  m_builder->get_widget ("i_extruder_box", extruder_box);
+  m_builder->get_widget("i_extruder_box", extruder_box);
   m_extruder_row = new ExtruderRow(m_printer);
   extruder_box->add(*m_extruder_row);
 

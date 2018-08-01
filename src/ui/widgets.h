@@ -39,26 +39,6 @@ class View::TranslationSpinRow {
 
 };
 
-class View::TempRow : public Gtk::Box {
- public:
-  TempRow(Model *model, Printer *printer, TempType type);
-  ~TempRow();
-
-  Model *m_model;
-  Printer *m_printer;
-  TempType m_type;
-  Gtk::Label *m_temp;
-  Gtk::SpinButton *m_target;
-  Gtk::ToggleButton *m_button;
-
-  void button_toggled();
-
-  void heat_changed();
-
-  void update_temp (double value);
-
-};
-
 class View::AxisRow : public Gtk::Box {
  public:
   AxisRow(Model *model, Printer *printer, int axis);
@@ -73,7 +53,6 @@ class View::AxisRow : public Gtk::Box {
   Printer *m_printer;
   Gtk::SpinButton *m_target;
   int m_axis;
-
 };
 
 class View::ExtruderRow : public Gtk::Box {

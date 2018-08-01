@@ -31,7 +31,6 @@ static bool UNUSED toggle_block = false; // blocks signals for togglebuttons etc
 
 class View : public Gtk::ApplicationWindow
 {
-  class TempRow;
   class AxisRow;
   class TranslationSpinRow;
   class ExtruderRow;
@@ -64,6 +63,9 @@ class View : public Gtk::ApplicationWindow
 
   void update_rot_value();
   void rot_object_from_spinbutton();
+
+  bool inhibit_temp = false;
+  void temp_button(int e_no);
   
   string m_folder;
   
@@ -106,11 +108,11 @@ class View : public Gtk::ApplicationWindow
   void save_settings();
   void save_settings_as();
   void save_settings_to(Glib::RefPtr < Gio::File > file);
-
+  
   // interactive bits
-  void temp_monitor_enabled_toggled (Gtk::ToggleButton *button);
-  void enable_logging_toggled (Gtk::ToggleButton *button);
-  void fan_enabled_toggled (Gtk::ToggleButton *button);
+  void temp_monitor_enabled_toggled(Gtk::ToggleButton *button);
+  void enable_logging_toggled(Gtk::ToggleButton *button);
+  void fan_enabled_toggled(Gtk::ToggleButton *button);
   void run_extruder();
   void clear_logs();
   void home_all();
@@ -120,17 +122,17 @@ class View : public Gtk::ApplicationWindow
   Gtk::SpinButton *m_extruder_length_mult;
   Gtk::SpinButton *m_fan_voltage;
   AxisRow *m_axis_rows[3];
-
-  TempRow *m_temps[TEMP_LAST];
+  
   void temp_changed();
-
+  void num_extruders_changed();
+  
   void edit_custombutton(string name="", string code="", Gtk::ToolButton *button=NULL);
   void new_custombutton() {edit_custombutton();};
   void hide_custombutton_dlg(int code, Gtk::Dialog *dialog);
   void add_custombutton(string name, string gcode);
   void custombutton_pressed(string name, Gtk::ToolButton *button);
-
-
+  
+  
   Gtk::TreeView * extruder_treeview;
   Glib::RefPtr< Gtk::ListStore > extruder_liststore;
   Gtk::TreeModelColumn<Glib::ustring> extrudername;

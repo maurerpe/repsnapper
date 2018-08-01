@@ -39,7 +39,9 @@ private:
   unsigned long prev_line;
   bool waiting_temp;
   int temp_countdown;
-
+  
+  int active_extruder = 1;
+  
   sigc::connection idle_timeout;
   sigc::connection print_timeout;
   sigc::connection temp_timeout;
@@ -72,6 +74,7 @@ public:
   void Pause( void ) { StopPrinting(); }
   bool SwitchPower( bool on );
   bool SelectExtruder( int extruder_no=-1 );
+  int  GetActiveExtruder( void );
   bool SetTemp( TempType type, float value, int extruder_no=-1 );
   bool RunExtruder(double extruder_speed, double extruder_length, bool reverse,
 		   int extruder_no=-1 );
