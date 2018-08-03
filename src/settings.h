@@ -120,6 +120,7 @@ class Settings : public Glib::KeyFile {
   
   string get_image_path();
 
+  void ps_to_gui(Builder &builder, ps_value_t *set);
   ps_value_t *FullSettings();
   void SetTargetTemps(Builder &builder);
   

@@ -399,8 +399,14 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
   if (glade_name.substr(0,8) == "Extruder")
     copyGroup("Extruder",numberedExtruder("Extruder", selectedExtruder));
   
-  if (key == "Material")
+  if (key == "Material") {
     SetTargetTemps(builder);
+    ps_to_gui(builder, PS_GetMember(config.Get("materials", get_string("Slicing", "Material").c_str()), "settings", NULL));
+  }
+  
+  if (key == "Quality") {
+    ps_to_gui(builder, PS_GetMember(config.Get("quality", get_string("Slicing", "Quality").c_str()), "settings", NULL));
+  }
   
   m_signal_visual_settings_changed.emit();
 }
@@ -553,9 +559,11 @@ void Settings::connect_to_ui(Builder &builder) {
 				  serialspeeds+sizeof(serialspeeds)/sizeof(string));
 	    set_up_combobox(combot, speeds);
 	  } else if (glade_name == "Slicing.Quality") {
-	    set_up_combobox(combot, Psv::GetNames(PS_GetItem(PS_GetItem(PS_GetMember(config(), "nozzles", NULL), 0), 1)));
+	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(config(), "quality", NULL)));
 	  } else if (glade_name == "Slicing.Material") {
 	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(config(), "materials", NULL)));
+	  } else if (glade_name == "Slicing.Adhesion") {
+	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(PS_GetMember(PS_GetMember(PS_GetMember(ps(), "#global", NULL), "#set", NULL), "adhesion_type", NULL), "options", NULL)));
 	  }
 	  combot->signal_changed().connect
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));
@@ -802,27 +810,69 @@ bool Settings::del_user_button(const string &name) {
   return false;
 }
 
+void Settings::ps_to_gui(Builder &builder, ps_value_t *set) {
+  ps_value_t *ext, *val;
+  
+  if (set == NULL)
+    return;
+  
+  if ((ext = PS_GetMember(set, "#global", NULL))) {
+    if ((val = PS_GetMember(ext, "infill_sparse_density", NULL))) {
+      set_double("Slicing", "InfillPercent", PS_AsFloat(val));
+      set_to_gui(builder, "Slicing", "InfillPercent");
+    }
+    
+    if ((val = PS_GetMember(ext, "adhesion_type", NULL))) {
+      set_string("Slicing", "Adhesion", PS_GetString(val));
+      set_to_gui(builder, "Slicing", "Adhesion");
+    }
+    
+    if ((val = PS_GetMember(ext, "cool_fan_enabled", NULL))) {
+      set_boolean("Slicing", "Fan", PS_AsBoolean(val));
+      set_to_gui(builder, "Slicing", "Fan");
+    }
+    
+    if ((val = PS_GetMember(ext, "magic_spiralize", NULL))) {
+      set_boolean("Slicing", "Spiralize", PS_AsBoolean(val));
+      set_to_gui(builder, "Slicing", "Spiralize");
+    }
+    
+    if ((val = PS_GetMember(ext, "wall_line_count", NULL))) {
+      set_integer("Slicing", "ShellCount", PS_AsInteger(val));
+      set_to_gui(builder, "Slicing", "ShellCount");
+    }
+    
+    if ((val = PS_GetMember(ext, "top_layers", NULL))) {
+      set_integer("Slicing", "Skins", PS_AsInteger(val));
+      set_to_gui(builder, "Slicing", "Skins");
+    }
+    
+    if ((val = PS_GetMember(ext, "bottom_layers", NULL))) {
+      set_integer("Slicing", "Skins", PS_AsInteger(val));
+      set_to_gui(builder, "Slicing", "Skins");
+    }
+  }
+}
+
 ps_value_t *Settings::FullSettings() {
   string qualname = get_string("Slicing", "Quality");
-  
-  const ps_value_t *nn = PS_GetMember(config(), "nozzles", NULL);
-  const ps_value_t *xx = PS_GetItem(PS_GetItem(nn, 0), 1);
-  const ps_value_t *qual = PS_GetMember(xx, qualname.c_str(), NULL);
+  const ps_value_t *qual = config.Get("quality", qualname.c_str());
   
   double dia = PS_AsFloat(dflt.Get("#global", "material_diameter"));
   
-  double noz = 0.4;
-  //double h = PS_AsFloat(PS_GetMember(qual, "layer-height", NULL));
+  double noz = PS_AsFloat(dflt.Get("0", "machine_nozzle_size"));
   double wh = PS_AsFloat(PS_GetMember(qual, "width/height", NULL));
   double speed = PS_AsFloat(PS_GetMember(qual, "speed", NULL));
   double ratio = PS_AsFloat(PS_GetMember(qual, "wall-speed-ratio", NULL));
 
   double h = get_double("Slicing", "LayerHeight");
   bool support = get_boolean("Slicing", "Support");
+  bool fan = get_boolean("Slicing", "Fan");
   double infill = get_double("Slicing", "InfillPercent");
   int shells = get_integer("Slicing", "ShellCount");
   int skins = get_integer("Slicing", "Skins");
   string matname = get_string("Slicing", "Material");
+  string adhesion = get_string("Slicing", "Adhesion");
   bool spiralize = get_boolean("Slicing","Spiralize");
   
   const ps_value_t *mat = config.Get("materials", matname.c_str());
@@ -844,19 +894,22 @@ ps_value_t *Settings::FullSettings() {
   set.Set("0", "material_diameter", dia);
   set.Set("0", "machine_nozzle_size", noz);
   
-  set.Set("#global", "layer_height", h);
-  set.Set("#global", "line_width", h * wh);
   set.Set("#global", "speed_print", speed);
   set.Set("#global", "speed_wall", speed * ratio);
+  
+  PS_MergeSettings(set(), PS_GetMember(qual, "settings", NULL));
+  PS_MergeSettings(set(), PS_GetMember(mat,  "settings", NULL));
+  
+  set.Set("#global", "layer_height", h);
+  set.Set("#global", "line_width", h * wh);
   set.Set("#global", "wall_line_count", spiralize ? 1 : shells);
   set.Set("#global", "top_layers", skins);
   set.Set("#global", "bottom_layers", skins);
   set.Set("#global", "infill_sparse_density", infill);
+  set.Set("#global", "adhesion_type", adhesion);
   set.Set("#global", "support_enable", support);
+  set.Set("#global", "cool_fan_enabled", fan);
   set.Set("#global", "magic_spiralize", spiralize);
-  
-  PS_MergeSettings(set(), PS_GetMember(qual, "settings", NULL));
-  PS_MergeSettings(set(), PS_GetMember(mat,  "settings", NULL));
   
   return PS_EvalAll(ps(), set());
 }

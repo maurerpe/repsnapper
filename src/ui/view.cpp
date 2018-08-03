@@ -364,11 +364,16 @@ void View::fan_enabled_toggled(Gtk::ToggleButton *button) {
 }
 
 void View::run_extruder() {
+  int e_no = -1;
+  string ext = m_extruder->get_active_text();
+  if (ext.length() > 8)
+    e_no = stoi(ext.substr(8));
+  
   double amount = m_extruder_length->get_value();
   m_printer->RunExtruder(m_extruder_speed->get_value() * 60,
 			 amount,
 			 false,
-			 m_extruder_row->get_selected());
+			 e_no);
 }
 
 void View::clear_logs() {
@@ -919,6 +924,7 @@ void View::num_extruders_changed() {
   update_extruder_combo(m_builder, "Extruder.Infill", num);
   update_extruder_combo(m_builder, "Extruder.Support", num);
   update_extruder_combo(m_builder, "m_extruder", num, false);
+  update_extruder_combo(m_builder, "Printer.Extruder", num, false);
 }
 
 bool View::move_selection(float x, float y, float z) {
@@ -1079,8 +1085,9 @@ View::View(BaseObjectType* cobject,
   // Interactive tab
   connect_toggled ("Printer.Logging", sigc::mem_fun(*this, &View::enable_logging_toggled));
   connect_button ("Printer.ClearLog",      sigc::mem_fun(*this, &View::clear_logs) );
-  m_builder->get_widget ("Printer.ExtrudeSpeed", m_extruder_speed);
-  m_builder->get_widget ("Printer.ExtrudeAmount", m_extruder_length);
+  m_builder->get_widget("Printer.ExtrudeSpeed", m_extruder_speed);
+  m_builder->get_widget("Printer.ExtrudeAmount", m_extruder_length);
+  m_builder->get_widget("Printer.Extruder", m_extruder);
   connect_toggled ("Misc.TempReadingEnabled", sigc::mem_fun(*this, &View::temp_monitor_enabled_toggled));
   connect_toggled ("i_fan_enabled", sigc::mem_fun(*this, &View::fan_enabled_toggled));
   m_builder->get_widget ("Printer.FanVoltage", m_fan_voltage);
@@ -1176,7 +1183,6 @@ void View::update_extruderlist() {
   Gtk::TreeModel::Row firstrow = extruder_treeview->get_model()->children()[0];
   extruder_treeview->get_selection()->select(firstrow);
   extruder_selected();
-  m_extruder_row->set_number(num);
 }
 
 //  stop file preview when leaving file tab
@@ -1194,7 +1200,6 @@ View::~View() {
   for (uint i = 0; i < 3; i++) {
     delete m_axis_rows[i];
   }
-  delete m_extruder_row;
   delete m_cnx_view;
   delete m_progress; m_progress = NULL;
   delete m_printer;
@@ -1299,11 +1304,6 @@ void View::setModel(Model *model) {
       (sigc::bind<int>(sigc::mem_fun(*this, &View::temp_button), i));
   }
   
-  Gtk::Box *extruder_box;
-  m_builder->get_widget("i_extruder_box", extruder_box);
-  m_extruder_row = new ExtruderRow(m_printer);
-  extruder_box->add(*m_extruder_row);
-
   inhibit_print_changed();
   m_printer->signal_inhibit_changed.
     connect (sigc::mem_fun(*this, &View::inhibit_print_changed));

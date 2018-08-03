@@ -33,7 +33,6 @@ class View : public Gtk::ApplicationWindow
 {
   class AxisRow;
   class TranslationSpinRow;
-  class ExtruderRow;
 
   friend class PrintInhibitor;
   friend class Render;
@@ -70,9 +69,7 @@ class View : public Gtk::ApplicationWindow
   string m_folder;
   
   Printer *m_printer;
-  ExtruderRow *m_extruder_row;
   PrefsDlg *m_settings_ui;
-
 
   Glib::RefPtr<Gtk::Builder> m_builder;
   Model *m_model;
@@ -116,6 +113,7 @@ class View : public Gtk::ApplicationWindow
   void run_extruder();
   void clear_logs();
   void home_all();
+  Gtk::ComboBoxText *m_extruder;
   Gtk::SpinButton *m_extruder_speed;
   Gtk::SpinButton *m_extruder_length;
   Gtk::SpinButton *m_extruder_speed_mult;

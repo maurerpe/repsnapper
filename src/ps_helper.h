@@ -48,6 +48,7 @@ public:
   void Set(const char *ext, const char *setting, int val);
   void Set(const char *ext, const char *setting, double val);
   void Set(const char *ext, const char *setting, const char *val);
+  void Set(const char *ext, const char *setting, string str);
   
   vector< string > GetNames() {return GetNames(v);};
   static vector< string > GetNames(const struct ps_value_t *v);

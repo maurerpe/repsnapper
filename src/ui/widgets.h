@@ -54,19 +54,3 @@ class View::AxisRow : public Gtk::Box {
   Gtk::SpinButton *m_target;
   int m_axis;
 };
-
-class View::ExtruderRow : public Gtk::Box {
- public:
-  ExtruderRow(Printer *printer);
-  ~ExtruderRow();
-
-  Printer *m_printer;
-
-  vector<Gtk::RadioButton*> m_buttons;
-  Gtk::RadioButtonGroup m_group;
-
-  void set_number(uint num);
-  uint get_selected() const;
-
-  void button_selected();
-};

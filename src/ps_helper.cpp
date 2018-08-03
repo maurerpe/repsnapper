@@ -93,6 +93,10 @@ void Psv::Set(const char *ext, const char *setting, const char *val) {
   Set(ext, setting, PS_NewString(val));
 }
 
+void Psv::Set(const char *ext, const char *setting, string str) {
+  Set(ext, setting, str.c_str());
+}
+
 vector< string > Psv::GetNames(const struct ps_value_t *v) {
   Psvi vi(v);
   vector< string > str;
