@@ -123,16 +123,6 @@ bool Settings::load_from_data (string data) {
   return true;
 }
 
-// make "ExtruderN" group, if i<0 (not given), use current selected Extruder number
-string Settings::numberedExtruder(const string &group, int num) const {
-  if (group == "Extruder") {
-    ostringstream oss; oss << "Extruder" << num;
-    //cerr << "call for " << oss.str() << endl;
-    return oss.str();
-  }
-  return group;
-}
-
 Vector4f Settings::get_colour(const string &group, const string &name) const {
   vector<double> s = get_double_list(group, name);
   return Vector4f(s[0],s[1],s[2],s[3]);
@@ -185,15 +175,6 @@ void Settings::load_settings(Glib::RefPtr<Gio::File> file) {
     CustomButtonGCodes = get_string_list("UserButtons","GCodes");
   }
   
-  uint ne = getNumExtruders();
-  for (uint k = 0; k < ne; k++) {
-    if (!has_key(numberedExtruder("Extruder",k), "OffsetX"))
-      set_double(numberedExtruder("Extruder",k), "OffsetX", 0);
-    if (!has_key(numberedExtruder("Extruder",k), "OffsetY"))
-      set_double(numberedExtruder("Extruder",k), "OffsetY", 0);
-  }
-  SelectExtruder(0);
-
   inhibit_callback = false;
   m_user_changed = false;
   m_signal_visual_settings_changed.emit();
@@ -208,8 +189,6 @@ void Settings::save_settings(Glib::RefPtr<Gio::File> file) {
   // cerr << contents << endl;
   Glib::file_set_contents(file->get_path(), contents);
 
-  SelectExtruder(selectedExtruder); // reload default extruder
-
   inhibit_callback = false;
   // all changes safely saved
   m_user_changed = false;
@@ -222,9 +201,9 @@ void Settings::load_printer_settings(void) {
   ps.Take(PS_New("/home/maurerpe/.config/repsnapper/cr10mini.def.json", search()));
   dflt.Take(PS_GetDefaults(ps()));
 
-  Psf config_file("/home/maurerpe/.config/repsnapper/cura_settings.json");
-  config.Take(PS_ParseJsonFile(config_file()));
-  config_file.close();
+  Psf qualmat_file("/home/maurerpe/.config/repsnapper/qualmat.json");
+  qualmat.Take(PS_ParseJsonFile(qualmat_file()));
+  qualmat_file.close();
 }
 
 void Settings::set_to_gui(Builder &builder,
@@ -395,17 +374,18 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
     break;
   } while (0);
   
-  // update currently edited extruder
-  if (glade_name.substr(0,8) == "Extruder")
-    copyGroup("Extruder",numberedExtruder("Extruder", selectedExtruder));
-  
-  if (key == "Material") {
+  if (key == "E1Material") {
     SetTargetTemps(builder);
-    ps_to_gui(builder, PS_GetMember(config.Get("materials", get_string("Slicing", "Material").c_str()), "settings", NULL));
+    ps_to_gui(builder, PS_GetMember(qualmat.Get("materials", get_string("Slicing", "E1Material").c_str()), "settings", NULL));
+  }
+  
+  if (key == "E2Material") {
+    SetTargetTemps(builder);
+    ps_to_gui(builder, PS_GetMember(qualmat.Get("materials", get_string("Slicing", "E2Material").c_str()), "settings", NULL));
   }
   
   if (key == "Quality") {
-    ps_to_gui(builder, PS_GetMember(config.Get("quality", get_string("Slicing", "Quality").c_str()), "settings", NULL));
+    ps_to_gui(builder, PS_GetMember(qualmat.Get("quality", get_string("Slicing", "Quality").c_str()), "settings", NULL));
   }
   
   m_signal_visual_settings_changed.emit();
@@ -559,9 +539,9 @@ void Settings::connect_to_ui(Builder &builder) {
 				  serialspeeds+sizeof(serialspeeds)/sizeof(string));
 	    set_up_combobox(combot, speeds);
 	  } else if (glade_name == "Slicing.Quality") {
-	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(config(), "quality", NULL)));
-	  } else if (glade_name == "Slicing.Material") {
-	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(config(), "materials", NULL)));
+	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(qualmat(), "quality", NULL)));
+	  } else if (glade_name == "Slicing.E1Material" || glade_name == "Slicing.E2Material") {
+	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(qualmat(), "materials", NULL)));
 	  } else if (glade_name == "Slicing.Adhesion") {
 	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(PS_GetMember(PS_GetMember(PS_GetMember(ps(), "#global", NULL), "#set", NULL), "adhesion_type", NULL), "options", NULL)));
 	  }
@@ -627,104 +607,8 @@ double Settings::RoundedLinewidthCorrection(double extr_width,
   return factor;
 }
 
-double Settings::GetExtrudedMaterialWidth(double layerheight) const {
-  // ExtrudedMaterialWidthRatio is preset by user
-  return min(max(get_double("Extruder","MinimumLineWidth"),
-		 get_double("Extruder","ExtrudedMaterialWidthRatio") * layerheight),
-	     get_double("Extruder","MaximumLineWidth"));
-}
-
-// TODO This depends whether lines are packed or not - ellipsis/rectangle
-
-// how much mm filament material per extruded line length mm -> E gcode
-double Settings::GetExtrusionPerMM(double layerheight) const {
-  double f = get_double("Extruder","ExtrusionFactor"); // overall factor
-  if (get_boolean("Extruder","CalibrateInput")) {  // means we use input filament diameter
-    const double matWidth = GetExtrudedMaterialWidth(layerheight); // this is the goal
-    // otherwise we just work back from the extruded diameter for now.
-    const double filamentdiameter = get_double("Extruder","FilamentDiameter");
-    f *= (matWidth * matWidth) / (filamentdiameter * filamentdiameter);
-  } // else: we work in terms of output anyway;
-
-  return f;
-}
-
-// return infill distance in mm
-double Settings::GetInfillDistance(double layerthickness, float percent) const {
-  double fullInfillDistance = GetExtrudedMaterialWidth(layerthickness);
-  if (percent == 0) return 10000000;
-  return fullInfillDistance * (100./percent);
-}
-
 uint Settings::getNumExtruders() const {
-  vector< Glib::ustring > groups = get_groups();
-  uint num=0;
-  for (uint g = 0; g < groups.size(); g++)
-    if (groups[g].substr(0,8) == "Extruder"
-	&& groups[g].length() > 8 ) // count only numbered
-      num++;
-  return num;
-}
-
-vector<char> Settings::get_extruder_letters() const {
-  uint num = getNumExtruders();
-  vector<char> letters(num);
-  for (uint i = 0; i < num; i++)
-    letters[i] = get_string(numberedExtruder("Extruder",i),"GCLetter")[0];
-  return letters;
-}
-
-uint Settings::GetSupportExtruder() const {
-  uint num = getNumExtruders();
-  for (uint i = 0; i < num; i++)
-    if (get_boolean(numberedExtruder("Extruder",i),"UseForSupport"))
-      return i;
-  return 0;
-}
-
-Vector3d Settings::get_extruder_offset(uint num) const {
-  string ext = numberedExtruder("Extruder",num);
-  return Vector3d(get_double(ext, "OffsetX"),
-		  get_double(ext, "OffsetY"), 0.);
-}
-
-void Settings::copyGroup(const string &from, const string &to) {
-  vector<string> keys = get_keys(from);
-  for (uint i = 0; i < keys.size(); i++)
-    set_value(to, keys[i], get_value(from, keys[i]));
-}
-
-// create new
-void Settings::CopyExtruder(uint num) {
-  uint total = getNumExtruders();
-  string from = numberedExtruder("Extruder",num);
-  string to   = numberedExtruder("Extruder",total);
-  copyGroup(from, to);
-}
-
-void Settings::RemoveExtruder(uint num) {
-  ostringstream oss; oss << "Extruder"<<num;
-  remove_group(oss.str());
-}
-
-void Settings::SelectExtruder(uint num, Builder *builder) {
-  if (num >= getNumExtruders()) return;
-  selectedExtruder = num;
-  copyGroup(numberedExtruder("Extruder",num),"Extruder");
-  // show Extruder settings on gui
-  if (builder) {
-    set_to_gui(*builder, "Extruder");
-  }
-}
-
-Matrix4d Settings::getBasicTransformation(Matrix4d T) const {
-  Vector3d t;
-  T.get_translation(t);
-  const Vector3d margin = getPrintMargin();
-  double rsize = get_double("Raft","Size") * (get_boolean("Raft","Enable")?1:0);
-  t+= Vector3d(margin.x() + rsize, margin.y() + rsize, 0);
-  T.set_translation(t);
-  return T;
+  return PS_ItemCount(dflt()) - 1;
 }
 
 Vector3d Settings::getPrintVolume() const {
@@ -734,29 +618,9 @@ Vector3d Settings::getPrintVolume() const {
 }
 
 Vector3d Settings::getPrintMargin() const {
-  Vector3d margin(get_double("Hardware","PrintMargin.X"),
+  return Vector3d(get_double("Hardware","PrintMargin.X"),
 		  get_double("Hardware","PrintMargin.Y"),
 		  0);
-  Vector3d maxoff = Vector3d::ZERO;
-  uint num = getNumExtruders();
-  for (uint i = 0; i < num ; i++) {
-    string ext = numberedExtruder("Extruder",i);
-    double offx = 0, offy = 0;
-    try {
-      offx = abs(get_double(ext, "OffsetX"));
-      offy = abs(get_double(ext, "OffsetY"));
-    } catch (const Glib::KeyFileError &err) {
-    }
-    if (offx > abs(maxoff.x())) maxoff.x() = offx;
-    if (offy > abs(maxoff.y())) maxoff.y() = offy;
-  }
-  return margin + maxoff;
-}
-
-// Locate it in relation to ourselves ...
-string Settings::get_image_path() {
-  string basename = Glib::path_get_dirname(filename);
-  return Glib::build_filename (basename, get_string("Global","Image"));
 }
 
 bool Settings::set_user_button(const string &name, const string &gcode) {
@@ -827,11 +691,6 @@ void Settings::ps_to_gui(Builder &builder, ps_value_t *set) {
       set_to_gui(builder, "Slicing", "Adhesion");
     }
     
-    if ((val = PS_GetMember(ext, "cool_fan_enabled", NULL))) {
-      set_boolean("Slicing", "Fan", PS_AsBoolean(val));
-      set_to_gui(builder, "Slicing", "Fan");
-    }
-    
     if ((val = PS_GetMember(ext, "magic_spiralize", NULL))) {
       set_boolean("Slicing", "Spiralize", PS_AsBoolean(val));
       set_to_gui(builder, "Slicing", "Spiralize");
@@ -854,51 +713,71 @@ void Settings::ps_to_gui(Builder &builder, ps_value_t *set) {
   }
 }
 
+int Settings::GetENo(string name, int model_specific) const {
+  string ext = get_string("Extruder", name);
+
+  if (string(ext) == "Model Specific")
+    return model_specific;
+  
+  return stoi(ext.substr(8));
+}
+
 ps_value_t *Settings::FullSettings() {
   string qualname = get_string("Slicing", "Quality");
-  const ps_value_t *qual = config.Get("quality", qualname.c_str());
+  const ps_value_t *qual = qualmat.Get("quality", qualname.c_str());
   
   double dia = PS_AsFloat(dflt.Get("#global", "material_diameter"));
   
-  double noz = PS_AsFloat(dflt.Get("0", "machine_nozzle_size"));
   double wh = PS_AsFloat(PS_GetMember(qual, "width/height", NULL));
   double speed = PS_AsFloat(PS_GetMember(qual, "speed", NULL));
   double ratio = PS_AsFloat(PS_GetMember(qual, "wall-speed-ratio", NULL));
 
   double h = get_double("Slicing", "LayerHeight");
   bool support = get_boolean("Slicing", "Support");
-  bool fan = get_boolean("Slicing", "Fan");
   double infill = get_double("Slicing", "InfillPercent");
   int shells = get_integer("Slicing", "ShellCount");
   int skins = get_integer("Slicing", "Skins");
-  string matname = get_string("Slicing", "Material");
   string adhesion = get_string("Slicing", "Adhesion");
   bool spiralize = get_boolean("Slicing","Spiralize");
   
-  const ps_value_t *mat = config.Get("materials", matname.c_str());
-  if (mat == NULL)
-    cout << endl << "Unknown material: " << matname << endl;
-  double efeed = PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(mat, "nozzle-feedrate", NULL), 0), 1));
-  const ps_value_t *matwh = PS_GetMember(mat, "width/height", NULL);
-  if (matwh && PS_AsFloat(matwh) > 0)
-    wh = PS_AsFloat(matwh);
-  
-  double espeed = efeed * dia * dia / (h * h * wh);
-  if (espeed > 0 && espeed < speed)
-    speed = espeed;
+  int num_e = getNumExtruders();
+  vector<double> espeed(num_e);
+  for (int e_no = 1; e_no <= num_e; e_no++) {
+    string matname = get_string("Slicing", "E" + to_string(e_no) + "Material");
+    const ps_value_t *mat = qualmat.Get("materials", matname.c_str());
+    if (mat == NULL)
+      cout << endl << "Unknown material: " << matname << endl;
+    
+    double efeed = PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(mat, "nozzle-feedrate", NULL), 0), 1));
+    const ps_value_t *matwh = PS_GetMember(mat, "width/height", NULL);
+    
+    if (matwh && PS_AsFloat(matwh) > 0)
+      wh = PS_AsFloat(matwh);
+    
+    double matspeed = efeed * dia * dia / (h * h * wh);
+    if (speed < matspeed)
+      matspeed = speed;
+    espeed[e_no - 1] = matspeed;
+  }
   
   Psv set(PS_BlankSettings(ps()));
   set.Set("#global", "material_diameter", dia);
-  set.Set("#global", "machine_nozzle_size", noz);
+  set.Set("#global", "extruders_enabled_count", (int) PS_ItemCount(dflt()) - 1);
   
-  set.Set("0", "material_diameter", dia);
-  set.Set("0", "machine_nozzle_size", noz);
-  
-  set.Set("#global", "speed_print", speed);
-  set.Set("#global", "speed_wall", speed * ratio);
+  set.Set("#global", "speed_print",     speed);
+  set.Set("#global", "speed_wall",      espeed[GetENo("Shell",   1) - 1] * ratio);
+  set.Set("#global", "speed_topbottom", espeed[GetENo("Skin",    1) - 1] * ratio);
+  set.Set("#global", "speed_infill",    espeed[GetENo("Infill",  1) - 1]);
+  set.Set("#global", "speed_support",   espeed[GetENo("Support", 1) - 1]);
   
   PS_MergeSettings(set(), PS_GetMember(qual, "settings", NULL));
-  PS_MergeSettings(set(), PS_GetMember(mat,  "settings", NULL));
+  for (int e_no = num_e; e_no >= 1; e_no--) {
+    string matname = get_string("Slicing", "E" + to_string(e_no) + "Material");
+    const ps_value_t *mat = qualmat.Get("materials", matname.c_str());
+
+    string ext = to_string(e_no - 1);
+    set.MergeActive(ext.c_str(), PS_GetMember(mat, "settings", NULL));
+  }
   
   set.Set("#global", "layer_height", h);
   set.Set("#global", "line_width", h * wh);
@@ -908,7 +787,6 @@ ps_value_t *Settings::FullSettings() {
   set.Set("#global", "infill_sparse_density", infill);
   set.Set("#global", "adhesion_type", adhesion);
   set.Set("#global", "support_enable", support);
-  set.Set("#global", "cool_fan_enabled", fan);
   set.Set("#global", "magic_spiralize", spiralize);
   
   return PS_EvalAll(ps(), set());
@@ -918,13 +796,19 @@ void Settings::SetTargetTemps(Builder &builder) {
   Psv set(FullSettings());
   
   Gtk::SpinButton *sp = NULL;
-  
-  builder->get_widget("E1Target", sp);
-  if (sp) {
-    try {
-      sp->set_value(PS_AsFloat(set.Get("#global", "material_print_temperature_layer_0")));
-    } catch (exception &e) {
-      cerr << "Could not set Extruder 1 target" << endl;
+
+  int max_e = getNumExtruders();
+  if (max_e > 5)
+    max_e = 5;
+  for (int e_no = 1; e_no <= max_e; e_no++) {
+    builder->get_widget("E" + to_string(e_no) + "Target", sp);
+    if (sp) {
+      try {
+	string ext = to_string(e_no - 1);
+	sp->set_value(PS_AsFloat(set.Get(ext.c_str(), "material_print_temperature_layer_0")));
+      } catch (exception &e) {
+	cerr << "Could not set Extruder " << e_no << " target" << endl;
+      }
     }
   }
   builder->get_widget("BedTarget", sp);

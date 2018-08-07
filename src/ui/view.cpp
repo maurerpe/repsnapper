@@ -918,7 +918,17 @@ void View::num_extruders_changed() {
       w->hide();
   }
   
-  // Update drop downs
+  // Enable disable E2Material combo
+  Gtk::ComboBoxText *w = NULL;
+  m_builder->get_widget("Slicing.E2Material", w);
+  if (w) {
+    if (num >= 2)
+      w->set_sensitive(true);
+    else
+      w->set_sensitive(false);
+  }
+  
+  // Update comboboxes
   update_extruder_combo(m_builder, "Extruder.Shell", num);
   update_extruder_combo(m_builder, "Extruder.Skin", num);
   update_extruder_combo(m_builder, "Extruder.Infill", num);
@@ -1138,31 +1148,31 @@ void View::extruder_selected() {
 }
 
 void View::copy_extruder() {
-  if (!m_model)
-    return;
+  // if (!m_model)
+  //   return;
   
-  vector< Gtk::TreeModel::Path > path =
-    extruder_treeview->get_selection()->get_selected_rows();
-  if(path.size()>0 && path[0].size()>0) {
-    m_model->settings.CopyExtruder(path[0][0]);
-  }
-  update_extruderlist();
-  Gtk::TreeNodeChildren ch = extruder_treeview->get_model()->children();
-  Gtk::TreeIter row = ch[ch.size()-1];
-  extruder_treeview->get_selection()->select(row);
-  extruder_selected();
+  // vector< Gtk::TreeModel::Path > path =
+  //   extruder_treeview->get_selection()->get_selected_rows();
+  // if(path.size()>0 && path[0].size()>0) {
+  //   m_model->settings.CopyExtruder(path[0][0]);
+  // }
+  // update_extruderlist();
+  // Gtk::TreeNodeChildren ch = extruder_treeview->get_model()->children();
+  // Gtk::TreeIter row = ch[ch.size()-1];
+  // extruder_treeview->get_selection()->select(row);
+  // extruder_selected();
 }
 
 void View::remove_extruder() {
-  if (!m_model)
-    return;
+  // if (!m_model)
+  //   return;
   
-  vector< Gtk::TreeModel::Path > path =
-    extruder_treeview->get_selection()->get_selected_rows();
-  if (path.size()>0 && path[0].size()>0) {
-    m_model->settings.RemoveExtruder(path[0][0]);
-  }
-  update_extruderlist();
+  // vector< Gtk::TreeModel::Path > path =
+  //   extruder_treeview->get_selection()->get_selected_rows();
+  // if (path.size()>0 && path[0].size()>0) {
+  //   m_model->settings.RemoveExtruder(path[0][0]);
+  // }
+  // update_extruderlist();
 }
 
 void View::update_extruderlist() {

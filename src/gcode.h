@@ -88,11 +88,9 @@ class GCode {
   bool empty(void) const {return cmds.empty();};
   void clear(void);
   
-  void Parse(Model *model, const vector<char> E_letters,
-	     ViewProgress *progress, istream &is);
+  void Parse(Model *model, ViewProgress *progress, istream &is);
   
-  void Read(Model *model, const vector<char> E_letters,
-	    ViewProgress *progress, string filename);
+  void Read(Model *model, ViewProgress *progress, string filename);
   
   void draw(Render &render,
 	    const Settings &settings,

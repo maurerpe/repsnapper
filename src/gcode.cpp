@@ -259,8 +259,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   cmd.t_stop = state.time;
 }
 
-void GCode::Parse(Model *model, const vector<char> E_letters,
-		  ViewProgress *progress, istream &is) {
+void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
   printer_state state;
   GCodeCmd cmd;
   string s;
@@ -336,11 +335,10 @@ void GCode::Parse(Model *model, const vector<char> E_letters,
   }
 }
 
-void GCode::Read(Model *model, const vector<char> E_letters,
-		 ViewProgress *progress, string filename) {
+void GCode::Read(Model *model, ViewProgress *progress, string filename) {
   ifstream file;
   file.open(filename.c_str());		//open a file
-  Parse(model, E_letters, progress, file);
+  Parse(model, progress, file);
   file.close();
 }
 

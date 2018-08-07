@@ -196,9 +196,9 @@ bool Printer::Move(string axis, double distance, bool relative )
   float speed = 0.0;
 
   if ( axis == "X" || axis == "Y" )
-    speed = settings->get_double("Hardware","MaxMoveSpeedXY") * 60;
+    speed = PS_AsFloat(settings->GetDflt()->Get("#global","machine_max_feedrate_x")) * 60;
   else if(axis == "Z")
-    speed = settings->get_double("Hardware","MaxMoveSpeedZ") * 60;
+    speed = PS_AsFloat(settings->GetDflt()->Get("#global", "machine_max_feedrate_z")) * 60;
   else
     alert (_("Move called with unknown axis"));
 

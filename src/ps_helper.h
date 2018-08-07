@@ -52,6 +52,8 @@ public:
   
   vector< string > GetNames() {return GetNames(v);};
   static vector< string > GetNames(const struct ps_value_t *v);
+
+  void MergeActive(const char *active, const struct ps_value_t *merge);
 };
 
 class Pso {

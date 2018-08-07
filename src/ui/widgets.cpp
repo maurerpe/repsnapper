@@ -125,7 +125,7 @@ void View::AxisRow::home_clicked() {
   m_target->set_value(0.0);
 }
 
-void View::AxisRow::spin_value_changed () {
+void View::AxisRow::spin_value_changed() {
   if (m_inhibit_update)
     return;
   m_printer->Goto (std::string (axis_names[m_axis]), m_target->get_value());
@@ -138,7 +138,7 @@ void View::AxisRow::nudge_clicked (double nudge) {
   m_inhibit_update = false;
 }
 
-void View::AxisRow::add_nudge_button (double nudge) {
+void View::AxisRow::add_nudge_button(double nudge) {
   std::stringstream label;
   if (nudge > 0)
     label << "+";

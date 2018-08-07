@@ -56,7 +56,7 @@ void Model::ConvertToGCode() {
   }
   
   istringstream iss(string(PS_OStreamContents(gcode_stream())));
-  gcode.Parse(this, settings.get_extruder_letters(), m_progress, iss);
+  gcode.Parse(this, m_progress, iss);
   cout << "Slicing complete" << endl;
   
   prog.update(100);

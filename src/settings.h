@@ -41,34 +41,23 @@ class Settings : public Glib::KeyFile {
   
   Psv ps;
   Psv dflt;
-  Psv config;
+  Psv qualmat;
   
  public:
   const Psv *GetPs() {return &ps;};
   const Psv *GetDflt() {return &dflt;};
-  const Psv *GetConfig() {return &config;};
+  const Psv *GetQualMat() {return &qualmat;};
   
   void copyGroup(const string &from, const string &to);
 
   Vector4f get_colour(const string &group, const string &name) const;
   void set_colour(const string &group, const string &name, const Vector4f &value);
 
-  string numberedExtruder(const string &group, int num=-1) const;
-
   vmml::vec3d getPrintVolume() const;
   vmml::vec3d getPrintMargin() const;
 
   static double RoundedLinewidthCorrection(double extr_width,
 					   double layerheight);
-  double GetExtrudedMaterialWidth(const double layerheight) const;
-  double GetExtrusionPerMM(double layerheight) const;
-  vector<char> get_extruder_letters() const;
-  Vector3d get_extruder_offset(uint num) const;
-  uint GetSupportExtruder() const;
-  void CopyExtruder(uint num);
-  void RemoveExtruder(uint num);
-  void SelectExtruder(uint num, Builder *builder=NULL);
-  uint selectedExtruder;
   uint getNumExtruders() const;
 
   // Paths we loaded / saved things to last time
@@ -86,7 +75,8 @@ class Settings : public Glib::KeyFile {
   bool get_group_and_key       (int i, Glib::ustring &group, Glib::ustring &key);
   void get_colour_from_gui     (Builder &builder, const string &glade_name);
   void set_defaults();
-
+  int  GetENo(string name, int model_specific) const;
+  
  public:
   Settings();
   ~Settings();
@@ -97,11 +87,6 @@ class Settings : public Glib::KeyFile {
   bool set_user_button(const string &name, const string &gcode);
   bool del_user_button(const string &name);
   string get_user_gcode(const string &name);
-
-  Matrix4d getBasicTransformation(Matrix4d T) const;
-
-  // return real mm depending on hardware extrusion width setting
-  double GetInfillDistance(double layerthickness, float percent) const;
 
   // sync changed settings with the GUI eg. used post load
   void set_to_gui(Builder &builder, const string filter="");
@@ -118,8 +103,6 @@ class Settings : public Glib::KeyFile {
 
   void load_printer_settings(void);
   
-  string get_image_path();
-
   void ps_to_gui(Builder &builder, ps_value_t *set);
   ps_value_t *FullSettings();
   void SetTargetTemps(Builder &builder);

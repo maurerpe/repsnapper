@@ -202,8 +202,8 @@ void Model::ReadGCode(Glib::RefPtr<Gio::File> file) {
   if (is_printing) return;
   is_calculating=true;
   settings.set_boolean("Display","DisplayGCode",true);
-  m_progress->start (_("Reading GCode"), 100.0);
-  gcode.Read (this, settings.get_extruder_letters(), m_progress, file->get_path());
+  m_progress->start(_("Reading GCode"), 100.0);
+  gcode.Read(this, m_progress, file->get_path());
   m_progress->stop (_("Done"));
   is_calculating=false;
 }

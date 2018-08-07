@@ -107,6 +107,30 @@ vector< string > Psv::GetNames(const struct ps_value_t *v) {
   return str;
 }
 
+void Psv::MergeActive(const char *active, const struct ps_value_t *merge) {
+  if (merge == NULL)
+    return;
+  
+  Psvi ext(merge);
+  
+  while (ext.Next()) {
+    Psvi setting(ext.Data());
+    if (string(ext.Key()) == "#active")
+      continue;
+    
+    while (setting.Next())
+      Set(ext.Key(), setting.Key(), setting.Data());
+  }
+
+  const struct ps_value_t *act = PS_GetMember(merge, "#active", NULL);
+  if (act == NULL)
+    return;
+  
+  Psvi setting(act);
+  while (setting.Next())
+    Set(active, setting.Key(), setting.Data());
+}
+
 /////////////////////////////////////////////////////////////////
 
 Pso::Pso(ps_ostream_t *ostream) : os(ostream) {
