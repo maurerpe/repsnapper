@@ -63,8 +63,8 @@ class Model {
 	       bool autoplace = true);
   int SplitShape(TreeObject *parent, Shape *shape, string filename);
   int MergeShapes(TreeObject *parent, const vector<Shape*> shapes);
-  Shape GetCombinedShape() const;
-	
+  Shape GetCombinedShape(int extruder = -1) const;
+  
   sigc::signal< void, Gtk::TreePath & > m_signal_stl_added;
 
   void Read(Glib::RefPtr<Gio::File> file, int extruder = -1);

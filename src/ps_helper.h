@@ -93,3 +93,18 @@ public:
   
   ps_value_iterator_t *operator()(void) {return vi;};
 };
+
+class Pssa {
+private:
+  size_t max;
+  size_t used;
+  ps_slice_str_t *arr;
+
+public:
+  Pssa(size_t max_entries);
+  ~Pssa();
+  
+  void append(string stl, ps_value_t *val);
+  size_t size() {return used;};
+  const ps_slice_str_t *operator()() {return arr;};
+};

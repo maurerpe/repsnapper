@@ -128,7 +128,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   }
   
   if (isfinite(codes['T']))
-    state.e_no = codes['T'];
+    state.e_no = codes['T'] + 1;
   
   this_feed = state.feedrate;
   cmd.type = other;
@@ -434,7 +434,6 @@ void GCode::drawCommands(Render &render,
 	if (cmd->e_no != e_no)
 	  continue;
 
-	/* FIXME: account for extruder offsets */
 	addSeg(vert, cmd);
       }
       

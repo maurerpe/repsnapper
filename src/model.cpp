@@ -165,10 +165,13 @@ void Model::SaveStl(Glib::RefPtr<Gio::File> file) {
 }
 
 // everything in one shape
-Shape Model::GetCombinedShape() const {
+Shape Model::GetCombinedShape(int extruder) const {
   Shape shape;
   for (uint o = 0; o<objtree.Objects.size(); o++) {
     for (uint s = 0; s<objtree.Objects[o]->shapes.size(); s++) {
+      if (extruder > 0 && objtree.Objects[o]->shapes[s]->extruder != extruder)
+	continue;
+      
       vector<Triangle> tr =
 	objtree.Objects[o]->shapes[s]->getTriangles(objtree.Objects[o]->transform3D.getTransform());
       shape.addTriangles(tr);

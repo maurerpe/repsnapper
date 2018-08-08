@@ -75,7 +75,7 @@ class Settings : public Glib::KeyFile {
   bool get_group_and_key       (int i, Glib::ustring &group, Glib::ustring &key);
   void get_colour_from_gui     (Builder &builder, const string &glade_name);
   void set_defaults();
-  int  GetENo(string name, int model_specific) const;
+  int  GetENo(string name, int model_specific = 1) const;
   
  public:
   Settings();
@@ -104,7 +104,7 @@ class Settings : public Glib::KeyFile {
   void load_printer_settings(void);
   
   void ps_to_gui(Builder &builder, ps_value_t *set);
-  ps_value_t *FullSettings();
+  ps_value_t *FullSettings(int model_specific = 1);
   void SetTargetTemps(Builder &builder);
   
   sigc::signal< void > m_signal_visual_settings_changed;

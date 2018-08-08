@@ -198,8 +198,8 @@ void Settings::load_printer_settings(void) {
   Psv search(PS_NewList());
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/definitions"));
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/extruders"));  
-  //ps.Take(PS_New("/home/maurerpe/.config/repsnapper/cr10mini.def.json", search()));
-  ps.Take(PS_New("/usr/share/cura/resources/definitions/makeit_pro_l.def.json", search()));
+  ps.Take(PS_New("/home/maurerpe/.config/repsnapper/cr10mini.def.json", search()));
+  //ps.Take(PS_New("/usr/share/cura/resources/definitions/makeit_pro_l.def.json", search()));
   dflt.Take(PS_GetDefaults(ps()));
 
   Psf qualmat_file("/home/maurerpe/.config/repsnapper/qualmat.json");
@@ -723,7 +723,11 @@ int Settings::GetENo(string name, int model_specific) const {
   return stoi(ext.substr(8));
 }
 
-ps_value_t *Settings::FullSettings() {
+static string EStr(int e_no) {
+  return to_string(e_no - 1);
+}
+
+ps_value_t *Settings::FullSettings(int model_specific) {
   string qualname = get_string("Slicing", "Quality");
   const ps_value_t *qual = qualmat.Get("quality", qualname.c_str());
   
@@ -761,15 +765,20 @@ ps_value_t *Settings::FullSettings() {
     espeed[e_no - 1] = matspeed;
   }
   
+  int eshell   = GetENo("Shell",   model_specific);
+  int eskin    = GetENo("Skin",    model_specific);
+  int einfill  = GetENo("Infill",  model_specific);
+  int esupport = GetENo("Support", model_specific);
+  
   Psv set(PS_BlankSettings(ps()));
   set.Set("#global", "material_diameter", dia);
   set.Set("#global", "extruders_enabled_count", (int) PS_ItemCount(dflt()) - 1);
   
   set.Set("#global", "speed_print",     speed);
-  set.Set("#global", "speed_wall",      espeed[GetENo("Shell",   1) - 1] * ratio);
-  set.Set("#global", "speed_topbottom", espeed[GetENo("Skin",    1) - 1] * ratio);
-  set.Set("#global", "speed_infill",    espeed[GetENo("Infill",  1) - 1]);
-  set.Set("#global", "speed_support",   espeed[GetENo("Support", 1) - 1]);
+  set.Set("#global", "speed_wall",      espeed[eshell   - 1] * ratio);
+  set.Set("#global", "speed_topbottom", espeed[eskin    - 1] * ratio);
+  set.Set("#global", "speed_infill",    espeed[einfill  - 1]);
+  set.Set("#global", "speed_support",   espeed[esupport - 1]);
   
   PS_MergeSettings(set(), PS_GetMember(qual, "settings", NULL));
   for (int e_no = num_e; e_no >= 1; e_no--) {
@@ -779,6 +788,11 @@ ps_value_t *Settings::FullSettings() {
     string ext = to_string(e_no - 1);
     set.MergeActive(ext.c_str(), PS_GetMember(mat, "settings", NULL));
   }
+  
+  set.Set("#global", "wall_extruder_nr",       EStr(eshell));
+  set.Set("#global", "top_bottom_extruder_nr", EStr(eskin));
+  set.Set("#global", "infill_extruder_nr",     EStr(einfill));
+  set.Set("#global", "support_extruder_nr",    EStr(esupport));
   
   set.Set("#global", "layer_height", h);
   set.Set("#global", "line_width", h * wh);

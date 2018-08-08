@@ -22,6 +22,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <string.h>
 
 #include "ps_helper.h"
 
@@ -168,4 +169,43 @@ Psvi::Psvi(const ps_value_t *v) {
 
 Psvi::~Psvi() {
   PS_FreeValueIterator(vi);
+}
+
+/////////////////////////////////////////////////////////////////
+
+Pssa::Pssa(size_t max_entries) {
+  max = max_entries;
+  used = 0;
+  
+  arr = new ps_slice_str_t[max];
+}
+
+Pssa::~Pssa() {
+  for (size_t count = 0; count < used; count++) {
+    delete [] arr[count].model_str;
+    PS_FreeValue(arr[count].model_settings);
+  }
+  
+  delete [] arr;
+}
+
+void Pssa::append(string stl, ps_value_t *val) {
+  try {
+    if (val == NULL)
+      throw invalid_argument("ps_value_t was null");
+    
+    if (used >= max)
+      throw invalid_argument("too many entries in Pssa");
+    
+    arr[used].model_str = new char[stl.size() + 1];
+    memcpy(arr[used].model_str, stl.c_str(), stl.size());
+    arr[used].model_str[stl.size()] = '\0';
+    arr[used].model_str_len = stl.size();
+    arr[used].model_settings = val;
+    used++;
+  } catch (exception &e) {
+    PS_FreeValue(val);
+    
+    throw e;
+  }
 }
