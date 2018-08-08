@@ -198,7 +198,8 @@ void Settings::load_printer_settings(void) {
   Psv search(PS_NewList());
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/definitions"));
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/extruders"));  
-  ps.Take(PS_New("/home/maurerpe/.config/repsnapper/cr10mini.def.json", search()));
+  //ps.Take(PS_New("/home/maurerpe/.config/repsnapper/cr10mini.def.json", search()));
+  ps.Take(PS_New("/usr/share/cura/resources/definitions/makeit_pro_l.def.json", search()));
   dflt.Take(PS_GetDefaults(ps()));
 
   Psf qualmat_file("/home/maurerpe/.config/repsnapper/qualmat.json");

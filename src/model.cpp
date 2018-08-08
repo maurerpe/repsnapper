@@ -114,7 +114,8 @@ void Model::WriteGCode(Glib::RefPtr<Gio::File> file) {
 }
 
 vector<Shape*> Model::ReadShapes(Glib::RefPtr<Gio::File> file,
-				 uint max_triangles) {
+				 uint max_triangles,
+				 int extruder) {
   vector<Shape*> shapes;
   if (!file) return shapes;
   File sfile(file);
@@ -126,16 +127,18 @@ vector<Shape*> Model::ReadShapes(Glib::RefPtr<Gio::File> file,
       Shape *shape = new Shape();
       shape->setTriangles(triangles[i]);
       shape->filename = shapenames[i];
+      shape->extruder = extruder;
       shape->FitToVolume(settings.getPrintVolume() - 2.*settings.getPrintMargin());
       shapes.push_back(shape);
+      cout << "Reading shape: ext = " << extruder << endl;
     }
   }
   return shapes;
 }
 
-void Model::ReadStl(Glib::RefPtr<Gio::File> file) {
+void Model::ReadStl(Glib::RefPtr<Gio::File> file, int extruder) {
   bool autoplace = true;
-  vector<Shape*> shapes = ReadShapes(file, 0);
+  vector<Shape*> shapes = ReadShapes(file, 0, extruder);
   // do not autoplace in multishape files
   if (shapes.size() > 1)  autoplace = false;
   for (uint i = 0; i < shapes.size(); i++){
@@ -175,7 +178,7 @@ Shape Model::GetCombinedShape() const {
   return shape;
 }
 
-void Model::Read(Glib::RefPtr<Gio::File> file) {
+void Model::Read(Glib::RefPtr<Gio::File> file, int extruder) {
   std::string basename = file->get_basename();
   size_t pos = basename.rfind('.');
   cerr << "reading " << basename<< endl;
@@ -193,7 +196,7 @@ void Model::Read(Glib::RefPtr<Gio::File> file) {
     }
   }
   
-  ReadStl(file);
+  ReadStl(file, extruder);
   settings.STLPath = directory_path;
 }
 

@@ -31,6 +31,14 @@
 #include "widgets.h"
 #include "platform.h"
 
+static int GetENo(Gtk::ComboBoxText *w) {
+  string ext = w->get_active_text();
+  if (ext.length() <= 8)
+    return -1;
+  
+  return stoi(ext.substr(8));
+}
+
 bool View::on_delete_event(GdkEventAny* event) {
   Gtk::Main::quit();
   return false;
@@ -66,7 +74,7 @@ void View::connect_activate(const char *name, const sigc::slot<void> &slot) {
 
 void View::connect_toggled(const char *name, const sigc::slot<void, Gtk::ToggleButton *> &slot) {
   Gtk::ToggleButton *button = NULL;
-  m_builder->get_widget (name, button);
+  m_builder->get_widget(name, button);
   if (button)
     button->signal_toggled().connect (sigc::bind(slot, button));
   else {
@@ -76,9 +84,9 @@ void View::connect_toggled(const char *name, const sigc::slot<void, Gtk::ToggleB
 
 void View::connect_tooltoggled(const char *name, const sigc::slot<void, Gtk::ToggleToolButton *> &slot) {
   Gtk::ToggleToolButton *button = NULL;
-  m_builder->get_widget (name, button);
+  m_builder->get_widget(name, button);
   if (button)
-    button->signal_toggled().connect (sigc::bind(slot, button));
+    button->signal_toggled().connect(sigc::bind(slot, button));
   else {
     cerr << "missing toggle button " << name << endl;
   }
@@ -146,10 +154,17 @@ void View::toggle_fullscreen() {
 
 void View::do_load_stl() {
   m_model->preview_shapes.clear();
-
+  
+  Gtk::ComboBoxText *w;
+  m_builder->get_widget("Display.ExtruderLoad", w);
+  int ext = 1;
+  if (w)
+    ext = GetENo(w);
+  cout << "Loading shape with extruder " << ext << endl;
+  
   vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
   for (uint i= 0; i < files.size(); i++)
-    m_model->Read(files[i]);
+    m_model->Read(files[i], ext);
 
   m_filechooser->set_path(m_model->settings.STLPath);
   show_notebooktab("model_tab", "controlnotebook");
@@ -364,10 +379,7 @@ void View::fan_enabled_toggled(Gtk::ToggleButton *button) {
 }
 
 void View::run_extruder() {
-  int e_no = -1;
-  string ext = m_extruder->get_active_text();
-  if (ext.length() > 8)
-    e_no = stoi(ext.substr(8));
+  int e_no = GetENo(m_extruder);
   
   double amount = m_extruder_length->get_value();
   m_printer->RunExtruder(m_extruder_speed->get_value() * 60,
@@ -933,6 +945,7 @@ void View::num_extruders_changed() {
   update_extruder_combo(m_builder, "Extruder.Skin", num);
   update_extruder_combo(m_builder, "Extruder.Infill", num);
   update_extruder_combo(m_builder, "Extruder.Support", num);
+  update_extruder_combo(m_builder, "Display.ExtruderLoad", num, false);
   update_extruder_combo(m_builder, "m_extruder", num, false);
   update_extruder_combo(m_builder, "Printer.Extruder", num, false);
 }
@@ -1010,21 +1023,21 @@ View::View(BaseObjectType* cobject,
     w->set_sensitive(true);
 
   // View tab
-  connect_button ("m_save_stl",      sigc::mem_fun(*this, &View::save_stl) );
-  connect_button ("m_delete",        sigc::mem_fun(*this, &View::delete_selected_objects) );
-  connect_button ("m_duplicate",     sigc::mem_fun(*this, &View::duplicate_selected_objects) );
-  connect_button ("m_split",         sigc::mem_fun(*this, &View::split_selected_objects) );
-  connect_button ("m_merge",         sigc::mem_fun(*this, &View::merge_selected_objects) );
-  connect_button ("m_divide",        sigc::mem_fun(*this, &View::divide_selected_objects) );
-  connect_button ("m_platform",      sigc::mem_fun(*this, &View::placeonplatform_selection));
-  connect_button ("m_mirror",        sigc::mem_fun(*this, &View::mirror_selection));
+  connect_button("m_save_stl",      sigc::mem_fun(*this, &View::save_stl));
+  connect_button("m_delete",        sigc::mem_fun(*this, &View::delete_selected_objects));
+  connect_button("m_duplicate",     sigc::mem_fun(*this, &View::duplicate_selected_objects));
+  connect_button("m_split",         sigc::mem_fun(*this, &View::split_selected_objects));
+  connect_button("m_merge",         sigc::mem_fun(*this, &View::merge_selected_objects));
+  connect_button("m_divide",        sigc::mem_fun(*this, &View::divide_selected_objects));
+  connect_button("m_platform",      sigc::mem_fun(*this, &View::placeonplatform_selection));
+  connect_button("m_mirror",        sigc::mem_fun(*this, &View::mirror_selection));
 
-  connect_button ("progress_stop",   sigc::mem_fun(*this, &View::stop_progress));
+  connect_button("progress_stop",   sigc::mem_fun(*this, &View::stop_progress));
 
-  connect_button ("copy_extruder",   sigc::mem_fun(*this, &View::copy_extruder));
-  connect_button ("remove_extruder",   sigc::mem_fun(*this, &View::remove_extruder));
+  connect_button("copy_extruder",   sigc::mem_fun(*this, &View::copy_extruder));
+  connect_button("remove_extruder", sigc::mem_fun(*this, &View::remove_extruder));
 
-  m_builder->get_widget ("m_treeview", m_treeview);
+  m_builder->get_widget("m_treeview", m_treeview);
   // Insert our keybindings all around the place
   signal_key_press_event().connect (sigc::mem_fun(*this, &View::key_pressed_event) );
   m_treeview->signal_key_press_event().connect (sigc::mem_fun(*this, &View::key_pressed_event) );
@@ -1074,37 +1087,37 @@ View::View(BaseObjectType* cobject,
     (sigc::mem_fun(*this, &View::rot_object_from_spinbutton));
 
   // GCode tab
-  m_builder->get_widget ("g_gcode", m_gcode_entry);
+  m_builder->get_widget("g_gcode", m_gcode_entry);
   m_gcode_entry->set_activates_default();
   m_gcode_entry->signal_activate().connect (sigc::mem_fun(*this, &View::send_gcode));;
 
-  connect_button ("g_load_gcode",    sigc::mem_fun(*this, &View::load_gcode) );
-  connect_button ("g_convert_gcode", sigc::mem_fun(*this, &View::convert_to_gcode) );
-  connect_button ("g_save_gcode",    sigc::mem_fun(*this, &View::save_gcode) );
-  connect_button ("g_send_gcode",    sigc::mem_fun(*this, &View::send_gcode) );
+  connect_button("g_load_gcode",    sigc::mem_fun(*this, &View::load_gcode));
+  connect_button("g_convert_gcode", sigc::mem_fun(*this, &View::convert_to_gcode) );
+  connect_button("g_save_gcode",    sigc::mem_fun(*this, &View::save_gcode));
+  connect_button("g_send_gcode",    sigc::mem_fun(*this, &View::send_gcode));
 
   // Print tab
-  m_builder->get_widget ("p_print", m_print_button);
-  connect_button ("p_print",         sigc::mem_fun(*this, &View::print_clicked) );
-  m_builder->get_widget ("p_pause", m_pause_button);
-  connect_tooltoggled("p_pause",     sigc::mem_fun(*this, &View::pause_toggled));
-  connect_button ("p_home",          sigc::mem_fun(*this, &View::home_all));
-  connect_button ("p_reset",         sigc::mem_fun(*this, &View::reset_clicked));
-  connect_tooltoggled("p_power",     sigc::mem_fun(*this, &View::power_toggled) );
+  m_builder->get_widget("p_print", m_print_button);
+  connect_button("p_print",         sigc::mem_fun(*this, &View::print_clicked));
+  m_builder->get_widget("p_pause", m_pause_button);
+  connect_tooltoggled("p_pause",    sigc::mem_fun(*this, &View::pause_toggled));
+  connect_button("p_home",          sigc::mem_fun(*this, &View::home_all));
+  connect_button("p_reset",         sigc::mem_fun(*this, &View::reset_clicked));
+  connect_tooltoggled("p_power",    sigc::mem_fun(*this, &View::power_toggled));
 
   // Interactive tab
-  connect_toggled ("Printer.Logging", sigc::mem_fun(*this, &View::enable_logging_toggled));
-  connect_button ("Printer.ClearLog",      sigc::mem_fun(*this, &View::clear_logs) );
+  connect_toggled("Printer.Logging", sigc::mem_fun(*this, &View::enable_logging_toggled));
+  connect_button("Printer.ClearLog",      sigc::mem_fun(*this, &View::clear_logs) );
   m_builder->get_widget("Printer.ExtrudeSpeed", m_extruder_speed);
   m_builder->get_widget("Printer.ExtrudeAmount", m_extruder_length);
   m_builder->get_widget("Printer.Extruder", m_extruder);
   connect_toggled ("Misc.TempReadingEnabled", sigc::mem_fun(*this, &View::temp_monitor_enabled_toggled));
-  connect_toggled ("i_fan_enabled", sigc::mem_fun(*this, &View::fan_enabled_toggled));
-  m_builder->get_widget ("Printer.FanVoltage", m_fan_voltage);
+  connect_toggled("i_fan_enabled", sigc::mem_fun(*this, &View::fan_enabled_toggled));
+  m_builder->get_widget("Printer.FanVoltage", m_fan_voltage);
 
-  connect_button ("i_extrude_length", sigc::mem_fun(*this, &View::run_extruder) );
+  connect_button("i_extrude_length", sigc::mem_fun(*this, &View::run_extruder) );
 
-  connect_button ("i_new_custombutton", sigc::mem_fun(*this, &View::new_custombutton) );
+  connect_button("i_new_custombutton", sigc::mem_fun(*this, &View::new_custombutton) );
   
   m_settings_ui = new PrefsDlg(m_builder);
 
@@ -1247,8 +1260,8 @@ void View::setModel(Model *model) {
   m_treeview->append_column_editable("Name", m_model->objtree.m_cols->m_name);
 
   // m_treeview->append_column_editable("Extruder", m_model->objtree.m_cols->m_material);
-  //m_treeview->append_column("Extruder", m_model->objtree.m_cols->m_extruder);
-  //  m_treeview->set_headers_visible(true);
+  m_treeview->append_column("Extruder", m_model->objtree.m_cols->m_extruder);
+  m_treeview->set_headers_visible(true);
 
   m_gcodetextview = NULL;
   m_builder->get_widget ("GCode.Result", m_gcodetextview);
@@ -1408,7 +1421,7 @@ void View::split_selected_objects() {
     for (uint i=0; i<shapes.size() ; i++) {
       TreeObject* object = m_model->objtree.getParent(shapes[i]);
       if (object !=NULL)
-	if (m_model->SplitShape (object, shapes[i], shapes[i]->filename) > 1) {
+	if (m_model->SplitShape(object, shapes[i], shapes[i]->filename) > 1) {
 	// delete shape?
       }
     }
@@ -1428,6 +1441,16 @@ void View::merge_selected_objects() {
 }
 
 void View::divide_selected_objects() {
+}
+
+void View::change_extruder_selected_objects(Gtk::ComboBoxText *w) {
+  vector<Shape*> shapes;
+  vector<TreeObject*> objects;
+  int e_no = GetENo(w);
+  get_selected_objects (objects, shapes);
+  if (shapes.size()>0)
+    for (uint i=0; i<shapes.size() ; i++)
+      shapes[i]->extruder = e_no;
 }
 
 /* Handler for widget rollover. Displays a message in the window status bar */

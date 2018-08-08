@@ -23,8 +23,8 @@
 #include "view.h"
 
 class View::TranslationSpinRow {
-  // apply values to objects
-  void spin_value_changed (int axis);
+  void combobox_changed();
+  void spin_value_changed(int axis);
  public:
   TranslationSpinRow(View *view, Gtk::TreeView *treeview);
   ~TranslationSpinRow();
@@ -33,10 +33,9 @@ class View::TranslationSpinRow {
   View *m_view;
   Gtk::Box *m_box;
   Gtk::SpinButton *m_xyz[3];
+  Gtk::ComboBoxText *m_extruder;
 
-  // Changed STL Selection - must update translation values
-  void selection_changed ();
-
+  void selection_changed();
 };
 
 class View::AxisRow : public Gtk::Box {

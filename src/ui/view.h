@@ -131,7 +131,7 @@ class View : public Gtk::ApplicationWindow
   void custombutton_pressed(string name, Gtk::ToolButton *button);
   
   
-  Gtk::TreeView * extruder_treeview;
+  Gtk::TreeView *extruder_treeview;
   Glib::RefPtr< Gtk::ListStore > extruder_liststore;
   Gtk::TreeModelColumn<Glib::ustring> extrudername;
   void copy_extruder();
@@ -139,7 +139,6 @@ class View : public Gtk::ApplicationWindow
   void extruder_selected();
   void update_extruderlist();
 
-  // rfo bits
   Gtk::TreeView *m_treeview;
   TranslationSpinRow *m_translation_row;
   void tree_selection_changed();
@@ -148,6 +147,7 @@ class View : public Gtk::ApplicationWindow
   void split_selected_objects();
   void merge_selected_objects();
   void divide_selected_objects();
+  void change_extruder_selected_objects(Gtk::ComboBoxText *w);
   void update_settings_gui();
   void handle_ui_settings_changed();
   bool key_pressed_event(GdkEventKey *event);

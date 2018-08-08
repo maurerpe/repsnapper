@@ -53,9 +53,10 @@ class Model {
   void LoadConfig(Glib::RefPtr<Gio::File> file);
   
   // STL Functions
-  void ReadStl(Glib::RefPtr<Gio::File> file);
+  void ReadStl(Glib::RefPtr<Gio::File> file, int extruder = -1);
   vector<Shape*> ReadShapes(Glib::RefPtr<Gio::File> file,
-			    uint max_triangles = 0);
+			    uint max_triangles = 0,
+			    int extruder = -1);
   void SaveStl(Glib::RefPtr<Gio::File> file);
   
   int AddShape(TreeObject *parent, Shape * shape, string filename,
@@ -66,7 +67,7 @@ class Model {
 	
   sigc::signal< void, Gtk::TreePath & > m_signal_stl_added;
 
-  void Read(Glib::RefPtr<Gio::File> file);
+  void Read(Glib::RefPtr<Gio::File> file, int extruder = -1);
   void SetViewProgress (ViewProgress *progress);
 
   void DeleteObjTree(vector<Gtk::TreeModel::Path> &iter);

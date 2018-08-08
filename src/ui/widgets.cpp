@@ -25,8 +25,15 @@ static const char *axis_names[] = {"X", "Y", "Z"};
 
 /************************** TranslationSpinRow ****************************/
 
-// apply values to objects
-void View::TranslationSpinRow::spin_value_changed (int axis) {
+static int GetENo(Gtk::ComboBoxText *w) {
+  string ext = w->get_active_text();
+  if (ext.length() <= 8)
+    return -1;
+  
+  return stoi(ext.substr(8));
+}
+
+void View::TranslationSpinRow::spin_value_changed(int axis) {
   if (m_inhibit_update)
     return;
   
@@ -49,7 +56,7 @@ void View::TranslationSpinRow::spin_value_changed (int axis) {
       Vector3d trans;
       mat->get_translation(trans);
       trans[axis] = val*scale;
-      mat->set_translation (trans);
+      mat->set_translation(trans);
     }
   else
     for (uint o=0; o<objects.size(); o++) {
@@ -58,14 +65,41 @@ void View::TranslationSpinRow::spin_value_changed (int axis) {
       Vector3d trans;
       mat->get_translation(trans);
       trans[axis] = val*scale;
-      mat->set_translation (trans);
+      mat->set_translation(trans);
     }
   
   m_view->get_model()->ModelChanged();
 }
 
-  // Changed STL Selection - must update translation values
-void View::TranslationSpinRow::selection_changed () {
+void View::TranslationSpinRow::combobox_changed() {
+  if (m_inhibit_update)
+    return;
+  
+  int e_no = GetENo(m_extruder);
+
+  vector<Shape*> shapes;
+  vector<TreeObject*> objects;
+  
+  if (!m_view->get_selected_objects(objects, shapes))
+    return;
+  
+  if (shapes.size()==0 && objects.size()==0)
+    return;
+  
+  for (uint s=0; s<shapes.size(); s++)
+    shapes[s]->extruder = e_no;
+  
+  for (uint o=0; o<objects.size(); o++) {
+    vector<Shape *> &shapes = objects[o]->shapes;
+    for (uint s=0; s<shapes.size(); s++)
+      shapes[s]->extruder = e_no;
+  }
+
+  m_view->m_model->objtree.extruders_changed();
+}
+
+// Changed STL Selection - must update translation values
+void View::TranslationSpinRow::selection_changed() {
   m_inhibit_update = true;
   
   vector<Shape*> shapes;
@@ -79,34 +113,43 @@ void View::TranslationSpinRow::selection_changed () {
   
   /* FIXME: don't modify tranform3D.tranform directly */
   Matrix4d *mat;
+  int e_no = 1;
   if (shapes.size()==0) {
     if (objects.size()==0) {
       for (uint i = 0; i < 3; i++)
 	m_xyz[i]->set_value(0.0);
       return;
-    } else
+    } else {
       mat = &objects.back()->transform3D.transform;
+      e_no = objects.back()->shapes.back()->extruder;
+    }
   }
-  else
+  else {
     mat = &shapes.back()->transform3D.transform;
+    e_no = shapes.back()->extruder;
+  }
   Vector3d trans;
   mat->get_translation(trans);
   double scale = (*mat)[3][3];
   for (uint i = 0; i < 3; i++)
     m_xyz[i]->set_value(trans[i]/scale);
+  m_extruder->set_active_text("Extruder " + to_string(e_no));
   m_inhibit_update = false;
 }
 
 View::TranslationSpinRow::TranslationSpinRow(View *view, Gtk::TreeView *treeview) :
   m_inhibit_update(false), m_view(view){
-  view->m_builder->get_widget ("translate_x", m_xyz[0]);
-  view->m_builder->get_widget ("translate_y", m_xyz[1]);
-  view->m_builder->get_widget ("translate_z", m_xyz[2]);
+  view->m_builder->get_widget("translate_x", m_xyz[0]);
+  view->m_builder->get_widget("translate_y", m_xyz[1]);
+  view->m_builder->get_widget("translate_z", m_xyz[2]);
+  view->m_builder->get_widget("m_extruder",  m_extruder);
   
   for (uint i = 0; i < 3; i++) {
     m_xyz[i]->signal_value_changed().connect
       (sigc::bind(sigc::mem_fun(*this, &TranslationSpinRow::spin_value_changed), (int)i));
   }
+  m_extruder->signal_changed().connect
+    (sigc::mem_fun(*this, &TranslationSpinRow::combobox_changed));
   selection_changed();
   
   treeview->get_selection()->signal_changed().connect

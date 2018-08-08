@@ -40,6 +40,7 @@ class Shape {
   virtual ~Shape(){};
   Glib::ustring filename;
   int idx;
+  int extruder;
 
   Transform3D transform3D;
 
@@ -89,7 +90,8 @@ class Shape {
   
  private:
   vector<Triangle> triangles;
-  void calcPolygons();
   bool vert_valid;
   RenderVert vert;
+  
+  void calcPolygons();
 };
