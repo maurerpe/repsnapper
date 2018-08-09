@@ -40,12 +40,16 @@ void GCode::clear(void) {
   layers.clear();
 }
 
-double len3(double x, double y, double z) {
+static double len3(double x, double y, double z) {
   return sqrt(x * x + y * y + z * z);
 }
 
-double len2(double x, double y) {
+static double len2(double x, double y) {
   return sqrt(x * x + y * y);
+}
+
+static double norm2(Vector2d &v) {
+  return len2(v.x(), v.y());
 }
 
 void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, double &max_feedrate, double &home_feedrate) {
@@ -56,8 +60,6 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   Vector3d dest = state.pos;
   Vector3d center = state.pos;
   double radius = 0.0;
-  double length = 0.0;
-  double this_feed;
   double angle;
   double ext_end = state.ext;
   
@@ -130,7 +132,6 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   if (isfinite(codes['T']))
     state.e_no = codes['T'] + 1;
   
-  this_feed = state.feedrate;
   cmd.type = other;
   cmd.e_no = state.e_no;
   cmd.start = pos;
@@ -138,9 +139,10 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   cmd.center = {0, 0, 0};
   cmd.angle = 0;
   cmd.ccw = 0;
+  cmd.length = 0;
+  cmd.feedrate = state.feedrate;
   cmd.e_start = state.ext + state.ext_offset;
   cmd.e_stop = state.ext + state.ext_offset;
-  cmd.t_start = state.time;
   cmd.layerno = state.layerno;
   
   if (isfinite('G')) {
@@ -151,8 +153,8 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
       cmd.e_stop = ext_end + state.ext_offset;
       state.pos = dest;
       state.ext = ext_end;
-      this_feed = max_feedrate;
-      length = len3(dest[0] - pos[0], dest[1] - pos[1], dest[2] - pos[2]);
+      cmd.feedrate = max_feedrate;
+      cmd.length = len3(dest[0] - pos[0], dest[1] - pos[1], dest[2] - pos[2]);
     } else if (codes['G'] == 1.0) {
       // Linear
       cmd.type = line;
@@ -160,7 +162,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
       cmd.e_stop = ext_end + state.ext_offset;
       state.pos = dest;
       state.ext = ext_end;
-      length = len3(dest[0] - pos[0], dest[1] - pos[1], dest[2] - pos[2]);
+      cmd.length = len3(dest[0] - pos[0], dest[1] - pos[1], dest[2] - pos[2]);
     } else if (codes['G'] == 2.0 || codes['G'] == 3.0) {
       // Arc: 2 = CW, 3 = CCW
       cmd.type = arc;
@@ -209,15 +211,26 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
 
       cmd.angle = angle;
       
-      length = len2(radius * angle, dest[2] - pos[2]);
+      cmd.length = len2(radius * angle, dest[2] - pos[2]);
+    } else if (codes['G'] == 4.0) {
+      // Dwell
+      double dtime = 0;
+      if (isfinite(codes['P']))
+	dtime += codes['P'] / 1000.0;
+
+      if (isfinite(codes['S']))
+	dtime += codes['S'];
+
+      cmd.type = dwell;
+      cmd.t_dwell = dtime;
     } else if (codes['G'] == 20.0) {
       state.scale = 25.4;
     } else if (codes['G'] == 21.0) {
       state.scale = 1.0;
     } else if (codes['G'] == 28.0) {
       // Home
-      length = len3(dest[0] - pos[0], dest[1] - pos[1], dest[2] - pos[2]);
-      this_feed = home_feedrate;
+      cmd.length = len3(dest[0] - pos[0], dest[1] - pos[1], dest[2] - pos[2]);
+      cmd.feedrate = home_feedrate;
     } else if (codes['G'] == 90.0) {
       state.is_rel = 0;
       state.is_e_rel = 0; /* FIXME: Use firmware flavor */
@@ -244,19 +257,200 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     }
   }
 
-  /* FIXME: Factor jerk into time */
-  double accel_time = this_feed / state.accel;
-  double accel_len = 0.5 * state.accel * accel_time * accel_time;
-  double time = 0;
-  if (length > 2 * accel_len) {
-    time = 2 * accel_time + (length - 2 * accel_len) / this_feed;
-  } else {
-    time = 2 * sqrt(length / state.accel);
+  cmd.jerk = state.jerk;
+  cmd.accel = state.accel;
+  cmd.center = center;
+}
+
+static void junction_speed(Vector2d &ret, Vector2d &a, Vector2d &b, double jerk) {
+  double jx = fabs(b.x() - a.x());
+  double jy = fabs(b.y() - a.y());
+  
+  //cout << "junction_speed: " << a << b << endl;
+  
+  if (jx <= jerk && jy <= jerk) {
+    ret = {norm2(a), norm2(b)};
+    return;
   }
   
-  state.time += time;
-  cmd.center = center;
-  cmd.t_stop = state.time;
+  if (jx > jy) {
+    if (a.x() * b.x() < 0) {
+      ret = {jerk*norm2(a)/fabs(2*a.x()), jerk*norm2(b)/fabs(2*b.x())};
+      return;
+    }
+
+    if (a.x() == 0) {
+      ret = {0, jerk*norm2(b)/fabs(b.x())};
+      return;
+    }
+
+    if (b.x() == 0) {
+      ret = {jerk*norm2(a)/fabs(a.x()), 0};
+      return;
+    }
+
+    if (fabs(a.x()) > fabs(b.x())) {
+      ret = {fabs((b.x()+jerk)*norm2(a)/a.x()), norm2(b)};
+      return;
+    }
+    
+    ret = {norm2(a), fabs((a.x()+jerk)*norm2(b)/b.x())};
+    return;
+  }
+
+  if (a.y() * b.y() < 0) {
+    ret = {jerk*norm2(a)/fabs(2*a.y()), jerk*norm2(b)/fabs(2*b.y())};
+    return;
+  }
+
+  if (a.y() == 0) {
+    ret = {0, jerk*norm2(b)/fabs(b.y())};
+    return;
+  }
+
+  if (b.y() == 0) {
+    ret = {jerk*norm2(a)/fabs(a.y()), 0};
+    return;
+  }
+
+  if (fabs(a.y()) > fabs(b.y())) {
+    ret = {fabs((b.y()+jerk)*norm2(a)/a.y()), norm2(b)};
+    return;
+  }
+  
+  ret = {norm2(a), fabs((a.y()+jerk)*norm2(b)/b.y())};
+}
+
+static void delta_vec(Vector2d &ret, Vector3d &start, Vector3d &stop) {
+  ret = {stop.x() - start.x(), stop.y() - start.y()};
+}
+
+static void rotate_right90(Vector2d &ret, Vector2d &vec) {
+  ret = {vec.y(), -vec.x()};
+}
+
+void GCode::Velocities(GCodeCmd &cmd, Vector2d &start, Vector2d &stop) {
+  if (cmd.type == line) {
+    Vector2d vel;
+    delta_vec(vel, cmd.start, cmd.stop);
+    if (vel.x() != 0 || vel.y() != 0) {
+      vel /= norm2(vel);
+      vel *= cmd.feedrate;
+    }
+    
+    start = stop = vel;
+    return;
+  }
+
+  if (cmd.type == arc) {
+    Vector2d vel;
+
+    delta_vec(vel, cmd.center, cmd.start);
+    rotate_right90(vel, vel);
+    if (vel.x() != 0 || vel.y() != 0) {
+      vel /= norm2(vel);
+      vel *= cmd.feedrate;
+    }
+    if (cmd.ccw)
+      vel = -vel;
+    start = vel;
+
+    delta_vec(vel, cmd.center, cmd.stop);
+    rotate_right90(vel, vel);
+    if (vel.x() != 0 || vel.y() != 0) {
+      vel /= norm2(vel);
+      vel *= cmd.feedrate;
+    }
+    if (cmd.ccw)
+      vel = -vel;
+    stop = vel;
+    return;
+  }
+
+  if (cmd.type == dwell) {
+    start = {0, 0};
+    stop = {0, 0};
+    return;
+  }
+}
+
+void GCode::CalcTime(void) {
+  Vector2d vstart2, vstop2, vstop1, j1, j2;
+  
+  if (cmds.size() == 0)
+    return;
+
+  GCodeCmd &cmd = cmds[0];
+  cmd.t_start = 0;
+  Velocities(cmd, vstart2, vstop2);
+  vstop1 = {0,0};
+  junction_speed(j1, vstop1, vstart2, cmd.jerk);
+  size_t prev = 0;
+  size_t count = 1;
+  vstop1 = vstop2;
+  while (count <= cmds.size()) {
+    while (count < cmds.size() && cmds[count].type == other)
+      count++;
+    
+    if (count < cmds.size())
+      Velocities(cmds[count], vstart2, vstop2);
+    else
+      vstart2 = {0,0};
+    junction_speed(j2, vstop1, vstart2, cmd.jerk);
+
+    double time = 0;
+    if (cmd.type == dwell)
+      time = cmd.t_dwell;
+    else {
+      double start_speed = j1[1];
+      double stop_speed = j2[0];
+    
+      double start_accel_time = fmax(0, (cmd.feedrate - start_speed)) / cmd.accel;
+      double start_accel_len = (0.5 * cmd.accel * start_accel_time + start_speed) * start_accel_time;
+      double stop_accel_time = fmax(0, (cmd.feedrate - stop_speed)) / cmd.accel;
+      double stop_accel_len = (0.5 * cmd.accel * stop_accel_time + stop_speed) * stop_accel_time;
+      double tot_accel_len = start_accel_len + stop_accel_len;
+      if (cmd.length > tot_accel_len) {
+	time = start_accel_time + stop_accel_time + (cmd.length - tot_accel_len) / cmd.feedrate;
+      } else {
+	double ds = start_speed - stop_speed;
+	double aa = cmd.accel;
+	double bb = 2 * (start_speed + stop_speed);
+	double cc = -ds * ds / cmd.accel - 4 * cmd.length;
+	double ss = sqrt(bb * bb - 4 * aa * cc);
+	double t1 = (-bb - ss) / (2 * aa);
+	double t2 = (-bb + ss) / (2 * aa);
+	
+	if (t1 >= 0 && t2 >= 0) {
+	  if (t1 < t2)
+	    time = t1;
+	  else
+	    time = t2;
+	} else if (t1 >= 0) {
+	  time = t1;
+	} else if (t2 >= 0) {
+	  time = t2;
+	}// else {
+	  //throw invalid_argument("bad math: " + to_string(start_speed) + "," + to_string(stop_speed));
+	//}
+      }
+    }
+    
+    cmd.t_stop = cmd.t_start + time;
+
+    while (++prev < count)
+      cmds[prev].t_start = cmds[prev].t_stop = cmd.t_stop;
+    
+    if (count < cmds.size()) {
+      cmds[count].t_start = cmd.t_stop;
+      cmd = cmds[count];
+    }
+    
+    vstop1 = vstop2;
+    j1 = j2;
+    prev = count;
+    count++;
+  }
 }
 
 void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
@@ -321,6 +515,8 @@ void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
     cmds.push_back(cmd);
   }
   reset_locales();
+  
+  CalcTime();
   
   buffer->set_text(alltext.str());
   model->m_signal_gcode_changed.emit();

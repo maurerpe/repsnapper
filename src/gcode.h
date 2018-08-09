@@ -51,8 +51,13 @@ class GCode {
     Vector3d center;
     double angle;
     int ccw;
+    double length;
+    double feedrate;
+    double accel;
+    double jerk;
     double e_start;
     double e_stop;
+    double t_dwell;
     double t_start;
     double t_stop;
     size_t layerno;
@@ -68,7 +73,6 @@ class GCode {
     double accel;
     double jerk;
     double scale;
-    double time;
     int e_no;
     int is_rel;
     int is_e_rel;
@@ -78,8 +82,11 @@ class GCode {
   vector<GCodeCmd> cmds;
   vector<size_t> layers; // First command at each layer
   
+  static void Velocities(GCodeCmd &cmd, Vector2d &start, Vector2d &stop);
   static void ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, double &max_feedrate, double &home_feedrate);
   static void addSeg(RenderVert &vert, const GCodeCmd *cmd);
+  
+  void CalcTime(void);
   
   Glib::RefPtr<Gtk::TextBuffer> buffer;
  public:
