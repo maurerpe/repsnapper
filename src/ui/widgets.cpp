@@ -121,7 +121,6 @@ void View::TranslationSpinRow::selection_changed() {
       return;
     } else {
       mat = &objects.back()->transform3D.transform;
-      e_no = objects.back()->shapes.back()->extruder;
     }
   }
   else {
