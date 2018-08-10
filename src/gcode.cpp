@@ -256,69 +256,65 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
 	state.accel = codes['S'] * state.scale;
     }
   }
-
+  
   cmd.jerk = state.jerk;
   cmd.accel = state.accel;
   cmd.center = center;
 }
 
+static void max_factors(Vector2d &max, double a, double b, double j) {
+  if (fabs(a * max[0] - b * max[1]) < j) {
+    // Max is valid
+    return;
+  }
+  
+  if (a * b <= 0) {
+    // Reversing
+    a = fabs(a);
+    b = fabs(b);
+    
+    if (max[0] * a < j/2) {
+      max[1] = (j - 2 * max[0] * a) / b;
+      return;
+    }
+
+    if (max[1] * b < j/2) {
+      max[0] = (j - 2 * max[1] * b) / a;
+    }
+    
+    max[0] = j / (2 * a);
+    max[1] = j / (2 * b);
+    return;
+  }
+  
+  // Same direction
+  a = fabs(a);
+  b = fabs(b);
+  
+  if (max[0] * a > max[1] * b) {
+    max[0] = (max[1] * b + j) / a;
+    return;
+  }
+  
+  max[1] = (max[0] * a + j) / b;
+}
+
 static void junction_speed(Vector2d &ret, Vector2d &a, Vector2d &b, double jerk) {
   double jx = fabs(b.x() - a.x());
   double jy = fabs(b.y() - a.y());
-  
-  //cout << "junction_speed: " << a << b << endl;
-  
-  if (jx <= jerk && jy <= jerk) {
-    ret = {norm2(a), norm2(b)};
-    return;
-  }
+  Vector2d max = {1.0, 1.0};
   
   if (jx > jy) {
-    if (a.x() * b.x() < 0) {
-      ret = {jerk*norm2(a)/fabs(2*a.x()), jerk*norm2(b)/fabs(2*b.x())};
-      return;
-    }
-
-    if (a.x() == 0) {
-      ret = {0, jerk*norm2(b)/fabs(b.x())};
-      return;
-    }
-
-    if (b.x() == 0) {
-      ret = {jerk*norm2(a)/fabs(a.x()), 0};
-      return;
-    }
-
-    if (fabs(a.x()) > fabs(b.x())) {
-      ret = {fabs((b.x()+jerk)*norm2(a)/a.x()), norm2(b)};
-      return;
-    }
-    
-    ret = {norm2(a), fabs((a.x()+jerk)*norm2(b)/b.x())};
-    return;
-  }
-
-  if (a.y() * b.y() < 0) {
-    ret = {jerk*norm2(a)/fabs(2*a.y()), jerk*norm2(b)/fabs(2*b.y())};
-    return;
-  }
-
-  if (a.y() == 0) {
-    ret = {0, jerk*norm2(b)/fabs(b.y())};
-    return;
-  }
-
-  if (b.y() == 0) {
-    ret = {jerk*norm2(a)/fabs(a.y()), 0};
-    return;
-  }
-
-  if (fabs(a.y()) > fabs(b.y())) {
-    ret = {fabs((b.y()+jerk)*norm2(a)/a.y()), norm2(b)};
-    return;
+    max_factors(max, a.x(), b.x(), jerk);
+    max_factors(max, a.y(), b.y(), jerk);
+    max_factors(max, a.x(), b.x(), jerk);
+  } else {
+    max_factors(max, a.y(), b.y(), jerk);
+    max_factors(max, a.x(), b.x(), jerk);
+    max_factors(max, a.y(), b.y(), jerk);
   }
   
-  ret = {norm2(a), fabs((a.y()+jerk)*norm2(b)/b.y())};
+  ret = {norm2(a)*max[0], norm2(b) * max[1]};
 }
 
 static void delta_vec(Vector2d &ret, Vector3d &start, Vector3d &stop) {
@@ -430,9 +426,7 @@ void GCode::CalcTime(void) {
 	  time = t1;
 	} else if (t2 >= 0) {
 	  time = t2;
-	}// else {
-	  //throw invalid_argument("bad math: " + to_string(start_speed) + "," + to_string(stop_speed));
-	//}
+	}
       }
     }
     
