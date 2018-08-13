@@ -321,49 +321,49 @@ static void delta_vec(Vector2d &ret, Vector3d &start, Vector3d &stop) {
   ret = {stop.x() - start.x(), stop.y() - start.y()};
 }
 
-static void rotate_right90(Vector2d &ret, Vector2d &vec) {
-  ret = {vec.y(), -vec.x()};
+static void rotate_right90(Vector2d &vec) {
+  vec = {vec.y(), -vec.x()};
 }
 
-void GCode::Velocities(GCodeCmd &cmd, Vector2d &start, Vector2d &stop) {
-  if (cmd.type == line) {
+void GCode::Velocities(GCodeCmd *cmd, Vector2d &start, Vector2d &stop) {
+  if (cmd->type == line) {
     Vector2d vel;
-    delta_vec(vel, cmd.start, cmd.stop);
+    delta_vec(vel, cmd->start, cmd->stop);
     if (vel.x() != 0 || vel.y() != 0) {
       vel /= norm2(vel);
-      vel *= cmd.feedrate;
+      vel *= cmd->feedrate;
     }
     
     start = stop = vel;
     return;
   }
 
-  if (cmd.type == arc) {
+  if (cmd->type == arc) {
     Vector2d vel;
 
-    delta_vec(vel, cmd.center, cmd.start);
-    rotate_right90(vel, vel);
+    delta_vec(vel, cmd->center, cmd->start);
+    rotate_right90(vel);
     if (vel.x() != 0 || vel.y() != 0) {
       vel /= norm2(vel);
-      vel *= cmd.feedrate;
+      vel *= cmd->feedrate;
     }
-    if (cmd.ccw)
+    if (cmd->ccw)
       vel = -vel;
     start = vel;
 
-    delta_vec(vel, cmd.center, cmd.stop);
-    rotate_right90(vel, vel);
+    delta_vec(vel, cmd->center, cmd->stop);
+    rotate_right90(vel);
     if (vel.x() != 0 || vel.y() != 0) {
       vel /= norm2(vel);
-      vel *= cmd.feedrate;
+      vel *= cmd->feedrate;
     }
-    if (cmd.ccw)
+    if (cmd->ccw)
       vel = -vel;
     stop = vel;
     return;
   }
 
-  if (cmd.type == dwell) {
+  if (cmd->type == dwell) {
     start = {0, 0};
     stop = {0, 0};
     return;
@@ -376,11 +376,11 @@ void GCode::CalcTime(void) {
   if (cmds.size() == 0)
     return;
 
-  GCodeCmd &cmd = cmds[0];
-  cmd.t_start = 0;
+  GCodeCmd *cmd = &cmds[0];
+  cmd->t_start = 0;
   Velocities(cmd, vstart2, vstop2);
   vstop1 = {0,0};
-  junction_speed(j1, vstop1, vstart2, cmd.jerk);
+  junction_speed(j1, vstop1, vstart2, cmd->jerk);
   size_t prev = 0;
   size_t count = 1;
   vstop1 = vstop2;
@@ -389,30 +389,30 @@ void GCode::CalcTime(void) {
       count++;
     
     if (count < cmds.size())
-      Velocities(cmds[count], vstart2, vstop2);
+      Velocities(&cmds[count], vstart2, vstop2);
     else
       vstart2 = {0,0};
-    junction_speed(j2, vstop1, vstart2, cmd.jerk);
+    junction_speed(j2, vstop1, vstart2, cmd->jerk);
 
     double time = 0;
-    if (cmd.type == dwell)
-      time = cmd.t_dwell;
+    if (cmd->type == dwell)
+      time = cmd->t_dwell;
     else {
       double start_speed = j1[1];
       double stop_speed = j2[0];
     
-      double start_accel_time = fmax(0, (cmd.feedrate - start_speed)) / cmd.accel;
-      double start_accel_len = (0.5 * cmd.accel * start_accel_time + start_speed) * start_accel_time;
-      double stop_accel_time = fmax(0, (cmd.feedrate - stop_speed)) / cmd.accel;
-      double stop_accel_len = (0.5 * cmd.accel * stop_accel_time + stop_speed) * stop_accel_time;
+      double start_accel_time = fmax(0, (cmd->feedrate - start_speed)) / cmd->accel;
+      double start_accel_len = (0.5 * cmd->accel * start_accel_time + start_speed) * start_accel_time;
+      double stop_accel_time = fmax(0, (cmd->feedrate - stop_speed)) / cmd->accel;
+      double stop_accel_len = (0.5 * cmd->accel * stop_accel_time + stop_speed) * stop_accel_time;
       double tot_accel_len = start_accel_len + stop_accel_len;
-      if (cmd.length > tot_accel_len) {
-	time = start_accel_time + stop_accel_time + (cmd.length - tot_accel_len) / cmd.feedrate;
+      if (cmd->length > tot_accel_len) {
+	time = start_accel_time + stop_accel_time + (cmd->length - tot_accel_len) / cmd->feedrate;
       } else {
 	double ds = start_speed - stop_speed;
-	double aa = cmd.accel;
+	double aa = cmd->accel;
 	double bb = 2 * (start_speed + stop_speed);
-	double cc = -ds * ds / cmd.accel - 4 * cmd.length;
+	double cc = -ds * ds / cmd->accel - 4 * cmd->length;
 	double ss = sqrt(bb * bb - 4 * aa * cc);
 	double t1 = (-bb - ss) / (2 * aa);
 	double t2 = (-bb + ss) / (2 * aa);
@@ -430,14 +430,14 @@ void GCode::CalcTime(void) {
       }
     }
     
-    cmd.t_stop = cmd.t_start + time;
+    cmd->t_stop = cmd->t_start + time;
 
     while (++prev < count)
-      cmds[prev].t_start = cmds[prev].t_stop = cmd.t_stop;
+      cmds[prev].t_start = cmds[prev].t_stop = cmd->t_stop;
     
     if (count < cmds.size()) {
-      cmds[count].t_start = cmd.t_stop;
-      cmd = cmds[count];
+      cmds[count].t_start = cmd->t_stop;
+      cmd = &cmds[count];
     }
     
     vstop1 = vstop2;
@@ -491,7 +491,8 @@ void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
     cout << "Cannot determine printer max jerk" << endl;
     state.jerk = 10;
   }
-  
+
+  cmds.clear();
   while (getline(is,s)) {
     alltext << s << endl;
     
@@ -514,7 +515,7 @@ void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
   
   buffer->set_text(alltext.str());
   model->m_signal_gcode_changed.emit();
-
+  
   if (!cmds.empty()) {
     double tot = cmds.back().t_stop;
     int hr = floor(tot / 3600);
@@ -522,6 +523,8 @@ void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
     double sec = fmod(tot, 60);
     cout << "Print time: " << hr << "h " << min << "m " << sec << "s" << endl;
     cout << "Filament used: " << cmds.back().e_stop / 1000.0 << " m" << endl;
+  } else {
+    cout << "Gcode was empty" << endl;
   }
 }
 

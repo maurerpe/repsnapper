@@ -82,7 +82,7 @@ class GCode {
   vector<GCodeCmd> cmds;
   vector<size_t> layers; // First command at each layer
   
-  static void Velocities(GCodeCmd &cmd, Vector2d &start, Vector2d &stop);
+  static void Velocities(GCodeCmd *cmd, Vector2d &start, Vector2d &stop);
   static void ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, double &max_feedrate, double &home_feedrate);
   static void addSeg(RenderVert &vert, const GCodeCmd *cmd);
   
