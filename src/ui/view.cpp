@@ -638,7 +638,7 @@ void View::rot_object_from_spinbutton() {
   const double zangle = spB->get_value()*M_PI/180.;
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
-  get_selected_objects (objects, shapes);
+  get_selected_objects(objects, shapes);
   if (shapes.size()>0)
     for (uint i=0; i<shapes.size(); i++) {
       shapes[i]->transform3D.rotate_to(shapes[i]->Center, xangle, yangle, zangle);
@@ -655,7 +655,7 @@ void View::rot_object_from_spinbutton() {
 bool View::rotate_selection(Vector3d axis, double angle) {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
-  get_selected_objects (objects, shapes);
+  get_selected_objects(objects, shapes);
   if (objects.size()>0)
     for (uint o=0; o<objects.size(); o++) {
       Transform3D &transf = objects[o]->transform3D;
@@ -678,7 +678,7 @@ void View::update_rot_value() {
   toggle_block = true;
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
-  get_selected_objects (objects, shapes);
+  get_selected_objects(objects, shapes);
   Transform3D *trans = NULL;
   if (objects.size()>0)  {
     trans = &objects.back()->transform3D;
@@ -701,7 +701,7 @@ void View::update_rot_value() {
 void View::placeonplatform_selection () {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
-  get_selected_objects (objects, shapes);
+  get_selected_objects(objects, shapes);
   if (shapes.size()>0)
     for (uint i=0; i<shapes.size() ; i++)
       m_model->PlaceOnPlatform(shapes[i], NULL);
@@ -715,7 +715,7 @@ void View::placeonplatform_selection () {
 void View::mirror_selection () {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
-  get_selected_objects (objects, shapes);
+  get_selected_objects(objects, shapes);
   if (shapes.size()>0)
     for (uint i=0; i<shapes.size() ; i++)
       m_model->Mirror(shapes[i], NULL);
@@ -737,8 +737,8 @@ void View::set_SliderBBox(double max_z) {
   Gtk::Scale *scale;
   m_builder->get_widget("Display.PolygonOpacity", scale);
   if (scale)
-    scale->set_range (0, 1);
-  m_builder->get_widget ("Display.GCodeLayer", scale);
+    scale->set_range(0, 1);
+  m_builder->get_widget("Display.GCodeLayer", scale);
   if (scale)
     scale->set_range(0, smax);
 }
@@ -953,7 +953,7 @@ void View::num_extruders_changed() {
 bool View::move_selection(float x, float y, float z) {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
-  get_selected_objects (objects, shapes);
+  get_selected_objects(objects, shapes);
   if (shapes.size()>0) {
     for (uint s=0; s<shapes.size(); s++) {
       shapes[s]->move(Vector3d(x,y,z));
@@ -1119,8 +1119,6 @@ View::View(BaseObjectType* cobject,
 
   connect_button("i_new_custombutton", sigc::mem_fun(*this, &View::new_custombutton) );
   
-  m_settings_ui = new PrefsDlg(m_builder);
-
   // file chooser
   m_filechooser = new RSFilechooser(this);
   // show_widget("save_buttons", false);
@@ -1341,6 +1339,8 @@ void View::setModel(Model *model) {
 
   m_printer->setModel(m_model);
   
+  m_settings_ui = new PrefsDlg(m_builder, m_model);
+
   // 3D preview of the bed
   Gtk::Box *pBox = NULL;
   m_builder->get_widget("viewarea", pBox);
@@ -1372,7 +1372,7 @@ void View::tree_selection_changed() {
     m_model->m_current_selectionpath = m_treeview->get_selection()->get_selected_rows();
     vector<Shape*> shapes;
     vector<TreeObject*> objects;
-    get_selected_objects (objects, shapes);
+    get_selected_objects(objects, shapes);
     if (shapes.size() > 0) {
       ostringstream ostr;
       ostr << shapes.back()->filename << ": " << shapes.back()->size() << " triangles ";

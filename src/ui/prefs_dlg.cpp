@@ -19,6 +19,8 @@
 
 #include <cstdlib>
 #include <gtkmm.h>
+
+#include "model.h"
 #include "prefs_dlg.h"
 
 void PrefsDlg::handle_response(Gtk::Dialog *dialog) {
@@ -29,7 +31,9 @@ void PrefsDlg::handle_response_int(int, Gtk::Dialog *dialog) {
   dialog->hide();
 }
 
-PrefsDlg::PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder) {
+PrefsDlg::PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder, Model *model) : m_set(builder, model->settings.GetPs())  {
+  m_model = model;
+  
   builder->get_widget("preferences_dlg", m_preferences_dlg);
   m_preferences_dlg->set_icon_name("gtk-convert");
   m_preferences_dlg->signal_response().connect(
@@ -37,8 +41,13 @@ PrefsDlg::PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder) {
   Gtk::Button *close = NULL;
   builder->get_widget("prefs_close", close);
   if (close)
-    close->signal_clicked().connect(
-        sigc::bind(sigc::mem_fun(*this, &PrefsDlg::handle_response), m_preferences_dlg));
+    close->signal_clicked().connect
+      (sigc::bind(sigc::mem_fun(*this, &PrefsDlg::handle_response), m_preferences_dlg));
+
+  Gtk::Button *b;
+  builder->get_widget("qual_cust_new", b);
+  b->signal_clicked().connect
+    (sigc::bind(sigc::bind(sigc::bind(sigc::mem_fun(m_set, &SetDlg::Show), (void*)NULL), string("#global")), m_preferences_dlg));
 }
 
 PrefsDlg::~PrefsDlg() {

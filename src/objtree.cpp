@@ -93,9 +93,10 @@ Gtk::TreePath ObjectsTree::addShape(TreeObject *parent, Shape *shape,
 ObjectsTree::ObjectsTree() {
   version=0.1f;
   m_cols = new ModelColumns();
-  m_model = Gtk::TreeStore::create (*m_cols);
+  m_model = Gtk::TreeStore::create(*m_cols);
   update_model();
-  m_model->signal_row_changed().connect(sigc::mem_fun(*this, &ObjectsTree::on_row_changed));
+  m_model->signal_row_changed().connect
+    (sigc::mem_fun(*this, &ObjectsTree::on_row_changed));
 }
 
 ObjectsTree::~ObjectsTree() {

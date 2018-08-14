@@ -177,6 +177,7 @@ am__objects_1 = src/repsnapper-geometry.$(OBJEXT) \
 	src/ui/repsnapper-widgets.$(OBJEXT) \
 	src/ui/repsnapper-view.$(OBJEXT) \
 	src/ui/repsnapper-prefs_dlg.$(OBJEXT) \
+	src/ui/repsnapper-set_dlg.$(OBJEXT) \
 	src/ui/repsnapper-connectview.$(OBJEXT) \
 	src/ui/repsnapper-rsfilechooser.$(OBJEXT) \
 	src/ui/repsnapper-progress.$(OBJEXT) \
@@ -599,20 +600,20 @@ SHARED_SRC = src/geometry.cpp src/transform3d.cpp src/platform.cpp \
 	src/objtree.cpp src/model.cpp src/model_slice.cpp \
 	src/shape.cpp src/gcode.cpp src/triangle.cpp src/files.cpp \
 	src/settings.cpp src/ps_helper.cpp src/ui/widgets.cpp \
-	src/ui/view.cpp src/ui/prefs_dlg.cpp src/ui/connectview.cpp \
-	src/ui/rsfilechooser.cpp src/ui/progress.cpp src/ui/render.cpp \
-	src/ui/filters.cpp src/printer/printer_serial.cpp \
-	src/printer/thread_buffer.cpp \
+	src/ui/view.cpp src/ui/prefs_dlg.cpp src/ui/set_dlg.cpp \
+	src/ui/connectview.cpp src/ui/rsfilechooser.cpp \
+	src/ui/progress.cpp src/ui/render.cpp src/ui/filters.cpp \
+	src/printer/printer_serial.cpp src/printer/thread_buffer.cpp \
 	src/printer/threaded_printer_serial.cpp \
 	src/printer/printer.cpp src/printer/custom_baud.cpp
 SHARED_INC = src/geometry.h src/transform3d.h src/model.h \
 	src/objtree.h src/shape.h src/gcode.h src/triangle.h \
 	src/files.h src/stdafx.h src/platform.h src/settings.h \
 	src/types.h src/ps_helper.h src/ui/widgets.h src/ui/view.h \
-	src/ui/prefs_dlg.h src/ui/connectview.h src/ui/rsfilechooser.h \
-	src/ui/progress.h src/ui/render.h src/ui/filters.h \
-	src/printer/printer_serial.h src/printer/thread.h \
-	src/printer/thread_buffer.h \
+	src/ui/prefs_dlg.h src/ui/set_dlg.h src/ui/connectview.h \
+	src/ui/rsfilechooser.h src/ui/progress.h src/ui/render.h \
+	src/ui/filters.h src/printer/printer_serial.h \
+	src/printer/thread.h src/printer/thread_buffer.h \
 	src/printer/threaded_printer_serial.h src/printer/printer.h \
 	src/printer/custom_baud.h
 repsnapper_SOURCES = $(SHARED_SRC) $(SHARED_INC) src/repsnapper.cpp
@@ -780,6 +781,8 @@ src/ui/repsnapper-view.$(OBJEXT): src/ui/$(am__dirstamp) \
 	src/ui/$(DEPDIR)/$(am__dirstamp)
 src/ui/repsnapper-prefs_dlg.$(OBJEXT): src/ui/$(am__dirstamp) \
 	src/ui/$(DEPDIR)/$(am__dirstamp)
+src/ui/repsnapper-set_dlg.$(OBJEXT): src/ui/$(am__dirstamp) \
+	src/ui/$(DEPDIR)/$(am__dirstamp)
 src/ui/repsnapper-connectview.$(OBJEXT): src/ui/$(am__dirstamp) \
 	src/ui/$(DEPDIR)/$(am__dirstamp)
 src/ui/repsnapper-rsfilechooser.$(OBJEXT): src/ui/$(am__dirstamp) \
@@ -850,6 +853,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-progress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-render.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-rsfilechooser.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-set_dlg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/ui/$(DEPDIR)/repsnapper-widgets.Po@am__quote@
 
@@ -1086,6 +1090,20 @@ src/ui/repsnapper-prefs_dlg.obj: src/ui/prefs_dlg.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/ui/prefs_dlg.cpp' object='src/ui/repsnapper-prefs_dlg.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/ui/repsnapper-prefs_dlg.obj `if test -f 'src/ui/prefs_dlg.cpp'; then $(CYGPATH_W) 'src/ui/prefs_dlg.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ui/prefs_dlg.cpp'; fi`
+
+src/ui/repsnapper-set_dlg.o: src/ui/set_dlg.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/ui/repsnapper-set_dlg.o -MD -MP -MF src/ui/$(DEPDIR)/repsnapper-set_dlg.Tpo -c -o src/ui/repsnapper-set_dlg.o `test -f 'src/ui/set_dlg.cpp' || echo '$(srcdir)/'`src/ui/set_dlg.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/ui/$(DEPDIR)/repsnapper-set_dlg.Tpo src/ui/$(DEPDIR)/repsnapper-set_dlg.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/ui/set_dlg.cpp' object='src/ui/repsnapper-set_dlg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/ui/repsnapper-set_dlg.o `test -f 'src/ui/set_dlg.cpp' || echo '$(srcdir)/'`src/ui/set_dlg.cpp
+
+src/ui/repsnapper-set_dlg.obj: src/ui/set_dlg.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/ui/repsnapper-set_dlg.obj -MD -MP -MF src/ui/$(DEPDIR)/repsnapper-set_dlg.Tpo -c -o src/ui/repsnapper-set_dlg.obj `if test -f 'src/ui/set_dlg.cpp'; then $(CYGPATH_W) 'src/ui/set_dlg.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ui/set_dlg.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/ui/$(DEPDIR)/repsnapper-set_dlg.Tpo src/ui/$(DEPDIR)/repsnapper-set_dlg.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/ui/set_dlg.cpp' object='src/ui/repsnapper-set_dlg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/ui/repsnapper-set_dlg.obj `if test -f 'src/ui/set_dlg.cpp'; then $(CYGPATH_W) 'src/ui/set_dlg.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ui/set_dlg.cpp'; fi`
 
 src/ui/repsnapper-connectview.o: src/ui/connectview.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/ui/repsnapper-connectview.o -MD -MP -MF src/ui/$(DEPDIR)/repsnapper-connectview.Tpo -c -o src/ui/repsnapper-connectview.o `test -f 'src/ui/connectview.cpp' || echo '$(srcdir)/'`src/ui/connectview.cpp

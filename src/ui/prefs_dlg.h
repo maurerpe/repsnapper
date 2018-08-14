@@ -22,8 +22,12 @@
 #include "settings.h"
 #include <gtkmm.h>
 
+#include "set_dlg.h"
+
 class PrefsDlg {
   Gtk::Dialog *m_preferences_dlg;
+  Model *m_model;
+  SetDlg m_set;
 
   void handle_response(Gtk::Dialog *dialog);
   void handle_response_int(int, Gtk::Dialog *dialog);
@@ -32,7 +36,7 @@ class PrefsDlg {
   bool load_settings();
 
  public:
-  PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder);
+  PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder, Model *model);
   ~PrefsDlg();
   void show(Gtk::Window &trans);
   void set_icon_from_file(const string path) {m_preferences_dlg->set_icon_from_file(path);}

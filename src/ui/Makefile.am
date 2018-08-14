@@ -13,6 +13,7 @@ SHARED_SRC += \
 	src/ui/widgets.cpp \
 	src/ui/view.cpp \
 	src/ui/prefs_dlg.cpp \
+	src/ui/set_dlg.cpp \
 	src/ui/connectview.cpp \
 	src/ui/rsfilechooser.cpp \
 	src/ui/progress.cpp \
@@ -23,6 +24,7 @@ SHARED_INC += \
 	src/ui/widgets.h \
 	src/ui/view.h \
 	src/ui/prefs_dlg.h \
+	src/ui/set_dlg.h \
 	src/ui/connectview.h \
 	src/ui/rsfilechooser.h \
 	src/ui/progress.h \
