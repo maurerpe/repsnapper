@@ -26,6 +26,7 @@ SetDlg::SetDlg(Glib::RefPtr<Gtk::Builder> builder, const Psv *ps) {
   m_ps = (Psv *) ps;
   
   builder->get_widget("set_dlg", m_dlg);
+  builder->get_widget("set_tree_box", m_tree_box);
   builder->get_widget("set_search", m_search);
   builder->get_widget("set_tree", m_tree);
   builder->get_widget("set_name", m_name);
@@ -73,11 +74,20 @@ SetDlg::SetDlg(Glib::RefPtr<Gtk::Builder> builder, const Psv *ps) {
 SetDlg::~SetDlg() {
 }
 
-void SetDlg::Show(Gtk::Window *parent, string &ext, void *callback) {
-  m_callback = callback;
+void SetDlg::Show(Gtk::Window *parent, const char *ext, const char *name) {
+  m_ext = Glib::ustring(ext);
+  if (name)
+    m_set_name = name;
+  else
+    m_set_name = Glib::ustring("");
   
-  m_ext = ext;
+  if (m_set_name == "")
+    m_tree_box->show();
+  else
+    m_tree_box->hide();
+  
   SearchChanged();
+  SelectionChanged();
   
   if (parent)
     m_dlg->set_transient_for(*parent);
@@ -85,21 +95,31 @@ void SetDlg::Show(Gtk::Window *parent, string &ext, void *callback) {
   m_dlg->raise();
 }
 
+SetDlg::sig_set SetDlg::signal_set() {
+  return m_callback;
+}
+
 void SetDlg::Cancel(void) {
   m_dlg->hide();
 }
 
 void SetDlg::Set(void) {
-  vector< Gtk::TreeModel::Path > paths = m_tree->get_selection()->get_selected_rows();
-  if (paths.size() == 0) {
-    Gtk::MessageDialog dialog(_("No setting selected"), false,
-                              Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
-    dialog.set_transient_for(*m_dlg);
-    dialog.run();
-    return;
+  Glib::ustring name;
+
+  if (m_set_name == "") {
+    vector< Gtk::TreeModel::Path > paths = m_tree->get_selection()->get_selected_rows();
+    if (paths.size() == 0) {
+      Gtk::MessageDialog dialog(_("No setting selected"), false,
+				Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
+      dialog.set_transient_for(*m_dlg);
+      dialog.run();
+      return;
+    }
+    Gtk::TreeModel::Row row = *m_store->children()[paths.front().back()];
+    name = row[m_name_col];
+  } else {
+    name = m_set_name;
   }
-  Gtk::TreeModel::Row row = *m_store->children()[paths.front().back()];
-  Glib::ustring name = row[m_name_col];
 
   Psv v;
   
@@ -116,15 +136,9 @@ void SetDlg::Set(void) {
   
   /* FIXME: Validate type */
   
-  // cout << "Entered:" << endl;
-  // Pso os(PS_NewFileOStream(stdout));
-  // PS_WriteValue(os(), v());
-  // fflush(stdout);
-  // cout << endl;
-  
   m_dlg->hide();
-  
-  /* FIXME: Execute callback */
+
+  m_callback.emit(m_ext, name, v());
 }
 
 static void SetLabel(Gtk::Label *label, const char *str) {
@@ -136,11 +150,17 @@ static void SetBuffer(Glib::RefPtr<Gtk::TextBuffer> buffer, const char *str) {
 }
 
 void SetDlg::SelectionChanged() {
-  vector< Gtk::TreeModel::Path > paths = m_tree->get_selection()->get_selected_rows();
-  if (paths.size() == 0)
-    return;
-  Gtk::TreeModel::Row row = *m_store->children()[paths.front().back()];
-  Glib::ustring name = row[m_name_col];
+  Glib::ustring name;
+
+  if (m_set_name == "") {
+    vector< Gtk::TreeModel::Path > paths = m_tree->get_selection()->get_selected_rows();
+    if (paths.size() == 0)
+      return;
+    Gtk::TreeModel::Row row = *m_store->children()[paths.front().back()];
+    name = row[m_name_col];
+  } else {
+    name = m_set_name;
+  }
   
   ps_value_t *v = PS_GetMember(m_ps->Get(m_ext.c_str(), "#set"), name.c_str(), NULL);
   SetLabel(m_name,    PS_GetString(PS_GetMember(v, "label", NULL)));

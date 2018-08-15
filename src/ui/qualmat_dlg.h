@@ -19,22 +19,23 @@
 
 #pragma once
 
-#include "settings.h"
 #include <gtkmm.h>
 
-class PrefsDlg {
-  Gtk::Dialog *m_preferences_dlg;
-  Model *m_model;
+#include "settings.h"
+#include "set_dlg.h"
+#include "cust_prop.h"
+#include "ps_helper.h"
 
-  void handle_response(Gtk::Dialog *dialog);
-  void handle_response_int(int, Gtk::Dialog *dialog);
+class QualMatDlg {
+ private:
+  Settings *m_settings;
+  SetDlg *m_set;
+  CustProp m_cust;
 
-  std::vector<Settings *> m_settings;
-  bool load_settings();
-
+  Gtk::Dialog *m_dlg;
+  
  public:
-  PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder, Model *model);
+  QualMatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
   
   void show(Gtk::Window &trans);
-  void set_icon_from_file(const string path) {m_preferences_dlg->set_icon_from_file(path);}
 };

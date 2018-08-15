@@ -21,51 +21,43 @@
 
 #include <gtkmm.h>
 
-#include "settings.h"
 #include "ps_helper.h"
+#include "set_dlg.h"
 
-class SetDlg {
- public:
-  typedef sigc::signal<void, Glib::ustring, Glib::ustring, const ps_value_t *> sig_set;
-  
+class CustProp : public Gtk::Box {
  private:
-  Psv *m_ps;
+  Gtk::Window *m_window;
+  SetDlg *m_set;
+  const Psv *m_ps;
   Glib::ustring m_ext;
-  Glib::ustring m_set_name;
+  ps_value_t *m_value;
   
   Glib::RefPtr< Gtk::ListStore > m_store;
   Gtk::TreeModelColumnRecord m_cols;
   Gtk::TreeModelColumn<Glib::ustring> m_name_col;
+  Gtk::TreeModelColumn<Glib::ustring> m_value_col;
   
-  sig_set m_callback;
+  Gtk::TreeView m_tree;
+  Gtk::Button   m_new;
+  Gtk::Button   m_edit;
+  Gtk::Button   m_delete;
   
-  Gtk::Dialog *m_dlg;
-  Gtk::Box      *m_tree_box;
-  Gtk::SearchEntry *m_search;
-  Gtk::TreeView *m_tree;
-  Gtk::Label    *m_name;
-  Gtk::Label    *m_unit;
-  Gtk::Label    *m_type;
-  Gtk::TextView *m_description;
-  Gtk::TextView *m_formula;
-  Gtk::TextView *m_default;
-  Gtk::Entry    *m_new;
-  
-  Glib::RefPtr<Gtk::TextBuffer> m_description_buffer;
-  Glib::RefPtr<Gtk::TextBuffer> m_formula_buffer;
-  Glib::RefPtr<Gtk::TextBuffer> m_default_buffer;
-  Glib::RefPtr<Gtk::EntryBuffer> m_search_buffer;
-  Glib::RefPtr<Gtk::EntryBuffer> m_new_buffer;
+  Gtk::Box m_buttonbox;
+  Gtk::ScrolledWindow m_scroll;
   
  public:
-  SetDlg(Glib::RefPtr<Gtk::Builder> builder, const Psv *ps);
-  ~SetDlg();
-  sig_set signal_set();
-  void Show(Gtk::Window *parent, const char *ext, const char *name = NULL);
+  CustProp(SetDlg *set, const Psv *ps);
+
+  void SetWindow(Gtk::Window *window);
+  void SetValue(const char *ext, ps_value_t *value);
+  ps_value_t *GetValue() {return m_value;};
 
  private:
-  void Cancel(void);
-  void Set(void);
-  void SelectionChanged(void);
-  void SearchChanged(void);
+  void BuildStore(void);
+  
+  void New(void);
+  void Edit(void);
+  void Delete(void);
+  
+  void Set(Glib::ustring ext, Glib::ustring name, const ps_value_t *v);
 };

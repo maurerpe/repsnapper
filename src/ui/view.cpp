@@ -26,6 +26,8 @@
 #include "render.h"
 #include "settings.h"
 #include "prefs_dlg.h"
+#include "set_dlg.h"
+#include "qualmat_dlg.h"
 #include "progress.h"
 #include "connectview.h"
 #include "widgets.h"
@@ -537,6 +539,10 @@ void View::show_preferences() {
   m_settings_ui->show(*this);
 }
 
+void View::show_qualmat() {
+  m_qualmat->show(*this);
+}
+
 void View::about_dialog() {
   show_dialog("about_dialog");
 }
@@ -1015,6 +1021,7 @@ View::View(BaseObjectType* cobject,
    
   connect_activate("edit.fullscreen",      sigc::mem_fun(*this, &View::toggle_fullscreen) );
   connect_activate("edit.preferences",     sigc::mem_fun(*this, &View::show_preferences) );
+  connect_activate("edit.qualmat",         sigc::mem_fun(*this, &View::show_qualmat) );
   
   connect_activate("help.about",           sigc::mem_fun(*this, &View::about_dialog));
   Gtk::Widget *w;
@@ -1217,6 +1224,8 @@ void View::on_controlnotebook_switch(Gtk::Widget* page, guint page_num) {
 
 View::~View() {
   delete m_settings_ui;
+  delete m_qualmat;
+  delete m_set;
   delete m_translation_row;
   for (uint i = 0; i < 3; i++) {
     delete m_axis_rows[i];
@@ -1340,6 +1349,8 @@ void View::setModel(Model *model) {
   m_printer->setModel(m_model);
   
   m_settings_ui = new PrefsDlg(m_builder, m_model);
+  m_set = new SetDlg(m_builder, m_model->settings.GetPs());
+  m_qualmat = new QualMatDlg(m_builder, &m_model->settings, m_set);
 
   // 3D preview of the bed
   Gtk::Box *pBox = NULL;

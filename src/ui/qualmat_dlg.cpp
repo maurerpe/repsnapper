@@ -17,24 +17,26 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#pragma once
-
-#include "settings.h"
+#include <cstdlib>
 #include <gtkmm.h>
 
-class PrefsDlg {
-  Gtk::Dialog *m_preferences_dlg;
-  Model *m_model;
+#include "qualmat_dlg.h"
 
-  void handle_response(Gtk::Dialog *dialog);
-  void handle_response_int(int, Gtk::Dialog *dialog);
-
-  std::vector<Settings *> m_settings;
-  bool load_settings();
-
- public:
-  PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder, Model *model);
+QualMatDlg::QualMatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set) : m_cust(set, settings->GetPs()) {
+  m_settings = settings;
+  m_set = set;
   
-  void show(Gtk::Window &trans);
-  void set_icon_from_file(const string path) {m_preferences_dlg->set_icon_from_file(path);}
-};
+  builder->get_widget("qualmat_dlg", m_dlg);
+  m_cust.SetWindow(m_dlg);
+  m_cust.SetValue("#global", PS_GetMember(PS_GetMember(m_settings->GetQualMat()->Get("quality", "Normal"), "settings", NULL), "#global", NULL));
+  
+  Gtk::Box *box;
+  builder->get_widget("qual_cust", box);
+  box->add(m_cust);
+}
+
+void QualMatDlg::show(Gtk::Window &trans) {
+  m_dlg->set_transient_for(trans);
+  m_dlg->show();
+  m_dlg->raise();
+}

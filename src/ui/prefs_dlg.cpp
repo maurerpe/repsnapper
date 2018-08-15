@@ -31,7 +31,7 @@ void PrefsDlg::handle_response_int(int, Gtk::Dialog *dialog) {
   dialog->hide();
 }
 
-PrefsDlg::PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder, Model *model) : m_set(builder, model->settings.GetPs())  {
+PrefsDlg::PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder, Model *model) {
   m_model = model;
   
   builder->get_widget("preferences_dlg", m_preferences_dlg);
@@ -43,14 +43,6 @@ PrefsDlg::PrefsDlg(Glib::RefPtr<Gtk::Builder> &builder, Model *model) : m_set(bu
   if (close)
     close->signal_clicked().connect
       (sigc::bind(sigc::mem_fun(*this, &PrefsDlg::handle_response), m_preferences_dlg));
-
-  Gtk::Button *b;
-  builder->get_widget("qual_cust_new", b);
-  b->signal_clicked().connect
-    (sigc::bind(sigc::bind(sigc::bind(sigc::mem_fun(m_set, &SetDlg::Show), (void*)NULL), string("#global")), m_preferences_dlg));
-}
-
-PrefsDlg::~PrefsDlg() {
 }
 
 bool PrefsDlg::load_settings() {

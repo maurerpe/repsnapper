@@ -28,6 +28,14 @@
 
 using namespace std;
 
+string PS_ToString(const ps_value_t *v) {
+  Pso os(PS_NewStrOStream());
+
+  PS_WriteValue(os(), v);
+  
+  return string(PS_OStreamContents(os()));
+}
+
 Psv::Psv() : v(NULL) {
 }
 

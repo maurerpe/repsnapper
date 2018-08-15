@@ -27,6 +27,9 @@
 
 #include "rsfilechooser.h"
 
+class SetDlg;
+class QualMatDlg;
+
 static bool UNUSED toggle_block = false; // blocks signals for togglebuttons etc
 
 class View : public Gtk::ApplicationWindow
@@ -70,6 +73,8 @@ class View : public Gtk::ApplicationWindow
   
   Printer *m_printer;
   PrefsDlg *m_settings_ui;
+  QualMatDlg *m_qualmat;
+  SetDlg *m_set;
 
   Glib::RefPtr<Gtk::Builder> m_builder;
   Model *m_model;
@@ -193,6 +198,7 @@ class View : public Gtk::ApplicationWindow
 
   void show_dialog(const char *name);
   void show_preferences();
+  void show_qualmat();
   Glib::RefPtr<Gtk::Builder> getBuilder() const { return m_builder; };
 
   void err_log(string s);

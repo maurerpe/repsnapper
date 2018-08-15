@@ -28,6 +28,8 @@
 
 using namespace std;
 
+string PS_ToString(const ps_value_t *v);
+
 class Psv {
 protected:
   ps_value_t *v;
