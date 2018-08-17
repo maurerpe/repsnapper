@@ -26,16 +26,92 @@
 #include "cust_prop.h"
 #include "ps_helper.h"
 
-class QualMatDlg {
- private:
+class SelectionBox {
+ protected:
   Settings *m_settings;
-  SetDlg *m_set;
-  CustProp m_cust;
-
+  Glib::ustring m_key;
+  Psv m_template;
+  
   Gtk::Dialog *m_dlg;
   
+  Glib::RefPtr< Gtk::ListStore > m_store;
+  Gtk::TreeModelColumnRecord m_cols;
+  Gtk::TreeModelColumn<Glib::ustring> m_name_col;
+  
+  Gtk::TreeView *m_tree;
+  Gtk::Button   *m_new;
+  Gtk::Button   *m_copy;
+  Gtk::Button   *m_rename;
+  Gtk::Button   *m_delete;
+  
+  bool inhibit_spin_changed;
+  
+ public:
+  SelectionBox(Glib::RefPtr<Gtk::Builder> builder,
+	       Settings *settings,
+	       Glib::ustring prefix,
+	       Glib::ustring key);
+  
+ protected:
+  void SetTemplate(const ps_value_t *v);
+  Glib::ustring GetSelectionName(void);
+  void SelectFirst(void);
+  void BuildStore(void);
+  
+  void New(void);
+  void Copy(void);
+  void Rename(void);
+  void Delete(void);
+
+  void SpinChanged(Gtk::SpinButton *button, const char *name);
+  
+  Glib::ustring GetString(void);
+};
+
+class QualDlg : public SelectionBox {
+ private:
+  SetDlg *m_set;
+  CustProp m_cust;
+  
+  Gtk::SpinButton *m_height;
+  Gtk::SpinButton *m_width;
+  Gtk::SpinButton *m_speed;
+  Gtk::SpinButton *m_wallspeedratio;
+  
+ public:
+  QualDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
+  
+ private:
+  void SelectionChanged(void);  
+};
+
+class MatDlg : public SelectionBox {
+ private:
+  SetDlg *m_set;
+  CustProp m_cust_global;
+  CustProp m_cust_active;
+  
+  Gtk::SpinButton  *m_feedrate;
+  Gtk::SpinButton  *m_width;
+  Gtk::CheckButton *m_width_enable;
+  
+ public:
+  MatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
+  
+ private:
+  void SelectionChanged(void);
+  void FeedrateChanged(void);
+  void WidthSpinChanged(void);
+  void WidthEnableChanged(void);
+};
+
+class QualMatDlg {
+ private:
+  QualDlg qual;
+  MatDlg mat;
+  Gtk::Dialog *m_dlg;  
+
  public:
   QualMatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
-  
   void show(Gtk::Window &trans);
 };

@@ -46,7 +46,7 @@ class Settings : public Glib::KeyFile {
  public:
   const Psv *GetPs() {return &ps;};
   const Psv *GetDflt() {return &dflt;};
-  const Psv *GetQualMat() {return &qualmat;};
+  Psv *GetQualMat() {return &qualmat;};
   
   void copyGroup(const string &from, const string &to);
 

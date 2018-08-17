@@ -33,7 +33,6 @@ string PS_ToString(const ps_value_t *v);
 class Psv {
 protected:
   ps_value_t *v;
-  void Set(const char *ext, const char *setting, ps_value_t *val);
   
 public:
   Psv();
@@ -46,6 +45,7 @@ public:
   
   ps_value_t *operator()(void) const;
   const ps_value_t *Get(const char *ext, const char *set) const;
+  void Set(const char *ext, const char *setting, ps_value_t *val);
   void Set(const char *ext, const char *setting, bool val);
   void Set(const char *ext, const char *setting, int val);
   void Set(const char *ext, const char *setting, double val);

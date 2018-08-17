@@ -45,7 +45,7 @@ CustProp::CustProp(SetDlg *set, const Psv *ps) : Gtk::Box(Gtk::ORIENTATION_HORIZ
   
   m_scroll.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
   m_scroll.property_width_request().set_value(400);
-  m_scroll.property_width_request().set_value(200);
+  m_scroll.property_height_request().set_value(200);
   m_scroll.add(m_tree);
 
   add(m_scroll);
