@@ -47,6 +47,11 @@ void Filters::attach_filters(Gtk::FileChooser &chooser, Filters::FileType type) 
     spec->add_pattern("*.conf");
     break;
 
+  case JSON:
+    spec->set_name(_("Json Settings"));
+    spec->add_pattern("*.json");
+    break;
+
   default:
     break;
   }  

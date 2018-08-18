@@ -46,11 +46,15 @@ class SelectionBox {
   
   bool inhibit_spin_changed;
   
+  sigc::signal<void> m_sig_changed;
+  
  public:
   SelectionBox(Glib::RefPtr<Gtk::Builder> builder,
 	       Settings *settings,
 	       Glib::ustring prefix,
 	       Glib::ustring key);
+
+  sigc::signal<void> signal_changed() {return m_sig_changed;};  
   
  protected:
   void SetTemplate(const ps_value_t *v);
@@ -107,11 +111,29 @@ class MatDlg : public SelectionBox {
 
 class QualMatDlg {
  private:
+  Settings *m_settings;
   QualDlg qual;
   MatDlg mat;
-  Gtk::Dialog *m_dlg;  
+  Gtk::Dialog *m_dlg;
+  
+  Gtk::Button *m_close;
+  Gtk::Button *m_save;
+  Gtk::Button *m_saveas;
+  Gtk::Button *m_load;
+  
+  sigc::signal<void> m_sig_changed;
 
+  string m_folder;
+  
  public:
   QualMatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
   void show(Gtk::Window &trans);
+  sigc::signal<void> signal_qualmat_changed() {return m_sig_changed;};
+
+ private:
+  void Close(void);
+  void Save(void);
+  void SaveAs(void);
+  void Load(void);
+  void Changed(void);
 };

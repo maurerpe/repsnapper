@@ -74,7 +74,7 @@ protected:
   FILE *file;
   
 public:
-  Psf(const char *name);
+  Psf(const char *name, const char *mode = "r");
   ~Psf();
 
   void close(void);

@@ -46,6 +46,15 @@
 
 const string serialspeeds[] = { "9600", "19200", "38400", "57600", "115200", "230400", "250000" };
 
+string Settings::GetConfigPath(string filename) {
+  vector<string> path(3);
+  path[0] = Glib::get_user_config_dir();
+  path[1] = "repsnapper";
+  path[2] = filename;
+  
+  return Glib::build_filename(path);
+}
+
 // convert GUI name to group/key
 bool splitpoint(const string &glade_name, string &group, string &key) {
   int pos = glade_name.find(".");
@@ -198,11 +207,11 @@ void Settings::load_printer_settings(void) {
   Psv search(PS_NewList());
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/definitions"));
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/extruders"));  
-  ps.Take(PS_New("/home/maurerpe/.config/repsnapper/cr10mini.def.json", search()));
-  //ps.Take(PS_New("/usr/share/cura/resources/definitions/makeit_pro_l.def.json", search()));
+  ps.Take(PS_New(GetConfigPath("cr10mini.def.json").c_str(), search()));
+  //ps.Take(PS_New(GetConfigPath("makeit_pro_l.def.json").c_str(), search()));
   dflt.Take(PS_GetDefaults(ps()));
 
-  Psf qualmat_file("/home/maurerpe/.config/repsnapper/qualmat.json");
+  Psf qualmat_file(GetConfigPath("qualmat.json").c_str(), "r");
   qualmat.Take(PS_ParseJsonFile(qualmat_file()));
   qualmat_file.close();
 }

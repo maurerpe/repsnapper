@@ -25,7 +25,7 @@
 class Filters {
  public:
   enum FileType {
-    UNDEF, MODEL, GCODE, SETTINGS
+    UNDEF, MODEL, GCODE, SETTINGS, JSON
   };
 
   static void attach_filters(Gtk::FileChooser &chooser, FileType type);

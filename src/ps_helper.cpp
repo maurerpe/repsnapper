@@ -153,8 +153,8 @@ Pso::~Pso() {
 
 /////////////////////////////////////////////////////////////////
 
-Psf::Psf(const char *name) {
-  if ((file = fopen(name, "r")) == NULL)
+Psf::Psf(const char *name, const char *mode) {
+  if ((file = fopen(name, mode)) == NULL)
     throw invalid_argument(string("Could not open file \"") + string(name) + string("\""));
 }
 

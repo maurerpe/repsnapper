@@ -21,6 +21,7 @@
 #include <gtkmm.h>
 
 #include "qualmat_dlg.h"
+#include "filters.h"
 
 //////////////////////// SelectionBox ///////////////////////////////////
 
@@ -96,6 +97,7 @@ void SelectionBox::New(void) {
   m_settings->GetQualMat()->Set(m_key.c_str(), name.c_str(), PS_CopyValue(m_template()));
   
   BuildStore();
+  m_sig_changed.emit();
 }
 
 void SelectionBox::Copy(void) {
@@ -108,6 +110,7 @@ void SelectionBox::Copy(void) {
   m_settings->GetQualMat()->Set(m_key.c_str(), new_name.c_str(), v);
   
   BuildStore();
+  m_sig_changed.emit();
 }
 
 void SelectionBox::Rename(void) {
@@ -121,6 +124,7 @@ void SelectionBox::Rename(void) {
   PS_RemoveMember(PS_GetMember((*m_settings->GetQualMat())(), m_key.c_str(), NULL), name.c_str());
   
   BuildStore();
+  m_sig_changed.emit();
 }
 
 void SelectionBox::Delete(void) {
@@ -131,6 +135,7 @@ void SelectionBox::Delete(void) {
   PS_RemoveMember(PS_GetMember((*m_settings->GetQualMat())(), m_key.c_str(), NULL), name.c_str());
   
   BuildStore();
+  m_sig_changed.emit();
 }
 
 void SelectionBox::SpinChanged(Gtk::SpinButton *button, const char *set_name) {
@@ -153,6 +158,7 @@ void SelectionBox::SpinChanged(Gtk::SpinButton *button, const char *set_name) {
     return;
   }
   PS_AddMember(v, set_name, num);
+  m_sig_changed.emit();
 }
 
 Glib::ustring SelectionBox::GetString(void) {
@@ -295,6 +301,7 @@ void MatDlg::FeedrateChanged(void) {
   }
   PS_ResizeList(v, 0, NULL);
   PS_AppendToList(v, num);  
+  m_sig_changed.emit();
 }
 
 void MatDlg::WidthSpinChanged(void) {
@@ -320,6 +327,7 @@ void MatDlg::WidthSpinChanged(void) {
     return;
   }
   PS_AddMember(v, "width/height", num);
+  m_sig_changed.emit();
 }
 
 void MatDlg::WidthEnableChanged(void) {
@@ -347,16 +355,90 @@ void MatDlg::WidthEnableChanged(void) {
     return;
   }
   PS_RemoveMember(v, "width/height");
+  m_sig_changed.emit();
 }
 
 ////////////////////////////// QualMatDlg /////////////////////////////////
 
 QualMatDlg::QualMatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set) : qual(builder, settings, set), mat(builder, settings, set) {
+  m_settings = settings;
+  
   builder->get_widget("qualmat_dlg", m_dlg);
+
+  builder->get_widget("qualmat_close",  m_close);
+  builder->get_widget("qualmat_save",   m_save);
+  builder->get_widget("qualmat_saveas", m_saveas);
+  builder->get_widget("qualmat_load",   m_load);
+
+  m_close-> signal_clicked().connect(sigc::mem_fun(*this, &QualMatDlg::Close));
+  m_save->  signal_clicked().connect(sigc::mem_fun(*this, &QualMatDlg::Save));
+  m_saveas->signal_clicked().connect(sigc::mem_fun(*this, &QualMatDlg::SaveAs));
+  m_load->  signal_clicked().connect(sigc::mem_fun(*this, &QualMatDlg::Load));
+  
+  qual.signal_changed().connect(sigc::mem_fun(*this, &QualMatDlg::Changed));
+  mat. signal_changed().connect(sigc::mem_fun(*this, &QualMatDlg::Changed));
 }
 
 void QualMatDlg::show(Gtk::Window &trans) {
   m_dlg->set_transient_for(trans);
   m_dlg->show();
   m_dlg->raise();
+}
+
+void QualMatDlg::Close(void) {
+  m_dlg->hide();
+}
+
+void QualMatDlg::Save(void) {
+  string filename = m_settings->GetConfigPath("qualmat.json");
+  
+  Psf outfile(filename.c_str(), "w");
+  Pso os(PS_NewFileOStream(outfile()));
+  PS_WriteValue(os(), (*m_settings->GetQualMat())());
+}
+
+void QualMatDlg::SaveAs(void) {
+  Gtk::FileChooserDialog dlg(*m_dlg, "Save Qualmat", Gtk::FILE_CHOOSER_ACTION_SAVE);
+  dlg.add_button("Cancel", 0);
+  dlg.add_button("Save", 1);
+  dlg.set_default_response(1);
+  dlg.set_current_folder(m_folder);
+  dlg.set_do_overwrite_confirmation(true);
+  
+  Filters::attach_filters(dlg, Filters::JSON);
+  
+  if (dlg.run() != 1)
+    return;
+  
+  string filename = dlg.get_filename();  
+  m_folder = dlg.get_current_folder();
+  
+  Psf outfile(filename.c_str(), "w");
+  Pso os(PS_NewFileOStream(outfile()));
+  PS_WriteValue(os(), (*m_settings->GetQualMat())());
+}
+
+void QualMatDlg::Load(void) {
+  Gtk::FileChooserDialog dlg(*m_dlg, "Load Qualmat", Gtk::FILE_CHOOSER_ACTION_OPEN);
+  dlg.add_button("Cancel", 0);
+  dlg.add_button("Load", 1);
+  dlg.set_default_response(1);
+  dlg.set_current_folder(m_folder);
+  
+  Filters::attach_filters(dlg, Filters::JSON);
+
+  if (dlg.run() != 1)
+    return;
+  
+  string filename = dlg.get_filename();  
+  m_folder = dlg.get_current_folder();
+  
+  Psf file(filename.c_str(), "r");
+  m_settings->GetQualMat()->Take(PS_ParseJsonFile(file()));
+  
+  Changed();
+}
+
+void QualMatDlg::Changed(void) {
+  m_sig_changed.emit();
 }

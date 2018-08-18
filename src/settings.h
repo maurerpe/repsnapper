@@ -48,6 +48,8 @@ class Settings : public Glib::KeyFile {
   const Psv *GetDflt() {return &dflt;};
   Psv *GetQualMat() {return &qualmat;};
   
+  string GetConfigPath(string filename);
+  
   void copyGroup(const string &from, const string &to);
 
   Vector4f get_colour(const string &group, const string &name) const;
