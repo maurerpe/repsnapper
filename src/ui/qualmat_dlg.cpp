@@ -43,7 +43,7 @@ SelectionBox::SelectionBox(Glib::RefPtr<Gtk::Builder> builder,
   m_store = Gtk::ListStore::create(m_cols);
   m_tree->set_model(m_store);
   m_tree->set_headers_visible(false);
-  m_tree->append_column("Name", m_name_col);
+  m_tree->append_column(_("Name"), m_name_col);
   
   m_new->signal_clicked().connect(sigc::mem_fun(*this, &QualDlg::New));
   m_copy->signal_clicked().connect(sigc::mem_fun(*this, &QualDlg::Copy));
@@ -163,8 +163,8 @@ void SelectionBox::SpinChanged(Gtk::SpinButton *button, const char *set_name) {
 
 Glib::ustring SelectionBox::GetString(void) {
   Gtk::Dialog dlg("Name for new setting", *m_dlg, true);
-  dlg.add_button("Cancel", 0);
-  dlg.add_button("Ok", 1);
+  dlg.add_button(_("Cancel"), 0);
+  dlg.add_button(_("Ok"), 1);
   dlg.set_default_response(1);
 
   Glib::RefPtr<Gtk::EntryBuffer> buffer = Gtk::EntryBuffer::create();
@@ -398,9 +398,9 @@ void QualMatDlg::Save(void) {
 }
 
 void QualMatDlg::SaveAs(void) {
-  Gtk::FileChooserDialog dlg(*m_dlg, "Save Qualmat", Gtk::FILE_CHOOSER_ACTION_SAVE);
-  dlg.add_button("Cancel", 0);
-  dlg.add_button("Save", 1);
+  Gtk::FileChooserDialog dlg(*m_dlg, _("Save Qualmat"), Gtk::FILE_CHOOSER_ACTION_SAVE);
+  dlg.add_button(_("Cancel"), 0);
+  dlg.add_button(_("Save"), 1);
   dlg.set_default_response(1);
   dlg.set_current_folder(m_folder);
   dlg.set_do_overwrite_confirmation(true);
@@ -419,9 +419,9 @@ void QualMatDlg::SaveAs(void) {
 }
 
 void QualMatDlg::Load(void) {
-  Gtk::FileChooserDialog dlg(*m_dlg, "Load Qualmat", Gtk::FILE_CHOOSER_ACTION_OPEN);
-  dlg.add_button("Cancel", 0);
-  dlg.add_button("Load", 1);
+  Gtk::FileChooserDialog dlg(*m_dlg, _("Load Qualmat"), Gtk::FILE_CHOOSER_ACTION_OPEN);
+  dlg.add_button(_("Cancel"), 0);
+  dlg.add_button(_("Load"), 1);
   dlg.set_default_response(1);
   dlg.set_current_folder(m_folder);
   

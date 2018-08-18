@@ -22,7 +22,7 @@
 
 #include "cust_prop.h"
 
-CustProp::CustProp(SetDlg *set, const Psv *ps) : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL), m_ps(ps), m_new("New"), m_edit("Edit"), m_delete("Delete"), m_buttonbox(Gtk::ORIENTATION_VERTICAL) {
+CustProp::CustProp(SetDlg *set, const Psv *ps) : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL), m_ps(ps), m_new(_("New")), m_edit(_("Edit")), m_delete(_("Delete")), m_buttonbox(Gtk::ORIENTATION_VERTICAL) {
   m_set = set;
   m_window = NULL;
   m_value = NULL;
@@ -40,8 +40,8 @@ CustProp::CustProp(SetDlg *set, const Psv *ps) : Gtk::Box(Gtk::ORIENTATION_HORIZ
   m_store = Gtk::ListStore::create(m_cols);
   m_tree.set_model(m_store);
   m_tree.set_headers_visible(true);
-  m_tree.append_column("Name", m_name_col);
-  m_tree.append_column("Value", m_value_col);
+  m_tree.append_column(_("Name"), m_name_col);
+  m_tree.append_column(_("Value"), m_value_col);
   
   m_scroll.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
   m_scroll.property_width_request().set_value(400);
