@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include <stdexcept>
 #include <string>
@@ -216,4 +217,61 @@ void Pssa::append(string stl, ps_value_t *val) {
     
     throw e;
   }
+}
+
+/////////////////////////////////////////////////////////////////
+
+const char template_base[] = "/tmp/ps_XXXXXX";
+
+Pstemp::Pstemp(string suffix) {
+  filename = "";
+  file = NULL;
+  int fd;
+  size_t len = strlen(template_base);
+  
+  char *name = new char[len + suffix.size() + 1];
+  try {
+    memcpy(name, template_base, len);
+    memcpy(name + len, suffix.c_str(), suffix.size() + 1);
+    
+    if ((fd = mkstemps(name, suffix.size())) < 0)
+      throw invalid_argument("Cannot create temp file");
+    
+    if ((file = fdopen(fd, "w+")) == NULL) {
+      close(fd);
+      throw invalid_argument("Cannot reopen temp file");
+    }
+    
+    filename = string(name);
+  } catch (exception &e) {
+    delete [] name;
+    throw e;
+  }
+
+  delete [] name;
+}
+
+Pstemp::~Pstemp() {
+  Close();
+  Delete();
+}
+
+void Pstemp::Close(void) {
+  if (file == NULL)
+    return;
+  
+  fclose(file);
+  
+  file = NULL;
+}
+
+void Pstemp::Delete(void) {
+  Close();
+
+  if (filename.size() == 0)
+    return;
+  
+  unlink(filename.c_str());
+  
+  filename = "";
 }

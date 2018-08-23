@@ -20,6 +20,7 @@
 #pragma once
 
 #include <gtkmm.h>
+#include <unordered_set>
 
 #include "ps_helper.h"
 #include "set_dlg.h"
@@ -31,7 +32,9 @@ class CustProp : public Gtk::Box {
   const Psv *m_ps;
   Glib::ustring m_ext;
   ps_value_t *m_value;
+  unordered_set< string > mask;
   
+  int m_inhibit_extruder;
   Glib::RefPtr< Gtk::ListStore > m_store;
   Gtk::TreeModelColumnRecord m_cols;
   Gtk::TreeModelColumn<Glib::ustring> m_name_col;
@@ -51,6 +54,7 @@ class CustProp : public Gtk::Box {
   void SetWindow(Gtk::Window *window);
   void SetValue(const char *ext, ps_value_t *value);
   ps_value_t *GetValue() {return m_value;};
+  void AddToMask(string setting);
 
  private:
   void BuildStore(void);

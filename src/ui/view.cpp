@@ -28,6 +28,7 @@
 #include "prefs_dlg.h"
 #include "set_dlg.h"
 #include "qualmat_dlg.h"
+#include "printer_dlg.h"
 #include "progress.h"
 #include "connectview.h"
 #include "widgets.h"
@@ -95,7 +96,6 @@ void View::connect_tooltoggled(const char *name, const sigc::slot<void, Gtk::Tog
 }
 
 void View::convert_to_gcode() {
-  extruder_selected(); // be sure to get extruder settings from gui
   PrintInhibitor inhibitPrint(m_printer);
   if (m_printer->IsPrinting()) {
     m_printer->error (_("Complete print before converting"),
@@ -543,6 +543,10 @@ void View::show_qualmat() {
   m_qualmat->show(*this);
 }
 
+void View::show_printer_dlg() {
+  m_printer_dlg->Show(*this);
+}
+
 void View::about_dialog() {
   show_dialog("about_dialog");
 }
@@ -835,7 +839,6 @@ void View::update_settings_gui() {
 		       m_model->settings.get_user_gcode(buttonlabels[i]));
     }
   }
-  update_extruderlist();
 }
 
 void View::handle_ui_settings_changed() {
@@ -1022,6 +1025,7 @@ View::View(BaseObjectType* cobject,
   connect_activate("edit.fullscreen",      sigc::mem_fun(*this, &View::toggle_fullscreen) );
   connect_activate("edit.preferences",     sigc::mem_fun(*this, &View::show_preferences) );
   connect_activate("edit.qualmat",         sigc::mem_fun(*this, &View::show_qualmat) );
+  connect_activate("edit.printer",         sigc::mem_fun(*this, &View::show_printer_dlg) );
   
   connect_activate("help.about",           sigc::mem_fun(*this, &View::about_dialog));
   Gtk::Widget *w;
@@ -1040,9 +1044,6 @@ View::View(BaseObjectType* cobject,
   connect_button("m_mirror",        sigc::mem_fun(*this, &View::mirror_selection));
 
   connect_button("progress_stop",   sigc::mem_fun(*this, &View::stop_progress));
-
-  connect_button("copy_extruder",   sigc::mem_fun(*this, &View::copy_extruder));
-  connect_button("remove_extruder", sigc::mem_fun(*this, &View::remove_extruder));
 
   m_builder->get_widget("m_treeview", m_treeview);
   // Insert our keybindings all around the place
@@ -1140,77 +1141,7 @@ View::View(BaseObjectType* cobject,
 
   m_printer = NULL;
 
-  m_builder->get_widget ("extruder_treeview", extruder_treeview);
-  if (extruder_treeview) {
-    extruder_treeview->signal_cursor_changed().connect (sigc::mem_fun(*this, &View::extruder_selected) );
-    Gtk::TreeModel::ColumnRecord colrec;
-    colrec.add(extrudername);
-    extruder_liststore = Gtk::ListStore::create(colrec);
-    extruder_treeview->set_model(extruder_liststore);
-    extruder_treeview->set_headers_visible(false);
-    extruder_treeview->append_column("Extruder",extrudername);
-  }
-
-  update_extruderlist();  
   show();
-}
-
-void View::extruder_selected() {
-  // vector< Gtk::TreeModel::Path > path =
-  //   extruder_treeview->get_selection()->get_selected_rows();
-  // if(path.size()>0 && path[0].size()>0) {
-  //   // copy selected extruder from Extruders to current Extruder
-  //   m_model->settings.SelectExtruder(path[0][0], &m_builder);
-  // }
-  // queue_draw();
-}
-
-void View::copy_extruder() {
-  // if (!m_model)
-  //   return;
-  
-  // vector< Gtk::TreeModel::Path > path =
-  //   extruder_treeview->get_selection()->get_selected_rows();
-  // if(path.size()>0 && path[0].size()>0) {
-  //   m_model->settings.CopyExtruder(path[0][0]);
-  // }
-  // update_extruderlist();
-  // Gtk::TreeNodeChildren ch = extruder_treeview->get_model()->children();
-  // Gtk::TreeIter row = ch[ch.size()-1];
-  // extruder_treeview->get_selection()->select(row);
-  // extruder_selected();
-}
-
-void View::remove_extruder() {
-  // if (!m_model)
-  //   return;
-  
-  // vector< Gtk::TreeModel::Path > path =
-  //   extruder_treeview->get_selection()->get_selected_rows();
-  // if (path.size()>0 && path[0].size()>0) {
-  //   m_model->settings.RemoveExtruder(path[0][0]);
-  // }
-  // update_extruderlist();
-}
-
-void View::update_extruderlist() {
-  if (!m_model || !extruder_treeview)
-    return;
-  
-  extruder_liststore->clear();
-  uint num = m_model->settings.getNumExtruders();
-  if (num==0) return;
-  Gtk::TreeModel::Row row;
-  for (uint i = 0; i < num ; i++) {
-    row = *(extruder_liststore->append());
-    ostringstream o; o << "Extruder " << i+1;
-    //cerr << o.str() << m_model->settings.Extruders[i].UseForSupport<< endl;
-    row[extrudername] = o.str();
-    //row[extrudername] = m_model->settings.Extruders[i].name;
-  }
-  Gtk::TreeModel::Row firstrow = extruder_treeview->get_model()->children()[0];
-  extruder_treeview->get_selection()->select(firstrow);
-  extruder_selected();
 }
 
 //  stop file preview when leaving file tab
@@ -1225,6 +1156,7 @@ void View::on_controlnotebook_switch(Gtk::Widget* page, guint page_num) {
 View::~View() {
   delete m_settings_ui;
   delete m_qualmat;
+  delete m_printer_dlg;
   delete m_set;
   delete m_translation_row;
   for (uint i = 0; i < 3; i++) {
@@ -1351,6 +1283,7 @@ void View::setModel(Model *model) {
   m_settings_ui = new PrefsDlg(m_builder, m_model);
   m_set = new SetDlg(m_builder, m_model->settings.GetPs());
   m_qualmat = new QualMatDlg(m_builder, &m_model->settings, m_set);
+  m_printer_dlg = new PrinterDlg(m_builder, &m_model->settings, m_set);
 
   // 3D preview of the bed
   Gtk::Box *pBox = NULL;
@@ -1600,7 +1533,8 @@ void View::DrawGrid(void) {
     return;
   
   Vector3d volume = m_model->settings.getPrintVolume();
-
+  /* Fixme: allow eliptical printers */
+  
   RenderVert vert;
   
   // Boarder lines
@@ -1652,43 +1586,8 @@ void View::DrawGrid(void) {
   m_renderer->draw_lines(color, vert, 1.0);  
 }
 
-void AddRectangle(RenderVert &vert, double x1, double y1, double x2, double y2, double z) {
-  vert.add(x1, y1, 0);
-  vert.add(x1, y2, 0);
-  vert.add(x2, y1, 0);
-  
-  vert.add(x1, y2, 0);
-  vert.add(x2, y1, 0);
-  vert.add(x2, y2, 0);
-  
-  vert.add(x1, y1, z);
-  vert.add(x1, y2, z);
-  vert.add(x2, y1, z);
-  
-  vert.add(x1, y2, z);
-  vert.add(x2, y1, z);
-  vert.add(x2, y2, z);
-}
-
 void View::DrawMargins(void) {
-  Vector3d margin = m_model->settings.getPrintMargin();
-  Vector3d volume = m_model->settings.getPrintVolume();
-  
-  // cout << "View::DrawMargins m: " << margin << " v: " << volume << endl;
-  
-  RenderVert vert;
-  if (margin.x()) {
-    AddRectangle(vert, 0, 0, margin.x(), volume.y(), volume.z());
-    AddRectangle(vert, volume.x() - margin.x(), 0, volume.x(), volume.y(), volume.z());
-  }
-  
-  if (margin.y()) {
-    AddRectangle(vert, margin.x(), 0, volume.x() - margin.x(), margin.y(), volume.z());
-    AddRectangle(vert, margin.x(), volume.y() - margin.y(), volume.x() - margin.x(), volume.y(), volume.z());
-  }
-
-  float *color = m_model->settings.get_colour("Display","MarginColor");
-  m_renderer->draw_triangles(color, vert);
+  /* Fix me: Draw disallowed polygons */
 }
 
 void View::DrawGCode(void) {

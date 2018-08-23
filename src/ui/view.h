@@ -29,6 +29,7 @@
 
 class SetDlg;
 class QualMatDlg;
+class PrinterDlg;
 
 static bool UNUSED toggle_block = false; // blocks signals for togglebuttons etc
 
@@ -74,6 +75,7 @@ class View : public Gtk::ApplicationWindow
   Printer *m_printer;
   PrefsDlg *m_settings_ui;
   QualMatDlg *m_qualmat;
+  PrinterDlg *m_printer_dlg;
   SetDlg *m_set;
 
   Glib::RefPtr<Gtk::Builder> m_builder;
@@ -135,15 +137,6 @@ class View : public Gtk::ApplicationWindow
   void add_custombutton(string name, string gcode);
   void custombutton_pressed(string name, Gtk::ToolButton *button);
   
-  
-  Gtk::TreeView *extruder_treeview;
-  Glib::RefPtr< Gtk::ListStore > extruder_liststore;
-  Gtk::TreeModelColumn<Glib::ustring> extrudername;
-  void copy_extruder();
-  void remove_extruder();
-  void extruder_selected();
-  void update_extruderlist();
-
   Gtk::TreeView *m_treeview;
   TranslationSpinRow *m_translation_row;
   void tree_selection_changed();
@@ -199,6 +192,7 @@ class View : public Gtk::ApplicationWindow
   void show_dialog(const char *name);
   void show_preferences();
   void show_qualmat();
+  void show_printer_dlg();
   Glib::RefPtr<Gtk::Builder> getBuilder() const { return m_builder; };
 
   void err_log(string s);

@@ -64,6 +64,10 @@ void CustProp::SetValue(const char *ext, ps_value_t *value) {
   BuildStore();
 }
 
+void CustProp::AddToMask(string setting) {
+  mask.insert(setting);
+}
+
 void CustProp::BuildStore(void) {
   m_store->clear();
 
@@ -72,6 +76,9 @@ void CustProp::BuildStore(void) {
   
   Psvi vi(m_value);
   while (vi.Next()) {
+    if (mask.count(vi.Key()))
+      continue;
+    
     Gtk::TreeModel::Row row = *m_store->append();
     row[m_name_col] = Glib::ustring(vi.Key());
     row[m_value_col] = PS_ToString(vi.Data());
@@ -111,6 +118,14 @@ void CustProp::Delete(void) {
 void CustProp::Set(Glib::ustring ext, Glib::ustring name, const ps_value_t *v) {
   if (m_value == NULL) {
     if ((m_value = PS_NewObject()) == NULL)
+      return;
+  }
+  
+  if (mask.count(name)) {
+      Gtk::MessageDialog dialog(_("Setting is masked"), false,
+				Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
+      dialog.set_transient_for(*m_window);
+      dialog.run();
       return;
   }
   

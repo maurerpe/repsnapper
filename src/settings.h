@@ -38,15 +38,19 @@ class Settings : public Glib::KeyFile {
   
   bool m_user_changed;
   bool inhibit_callback; // don't update settings from gui while setting to gui
-  
+
+  Psv printer;
   Psv ps;
   Psv dflt;
   Psv qualmat;
   
  public:
+  const Psv *GetPrinter() {return &printer;};
   const Psv *GetPs() {return &ps;};
   const Psv *GetDflt() {return &dflt;};
   Psv *GetQualMat() {return &qualmat;};
+
+  void SetPrinter(const ps_value_t *v);
   
   string GetConfigPath(string filename);
   
@@ -103,6 +107,9 @@ class Settings : public Glib::KeyFile {
   void load_settings(Glib::RefPtr<Gio::File> file);
   void save_settings(Glib::RefPtr<Gio::File> file);
 
+  void WriteTempPrinter(FILE *file, vector<string> ext);
+  ps_value_t *load_printer(string filename);
+  ps_value_t *load_printer(vector<string> ext);
   void load_printer_settings(void);
   
   void ps_to_gui(Builder &builder, ps_value_t *set);

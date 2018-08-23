@@ -41,11 +41,11 @@ void Model::ConvertToGCode() {
   Psv set(settings.FullSettings());
   Vector3d bed = settings.getPrintVolume();
   Vector3d margin = settings.getPrintMargin();
-
+  
   int num = settings.getNumExtruders();
   Pssa strs(num);
-  for (int count = 0; count < num; count++) {
-    Shape comb = GetCombinedShape();
+  for (int count = 1; count <= num; count++) {
+    Shape comb = GetCombinedShape(count);
     if (comb.size() == 0)
       continue;
     
@@ -55,13 +55,21 @@ void Model::ConvertToGCode() {
     strs.append(comb.getSTLsolid(), settings.FullSettings(count));
   }
   
+  Pstemp temp(".def.json");
+  settings.WriteTempPrinter(temp(), set.GetNames());
+  temp.Close();
+  Psv ps2(PS_CopyValue((*ps)()));
+  ps2.Set("#global", "#filename", temp.Name());
+  
   Pso gcode_stream(PS_NewStrOStream());
-  if (PS_SliceStrs(gcode_stream(), (*ps)(), set(), strs(), strs.size()) < 0) {
+  if (PS_SliceStrs(gcode_stream(), ps2(), set(), strs(), strs.size()) < 0) {
     Gtk::MessageDialog dialog(_("Error Slicing Model"), false,
                               Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);
     dialog.run();
     return;
   }
+  
+  temp.Delete();
   
   istringstream iss(string(PS_OStreamContents(gcode_stream())));
   gcode.Parse(this, m_progress, iss);

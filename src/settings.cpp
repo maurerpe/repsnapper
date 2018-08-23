@@ -156,9 +156,6 @@ void Settings::set_defaults() {
   set_string("Global","SettingsImage","");
 
   set_string("Global","Version",VERSION);
-
-  set_double("Hardware","PrintMargin.X", 10);
-  set_double("Hardware","PrintMargin.Y", 10);
 }
 
 void Settings::load_settings(Glib::RefPtr<Gio::File> file) {
@@ -203,13 +200,47 @@ void Settings::save_settings(Glib::RefPtr<Gio::File> file) {
   m_user_changed = false;
 }
 
-void Settings::load_printer_settings(void) {
+void Settings::SetPrinter(const ps_value_t *v) {
+  printer.Take(PS_CopyValue(v));
+}
+
+void Settings::WriteTempPrinter(FILE *file, vector<string> ext) {
+  fprintf(file, "{\"name\":\"%s\",\"version\":2,\"inherits\":\"fdmprinter\",\"metadata\":{\"machine_extruder_trains\":{", PS_GetString(PS_GetMember(printer(), "name", NULL)));
+
+  bool first = true;
+  for (size_t count = 0; count < ext.size(); count++) {
+    if (ext[count] == "#global")
+      continue;
+    
+    fprintf(file, "%s\"%s\": \"fdmextruder\"", first ? "" : ",", ext[count].c_str());
+    first = false;
+  }
+  fprintf(file, "}},\"overrides\":{}}\n");
+}
+
+ps_value_t *Settings::load_printer(string filename) {
   Psv search(PS_NewList());
   PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/definitions"));
-  PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/extruders"));  
-  ps.Take(PS_New(GetConfigPath("cr10mini.def.json").c_str(), search()));
-  //ps.Take(PS_New(GetConfigPath("makeit_pro_l.def.json").c_str(), search()));
+  PS_AppendToList(search(), PS_NewString("/usr/share/cura/resources/extruders"));
+  return PS_New(filename.c_str(), search());
+}
+
+ps_value_t *Settings::load_printer(vector<string> ext) {
+  Pstemp temp(".def.json");
+  WriteTempPrinter(temp(), ext);
+  temp.Close();
+  return load_printer(temp.Name().c_str());
+}
+
+void Settings::load_printer_settings(void) {
+  Psf printer_file(GetConfigPath("printer.json").c_str(), "r");
+  printer.Take(PS_ParseJsonFile(printer_file()));
+  printer_file.close();
+  
+  ps.Take(load_printer(Psv::GetNames(PS_GetMember(printer(), "overrides", NULL))));
+  
   dflt.Take(PS_GetDefaults(ps()));
+  PS_MergeSettings(dflt(), PS_GetMember(printer(), "overrides", NULL));
 
   Psf qualmat_file(GetConfigPath("qualmat.json").c_str(), "r");
   qualmat.Take(PS_ParseJsonFile(qualmat_file()));
@@ -627,10 +658,8 @@ Vector3d Settings::getPrintVolume() const {
 		  PS_AsFloat(dflt.Get("#global", "machine_height")));
 }
 
-Vector3d Settings::getPrintMargin() const {
-  return Vector3d(get_double("Hardware","PrintMargin.X"),
-		  get_double("Hardware","PrintMargin.Y"),
-		  0);
+vmml::vec3d Settings::getPrintMargin() const {
+  return Vector3d(0, 0, 0);
 }
 
 bool Settings::set_user_button(const string &name, const string &gcode) {
@@ -813,7 +842,14 @@ ps_value_t *Settings::FullSettings(int model_specific) {
   set.Set("#global", "support_enable", support);
   set.Set("#global", "magic_spiralize", spiralize);
   
-  return PS_EvalAll(ps(), set());
+  Psv eval(PS_EvalAllDflt(ps(), set(), dflt()));
+  Psv all(PS_CopyValue(dflt()));
+  PS_MergeSettings(all(), eval());
+  
+  ps_value_t *allv = all();
+  all.Disown();
+  
+  return allv;
 }
 
 void Settings::SetTargetTemps(Builder &builder) {

@@ -110,3 +110,17 @@ public:
   size_t size() {return used;};
   const ps_slice_str_t *operator()() {return arr;};
 };
+
+class Pstemp {
+ private:
+  string filename;
+  FILE *file;
+  
+ public:
+  Pstemp(string suffix);
+  ~Pstemp();
+  void Close(void);
+  void Delete(void);
+  string Name(void) {return filename;};
+  FILE *operator()() {return file;};
+};
