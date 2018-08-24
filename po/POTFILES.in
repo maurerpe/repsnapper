@@ -18,6 +18,7 @@ src/shape.cpp
 src/ui/connectview.cpp
 src/ui/cust_prop.cpp
 src/ui/filters.cpp
+src/ui/printer_dlg.cpp
 src/ui/progress.cpp
 src/ui/qualmat_dlg.cpp
 src/ui/set_dlg.cpp

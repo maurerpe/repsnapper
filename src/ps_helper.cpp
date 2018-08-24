@@ -66,15 +66,16 @@ ps_value_t *Psv::operator()(void) const {
   return v;
 }
 
-const ps_value_t *Psv::Get(const char *ext, const char *setting) const {
-  if (v == NULL)
-    throw invalid_argument(string("ps_value was null"));
-  
-  const ps_value_t *gg = PS_GetMember(PS_GetMember(v, ext, NULL), setting, NULL);
-  if (gg == NULL)
-    throw invalid_argument(string("Unknown setting ") + string(ext) + "->" + string(setting));
-  
-  return gg;
+ps_value_t *Psv::Get(const char *m) const {
+  return PS_GetMember(v, m, NULL);
+}
+
+ps_value_t *Psv::Get(const char *m1, const char *m2) const {
+  return PS_GetMember(PS_GetMember(v, m1, NULL), m2, NULL);
+}
+
+ps_value_t *Psv::Get(const char *m1, const char *m2, const char *m3) const {
+  return PS_GetMember(PS_GetMember(PS_GetMember(v, m1, NULL), m2, NULL), m3, NULL);
 }
 
 void Psv::Set(const char *ext, const char *setting, ps_value_t *val) {

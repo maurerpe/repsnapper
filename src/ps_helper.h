@@ -44,7 +44,9 @@ public:
   void Disown() {v = NULL;};
   
   ps_value_t *operator()(void) const;
-  const ps_value_t *Get(const char *ext, const char *set) const;
+  ps_value_t *Get(const char *m) const;
+  ps_value_t *Get(const char *m1, const char *m2) const;
+  ps_value_t *Get(const char *m1, const char *m2, const char *m3) const;
   void Set(const char *ext, const char *setting, ps_value_t *val);
   void Set(const char *ext, const char *setting, bool val);
   void Set(const char *ext, const char *setting, int val);

@@ -200,8 +200,42 @@ void Settings::save_settings(Glib::RefPtr<Gio::File> file) {
   m_user_changed = false;
 }
 
+static bool StringsEqual(vector<string> s1, vector<string> s2) {
+  if (s1.size() != s2.size())
+    return false;
+  
+  for (size_t count = 0; count < s1.size(); count++) {
+    if (s1[count] != s2[count])
+      return false;
+  }
+  
+  return true;
+}
+
 void Settings::SetPrinter(const ps_value_t *v) {
+  vector<string> prev_ext;
+  try {
+    prev_ext = Psv::GetNames(PS_GetMember(printer(), "overrides", NULL));
+  } catch (exception &e) {
+  }
+  
+  bool ext_changed = false;
+  
   printer.Take(PS_CopyValue(v));
+  vector<string> ext = Psv::GetNames(PS_GetMember(printer(), "overrides", NULL));
+  
+  if (!StringsEqual(prev_ext, ext)) {
+    ext_changed = true;
+    ps.Take(load_printer(Psv::GetNames(PS_GetMember(printer(), "overrides", NULL))));
+  }
+  
+  dflt.Take(PS_GetDefaults(ps()));
+  PS_MergeSettings(dflt(), PS_GetMember(printer(), "overrides", NULL));
+
+  if (ext_changed)
+    m_extruders_changed.emit();
+  
+  m_printer_changed.emit();
 }
 
 void Settings::WriteTempPrinter(FILE *file, vector<string> ext) {
@@ -234,14 +268,9 @@ ps_value_t *Settings::load_printer(vector<string> ext) {
 
 void Settings::load_printer_settings(void) {
   Psf printer_file(GetConfigPath("printer.json").c_str(), "r");
-  printer.Take(PS_ParseJsonFile(printer_file()));
+  SetPrinter(PS_ParseJsonFile(printer_file()));
   printer_file.close();
   
-  ps.Take(load_printer(Psv::GetNames(PS_GetMember(printer(), "overrides", NULL))));
-  
-  dflt.Take(PS_GetDefaults(ps()));
-  PS_MergeSettings(dflt(), PS_GetMember(printer(), "overrides", NULL));
-
   Psf qualmat_file(GetConfigPath("qualmat.json").c_str(), "r");
   qualmat.Take(PS_ParseJsonFile(qualmat_file()));
   qualmat_file.close();
@@ -415,14 +444,14 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
     break;
   } while (0);
   
+  if (key == "E0Material") {
+    SetTargetTemps(builder);
+    ps_to_gui(builder, PS_GetMember(qualmat.Get("materials", get_string("Slicing", "E0Material").c_str()), "settings", NULL));
+  }
+  
   if (key == "E1Material") {
     SetTargetTemps(builder);
     ps_to_gui(builder, PS_GetMember(qualmat.Get("materials", get_string("Slicing", "E1Material").c_str()), "settings", NULL));
-  }
-  
-  if (key == "E2Material") {
-    SetTargetTemps(builder);
-    ps_to_gui(builder, PS_GetMember(qualmat.Get("materials", get_string("Slicing", "E2Material").c_str()), "settings", NULL));
   }
   
   if (key == "Quality") {
@@ -581,7 +610,7 @@ void Settings::connect_to_ui(Builder &builder) {
 	    set_up_combobox(combot, speeds);
 	  } else if (glade_name == "Slicing.Quality") {
 	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(qualmat(), "quality", NULL)));
-	  } else if (glade_name == "Slicing.E1Material" || glade_name == "Slicing.E2Material") {
+	  } else if (glade_name == "Slicing.E0Material" || glade_name == "Slicing.E1Material") {
 	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(qualmat(), "materials", NULL)));
 	  } else if (glade_name == "Slicing.Adhesion") {
 	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(PS_GetMember(PS_GetMember(PS_GetMember(ps(), "#global", NULL), "#set", NULL), "adhesion_type", NULL), "options", NULL)));
@@ -713,7 +742,7 @@ bool Settings::del_user_button(const string &name) {
   return false;
 }
 
-void Settings::ps_to_gui(Builder &builder, ps_value_t *set) {
+void Settings::ps_to_gui(Builder &builder, const ps_value_t *set) {
   ps_value_t *ext, *val;
   
   if (set == NULL)
@@ -762,7 +791,7 @@ int Settings::GetENo(string name, int model_specific) const {
 }
 
 static string EStr(int e_no) {
-  return to_string(e_no - 1);
+  return to_string(e_no);
 }
 
 ps_value_t *Settings::FullSettings(int model_specific) {
@@ -785,7 +814,7 @@ ps_value_t *Settings::FullSettings(int model_specific) {
   
   int num_e = getNumExtruders();
   vector<double> espeed(num_e);
-  for (int e_no = 1; e_no <= num_e; e_no++) {
+  for (int e_no = 0; e_no < num_e; e_no++) {
     string matname = get_string("Slicing", "E" + to_string(e_no) + "Material");
     const ps_value_t *mat = qualmat.Get("materials", matname.c_str());
     if (mat == NULL)
@@ -800,7 +829,7 @@ ps_value_t *Settings::FullSettings(int model_specific) {
     double matspeed = efeed * dia * dia / (h * h * wh);
     if (speed < matspeed)
       matspeed = speed;
-    espeed[e_no - 1] = matspeed;
+    espeed[e_no] = matspeed;
   }
   
   int eshell   = GetENo("Shell",   model_specific);
@@ -813,17 +842,17 @@ ps_value_t *Settings::FullSettings(int model_specific) {
   set.Set("#global", "extruders_enabled_count", (int) PS_ItemCount(dflt()) - 1);
   
   set.Set("#global", "speed_print",     speed);
-  set.Set("#global", "speed_wall",      espeed[eshell   - 1] * ratio);
-  set.Set("#global", "speed_topbottom", espeed[eskin    - 1] * ratio);
-  set.Set("#global", "speed_infill",    espeed[einfill  - 1]);
-  set.Set("#global", "speed_support",   espeed[esupport - 1]);
+  set.Set("#global", "speed_wall",      espeed[eshell  ] * ratio);
+  set.Set("#global", "speed_topbottom", espeed[eskin   ] * ratio);
+  set.Set("#global", "speed_infill",    espeed[einfill ]);
+  set.Set("#global", "speed_support",   espeed[esupport]);
   
   PS_MergeSettings(set(), PS_GetMember(qual, "settings", NULL));
-  for (int e_no = num_e; e_no >= 1; e_no--) {
+  for (int e_no = num_e - 1; e_no >= 0; e_no--) {
     string matname = get_string("Slicing", "E" + to_string(e_no) + "Material");
     const ps_value_t *mat = qualmat.Get("materials", matname.c_str());
 
-    string ext = to_string(e_no - 1);
+    string ext = to_string(e_no);
     set.MergeActive(ext.c_str(), PS_GetMember(mat, "settings", NULL));
   }
   
@@ -860,11 +889,11 @@ void Settings::SetTargetTemps(Builder &builder) {
   int max_e = getNumExtruders();
   if (max_e > 5)
     max_e = 5;
-  for (int e_no = 1; e_no <= max_e; e_no++) {
+  for (int e_no = 0; e_no < max_e; e_no++) {
     builder->get_widget("E" + to_string(e_no) + "Target", sp);
     if (sp) {
       try {
-	string ext = to_string(e_no - 1);
+	string ext = to_string(e_no);
 	sp->set_value(PS_AsFloat(set.Get(ext.c_str(), "material_print_temperature_layer_0")));
       } catch (exception &e) {
 	cerr << "Could not set Extruder " << e_no << " target" << endl;

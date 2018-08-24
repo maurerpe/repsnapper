@@ -129,7 +129,8 @@ class View : public Gtk::ApplicationWindow
   AxisRow *m_axis_rows[3];
   
   void temp_changed();
-  void num_extruders_changed();
+  void extruders_changed();
+  void printer_changed();
   
   void edit_custombutton(string name="", string code="", Gtk::ToolButton *button=NULL);
   void new_custombutton() {edit_custombutton();};

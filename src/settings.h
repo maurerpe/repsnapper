@@ -73,12 +73,8 @@ class Settings : public Glib::KeyFile {
   string SettingsPath;
 
  private:
-  void set_to_gui              (Builder &builder, int i);
   void set_to_gui              (Builder &builder,
 				const string &group, const string &key);
-  void get_from_gui_old        (Builder &builder, int i);
-  void get_from_gui            (Builder &builder, const string &glade_name);
-  bool get_group_and_key       (int i, Glib::ustring &group, Glib::ustring &key);
   void get_colour_from_gui     (Builder &builder, const string &glade_name);
   void set_defaults();
   int  GetENo(string name, int model_specific = 1) const;
@@ -96,6 +92,7 @@ class Settings : public Glib::KeyFile {
 
   // sync changed settings with the GUI eg. used post load
   void set_to_gui(Builder &builder, const string filter="");
+  void get_from_gui(Builder &builder, const string &glade_name);
 
   // connect settings to relevant GUI widgets
   void connect_to_ui(Builder &builder);
@@ -112,11 +109,13 @@ class Settings : public Glib::KeyFile {
   ps_value_t *load_printer(vector<string> ext);
   void load_printer_settings(void);
   
-  void ps_to_gui(Builder &builder, ps_value_t *set);
+  void ps_to_gui(Builder &builder, const ps_value_t *set);
   ps_value_t *FullSettings(int model_specific = 1);
   void SetTargetTemps(Builder &builder);
   
   sigc::signal< void > m_signal_visual_settings_changed;
   sigc::signal< void > m_signal_update_settings_gui;
-  sigc::signal< void > m_signal_core_settings_changed;
+
+  sigc::signal< void > m_extruders_changed;
+  sigc::signal< void > m_printer_changed;
 };

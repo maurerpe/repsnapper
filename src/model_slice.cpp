@@ -44,7 +44,7 @@ void Model::ConvertToGCode() {
   
   int num = settings.getNumExtruders();
   Pssa strs(num);
-  for (int count = 1; count <= num; count++) {
+  for (int count = 0; count < num; count++) {
     Shape comb = GetCombinedShape(count);
     if (comb.size() == 0)
       continue;

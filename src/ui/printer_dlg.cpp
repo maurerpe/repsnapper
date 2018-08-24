@@ -721,7 +721,7 @@ void PrinterDlg::Import() {
     if (name == NULL)
       name = PS_GetMember(PS_GetMember(set(), "#global", NULL), "machine_name", NULL);
     if (name)
-      PS_AddMember(glo, "name", name);
+      PS_AddMember(glo, "name", PS_CopyValue(name));
   } catch (exception &e) {
     Gtk::MessageDialog dialog(_("Import Failed"), false,
 			      Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE);

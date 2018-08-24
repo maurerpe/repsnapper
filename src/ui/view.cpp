@@ -845,9 +845,8 @@ void View::handle_ui_settings_changed() {
   queue_draw();
 }
 
-
 static string ename(int e_no) {
-  if (e_no == 0)
+  if (e_no == -1)
     return string("Bed");
 
   return "E" + to_string(e_no);
@@ -870,7 +869,7 @@ void View::temp_button(int e_no) {
     value = spin->get_value();
   }
 
-  if (e_no > 0)
+  if (e_no >= 0)
     m_printer->SetTemp(TEMP_NOZZLE, value, e_no);
   else
     m_printer->SetTemp(TEMP_BED, value);
@@ -898,7 +897,7 @@ void View::temp_changed() {
   
   set_temp(m_builder, "BedTemp", m_printer->get_temp(TEMP_BED));
   
-  for (int i = 1; i <= 5; i++)
+  for (int i = 0; i < 5; i++)
     set_temp(m_builder,
 	     ename(i) + "Temp",
 	     i != e_no ? -1 : m_printer->get_temp(TEMP_NOZZLE));
@@ -912,19 +911,26 @@ static void update_extruder_combo(Glib::RefPtr<Gtk::Builder> &builder, string na
     return;
   }
   
+  Glib::ustring prev = w->get_active_text();
+  
   w->remove_all();
   if (include_model)
     w->append("Model Specific");
-  for (uint i = 1; i <= num_extruders; i++) {
+  for (uint i = 0; i < num_extruders; i++) {
     w->append("Extruder " + to_string(i));
   }
+  
+  if (prev.size() > 0)
+    w->set_active_text(prev);
+  if (w->get_active_text().size() == 0)
+    w->set_active(0);
 }
 
-void View::num_extruders_changed() {
+void View::extruders_changed() {
   uint num = m_model->settings.getNumExtruders();
 
   // Show correct number of temp row extruders
-  for (uint i = 1; i <= 5; i++) {
+  for (uint i = 0; i < 5; i++) {
     Gtk::Widget *w = NULL;
     m_builder->get_widget("E" + to_string(i) + "TempRow", w);
     
@@ -933,15 +939,15 @@ void View::num_extruders_changed() {
       continue;
     }
     
-    if (i <= num)
+    if (i < num)
       w->show_all();
     else
       w->hide();
   }
   
-  // Enable disable E2Material combo
+  // Enable/disable E1Material combo
   Gtk::ComboBoxText *w = NULL;
-  m_builder->get_widget("Slicing.E2Material", w);
+  m_builder->get_widget("Slicing.E1Material", w);
   if (w) {
     if (num >= 2)
       w->set_sensitive(true);
@@ -957,6 +963,16 @@ void View::num_extruders_changed() {
   update_extruder_combo(m_builder, "Display.ExtruderLoad", num, false);
   update_extruder_combo(m_builder, "m_extruder", num, false);
   update_extruder_combo(m_builder, "Printer.Extruder", num, false);
+}
+
+void View::printer_changed() {
+  m_model->settings.ps_to_gui(m_builder, (*m_model->settings.GetDflt())());
+  
+  m_model->settings.get_from_gui(m_builder, "Slicing.Quality");
+  m_model->settings.get_from_gui(m_builder, "Slicing.E0Material");
+  if (m_model->settings.getNumExtruders() > 1)
+    m_model->settings.get_from_gui(m_builder, "Slicing.E1Material");
+  m_renderer->queue_draw();
 }
 
 bool View::move_selection(float x, float y, float z) {
@@ -1253,8 +1269,8 @@ void View::setModel(Model *model) {
   }
   axis_box->show_all();
 
-  num_extruders_changed();
-  for (int i = 0; i <= 5; i++) {
+  extruders_changed();
+  for (int i = -1; i < 5; i++) {
     Gtk::Switch *swit = NULL;
     m_builder->get_widget(ename(i) + "TempEnable", swit);
     if (swit == NULL) {
@@ -1274,11 +1290,16 @@ void View::setModel(Model *model) {
   m_model->m_signal_gcode_changed.connect (sigc::mem_fun(*this, &View::gcode_changed));
   m_model->signal_alert.connect (sigc::mem_fun(*this, &View::alert));
   m_printer->signal_alert.connect (sigc::mem_fun(*this, &View::alert));
-
+  
   // connect settings
   m_model->settings.connect_to_ui(m_builder);
 
   m_printer->setModel(m_model);
+
+  m_model->settings.m_extruders_changed.connect
+    (sigc::mem_fun(*this, &View::extruders_changed));
+  m_model->settings.m_printer_changed.connect
+    (sigc::mem_fun(*this, &View::printer_changed));
   
   m_settings_ui = new PrefsDlg(m_builder, m_model);
   m_set = new SetDlg(m_builder, m_model->settings.GetPs());
@@ -1533,57 +1554,92 @@ void View::DrawGrid(void) {
     return;
   
   Vector3d volume = m_model->settings.getPrintVolume();
-  /* Fixme: allow eliptical printers */
-  
   RenderVert vert;
+  RenderVert vert2;
   
-  // Boarder lines
-  // left edge
-  vert.add(0.0f, 0.0f, 0.0f);
-  vert.add(0.0f, volume.y(), 0.0f);
-  // near edge
-  vert.add(0.0f, 0.0f, 0.0f);
-  vert.add(volume.x(), 0.0f, 0.0f);
-  // right edge
-  vert.add(volume.x(), 0.0f, 0.0f);
-  vert.add(volume.x(), volume.y(), 0.0f);
-  // far edge
-  vert.add(0.0f, volume.y(), 0.0f);
-  vert.add(volume.x(), volume.y(), 0.0f);
-  // left edge
-  vert.add(0.0f, 0.0f, volume.z());
-  vert.add(0.0f, volume.y(), volume.z());
-  // near edge
-  vert.add(0.0f, 0.0f, volume.z());
-  vert.add(volume.x(), 0.0f, volume.z());
-  // right edge
-  vert.add(volume.x(), 0.0f, volume.z());
-  vert.add(volume.x(), volume.y(), volume.z());
-  // far edge
-  vert.add(0.0f, volume.y(), volume.z());
-  vert.add(volume.x(), volume.y(), volume.z());
-	 
-  // verticals at rear
-  vert.add(0.0f, volume.y(), 0);
-  vert.add(0.0f, volume.y(), volume.z());
-  vert.add(volume.x(), volume.y(), 0);
-  vert.add(volume.x(), volume.y(), volume.z());
+  ps_value_t *shape = m_model->settings.GetDflt()->Get("#global", "machine_shape");
+  if (shape && PS_GetString(shape) && strcmp(PS_GetString(shape), "elliptic") == 0) {
+    // Eliptical printer
+    for (int hh = 0; hh <= 1; hh++) {
+      for (int count = 0; count < 360; count++) {
+	vert.add(volume.x()/2 * (1.0 + cosf(count * M_PI / 180.0)), volume.y()/2 * (1.0 + sinf(count * M_PI / 180.0)), hh * volume.z());
+	vert.add(volume.x()/2 * (1.0 + cosf((count + 1) * M_PI / 180.0)), volume.y()/2 * (1.0 + sinf((count + 1) * M_PI / 180.0)), hh * volume.z());
+      }
+    }
+    vert.add(volume.x()/2, volume.y(), 0.0f);
+    vert.add(volume.x()/2, volume.y(), volume.z());
 
+    // Fine internal grid
+    vert2.add(0.0f,         volume.y()/2, 0.0f);
+    vert2.add(volume.x(),   volume.y()/2, 0.0f);
+    vert2.add(volume.x()/2, 0.0f,         0.0f);
+    vert2.add(volume.x()/2, volume.y(),   0.0f);
+    
+    for (uint x = 10; x < volume.x() / 2; x += 10) {
+      float xf = x / volume.x() * 2;
+      float y = volume.y() / 2 * sqrtf(1.0f - xf * xf);
+      vert2.add(volume.x() / 2 + x, volume.y()/2 + y, 0.0f);
+      vert2.add(volume.x() / 2 + x, volume.y()/2 - y, 0.0f);
+      vert2.add(volume.x() / 2 - x, volume.y()/2 + y, 0.0f);
+      vert2.add(volume.x() / 2 - x, volume.y()/2 - y, 0.0f);
+    }
+    
+    for (uint y = 10; y < volume.y() / 2; y += 10) {
+      float yf = y / volume.y() * 2;
+      float x = volume.x() / 2 * sqrtf(1.0f - yf * yf);
+      vert2.add(volume.x() / 2 + x, volume.y()/2 + y, 0.0f);
+      vert2.add(volume.x() / 2 - x, volume.y()/2 + y, 0.0f);
+      vert2.add(volume.x() / 2 - x, volume.y()/2 - y, 0.0f);
+      vert2.add(volume.x() / 2 + x, volume.y()/2 - y, 0.0f);
+    }
+  } else {
+    // Boarder lines
+    // left edge
+    vert.add(0.0f, 0.0f, 0.0f);
+    vert.add(0.0f, volume.y(), 0.0f);
+    // near edge
+    vert.add(0.0f, 0.0f, 0.0f);
+    vert.add(volume.x(), 0.0f, 0.0f);
+    // right edge
+    vert.add(volume.x(), 0.0f, 0.0f);
+    vert.add(volume.x(), volume.y(), 0.0f);
+    // far edge
+    vert.add(0.0f, volume.y(), 0.0f);
+    vert.add(volume.x(), volume.y(), 0.0f);
+    // left edge
+    vert.add(0.0f, 0.0f, volume.z());
+    vert.add(0.0f, volume.y(), volume.z());
+    // near edge
+    vert.add(0.0f, 0.0f, volume.z());
+    vert.add(volume.x(), 0.0f, volume.z());
+    // right edge
+    vert.add(volume.x(), 0.0f, volume.z());
+    vert.add(volume.x(), volume.y(), volume.z());
+    // far edge
+    vert.add(0.0f, volume.y(), volume.z());
+    vert.add(volume.x(), volume.y(), volume.z());
+	 
+    // verticals at rear
+    vert.add(0.0f, volume.y(), 0);
+    vert.add(0.0f, volume.y(), volume.z());
+    vert.add(volume.x(), volume.y(), 0);
+    vert.add(volume.x(), volume.y(), volume.z());
+    
+    // Draw thin internal lines
+    for (uint x = 10; x < volume.x(); x += 10) {
+      vert2.add(x, 0.0f, 0.0f);
+      vert2.add(x, volume.y(), 0.0f);
+    }
+    
+    for (uint y = 10; y < volume.y(); y += 10) {
+      vert2.add(0.0f, y, 0.0f);
+      vert2.add(volume.x(), y, 0.0f);
+    }
+  }
+  
   float color[4] = {0.5f, 0.5f, 0.5f, 1.0f}; // Gray
   m_renderer->draw_lines(color, vert, 2.0);
-
-  // Draw thin internal lines
-  vert.clear();
-  for (uint x = 10; x < volume.x(); x += 10) {
-    vert.add(x, 0.0f, 0.0f);
-    vert.add(x, volume.y(), 0.0f);
-  }
-
-  for (uint y = 10; y < volume.y(); y += 10) {
-    vert.add(0.0f, y, 0.0f);
-    vert.add(volume.x(), y, 0.0f);
-  }
-  m_renderer->draw_lines(color, vert, 1.0);  
+  m_renderer->draw_lines(color, vert2, 1.0);
 }
 
 void View::DrawMargins(void) {

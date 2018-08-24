@@ -130,7 +130,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   }
   
   if (isfinite(codes['T']))
-    state.e_no = codes['T'] + 1;
+    state.e_no = codes['T'];
   
   cmd.type = other;
   cmd.e_no = state.e_no;
@@ -453,17 +453,18 @@ void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
   string s;
   stringstream alltext;
   
+  /* Fixme: offset for machine_center_is_zero setting */
   clear();
   
   set_locales("C");
   
   double h = model->settings.get_double("Slicing", "LayerHeight");
-  double home_feedrate = model->settings.get_double("Hardware", "HomeSpeed.XY"); // mm/s
+  double home_feedrate = PS_AsFloat(model->settings.GetPrinter()->Get("repsnapper", "#global", "home_feedrate_x"));
   const Psv *dflt = model->settings.GetDflt();
   
   memset(&state, 0, sizeof(state));
   state.scale = 1.0;
-  state.e_no = 1;
+  state.e_no = 0;
   
   double max_feedrate;
   try {
@@ -619,7 +620,7 @@ void GCode::drawCommands(Render &render,
     render.draw_lines(color, vert, linewidth);
   } else {
     int num = settings.getNumExtruders();
-    for (int e_no = 1; e_no <= num; e_no++) {
+    for (int e_no = 0; e_no < num; e_no++) {
       for (count = start; count < end; count++) {
 	cmd = &cmds[count];
 	if (!cmd->spec_e)
@@ -630,7 +631,7 @@ void GCode::drawCommands(Render &render,
 	addSeg(vert, cmd);
       }
       
-      string colorname = "E" + to_string(((e_no - 1) % 5) + 1) + "Color";
+      string colorname = "E" + to_string(e_no % 5) + "Color";
       color = settings.get_colour("Display", colorname);
       render.draw_lines(color, vert, linewidth);
     }

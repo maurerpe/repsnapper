@@ -40,7 +40,7 @@ private:
   bool waiting_temp;
   int temp_countdown;
   
-  int active_extruder = 1;
+  int active_extruder = 0;
   
   sigc::connection idle_timeout;
   sigc::connection print_timeout;
