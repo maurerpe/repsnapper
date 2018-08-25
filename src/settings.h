@@ -92,7 +92,9 @@ class Settings : public Glib::KeyFile {
  public:
   Settings();
   ~Settings();
-
+  
+  string GetExtruderText() const;
+  
   bool has_user_changed() const { return m_user_changed; }
   void assign_from(Settings *pSettings);
 
@@ -120,7 +122,7 @@ class Settings : public Glib::KeyFile {
   void load_printer_settings(void);
   
   void ps_to_gui(Builder &builder, const ps_value_t *set);
-  ps_value_t *FullSettings(int model_specific = 1);
+  ps_value_t *FullSettings(int model_specific = 0);
   void SetTargetTemps(Builder &builder);
   
   sigc::signal< void > m_signal_visual_settings_changed;

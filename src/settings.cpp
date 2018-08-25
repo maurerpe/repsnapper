@@ -46,6 +46,10 @@
 
 const string serialspeeds[] = { "9600", "19200", "38400", "57600", "115200", "230400", "250000" };
 
+string Settings::GetExtruderText() const {
+  return _("Extruder");
+}
+
 string Settings::GetConfigPath(string filename) {
   vector<string> path(3);
   path[0] = Glib::get_user_config_dir();
@@ -789,8 +793,13 @@ int Settings::GetENo(string name, int model_specific) const {
 
   if (string(ext) == "Model Specific")
     return model_specific;
+
+  size_t len = GetExtruderText().size();
+
+  if (ext.size() < len)
+    return -1;
   
-  return stoi(ext.substr(8));
+  return stoi(ext.substr(len));
 }
 
 static string EStr(int e_no) {

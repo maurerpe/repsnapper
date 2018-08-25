@@ -34,12 +34,14 @@
 #include "widgets.h"
 #include "platform.h"
 
-static int GetENo(Gtk::ComboBoxText *w) {
+static int GetENo(Gtk::ComboBoxText *w, string ext_text) {
+  size_t len = ext_text.size();
+  
   string ext = w->get_active_text();
-  if (ext.length() <= 8)
+  if (ext.length() <= len)
     return -1;
   
-  return stoi(ext.substr(8));
+  return stoi(ext.substr(len));
 }
 
 bool View::on_delete_event(GdkEventAny* event) {
@@ -161,7 +163,7 @@ void View::do_load_stl() {
   m_builder->get_widget("Display.ExtruderLoad", w);
   int ext = 1;
   if (w)
-    ext = GetENo(w);
+    ext = GetENo(w, m_model->settings.GetExtruderText());
   cout << "Loading shape with extruder " << ext << endl;
   
   vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
@@ -381,7 +383,7 @@ void View::fan_enabled_toggled(Gtk::ToggleButton *button) {
 }
 
 void View::run_extruder() {
-  int e_no = GetENo(m_extruder);
+  int e_no = GetENo(m_extruder, m_model->settings.GetExtruderText());
   
   double amount = m_extruder_length->get_value();
   m_printer->RunExtruder(m_extruder_speed->get_value() * 60,
@@ -903,7 +905,7 @@ void View::temp_changed() {
 	     i != e_no ? -1 : m_printer->get_temp(TEMP_NOZZLE));
 }
 
-static void update_extruder_combo(Glib::RefPtr<Gtk::Builder> &builder, string name, uint num_extruders, bool include_model = true) {
+static void update_extruder_combo(Glib::RefPtr<Gtk::Builder> &builder, string ext_name, string name, uint num_extruders, bool include_model = true) {
   Gtk::ComboBoxText *w = NULL;
   builder->get_widget(name, w);
   if (w == NULL) {
@@ -917,7 +919,7 @@ static void update_extruder_combo(Glib::RefPtr<Gtk::Builder> &builder, string na
   if (include_model)
     w->append("Model Specific");
   for (uint i = 0; i < num_extruders; i++) {
-    w->append("Extruder " + to_string(i));
+    w->append(ext_name + " " + to_string(i));
   }
   
   if (prev.size() > 0)
@@ -956,13 +958,14 @@ void View::extruders_changed() {
   }
   
   // Update comboboxes
-  update_extruder_combo(m_builder, "Extruder.Shell", num);
-  update_extruder_combo(m_builder, "Extruder.Skin", num);
-  update_extruder_combo(m_builder, "Extruder.Infill", num);
-  update_extruder_combo(m_builder, "Extruder.Support", num);
-  update_extruder_combo(m_builder, "Display.ExtruderLoad", num, false);
-  update_extruder_combo(m_builder, "m_extruder", num, false);
-  update_extruder_combo(m_builder, "Printer.Extruder", num, false);
+  string et = m_model->settings.GetExtruderText();
+  update_extruder_combo(m_builder, et, "Extruder.Shell", num);
+  update_extruder_combo(m_builder, et, "Extruder.Skin", num);
+  update_extruder_combo(m_builder, et, "Extruder.Infill", num);
+  update_extruder_combo(m_builder, et, "Extruder.Support", num);
+  update_extruder_combo(m_builder, et, "Display.ExtruderLoad", num, false);
+  update_extruder_combo(m_builder, et, "m_extruder", num, false);
+  update_extruder_combo(m_builder, et, "Printer.Extruder", num, false);
 }
 
 void View::printer_changed() {
@@ -1410,7 +1413,7 @@ void View::divide_selected_objects() {
 void View::change_extruder_selected_objects(Gtk::ComboBoxText *w) {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
-  int e_no = GetENo(w);
+  int e_no = GetENo(w, m_model->settings.GetExtruderText());
   get_selected_objects (objects, shapes);
   if (shapes.size()>0)
     for (uint i=0; i<shapes.size() ; i++)
