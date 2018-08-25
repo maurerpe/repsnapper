@@ -100,7 +100,7 @@ void View::TranslationSpinRow::combobox_changed() {
 
 // Changed STL Selection - must update translation values
 void View::TranslationSpinRow::selection_changed() {
-  m_inhibit_update = true;
+  Inhibitor inhibit(&m_inhibit_update);
   
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
@@ -133,7 +133,6 @@ void View::TranslationSpinRow::selection_changed() {
   for (uint i = 0; i < 3; i++)
     m_xyz[i]->set_value(trans[i]/scale);
   m_extruder->set_active_text("Extruder " + to_string(e_no));
-  m_inhibit_update = false;
 }
 
 View::TranslationSpinRow::TranslationSpinRow(View *view, Gtk::TreeView *treeview) :
@@ -174,10 +173,9 @@ void View::AxisRow::spin_value_changed() {
 }
 
 void View::AxisRow::nudge_clicked (double nudge) {
-  m_inhibit_update = true;
+  Inhibitor inhibit(&m_inhibit_update);
   m_target->set_value (MAX (m_target->get_value () + nudge, 0.0));
   m_printer->Move (std::string (axis_names[m_axis]), nudge);
-  m_inhibit_update = false;
 }
 
 void View::AxisRow::add_nudge_button(double nudge) {
@@ -192,9 +190,8 @@ void View::AxisRow::add_nudge_button(double nudge) {
 }
 
 void View::AxisRow::notify_homed() {
-  m_inhibit_update = true;
+  Inhibitor inhibit(&m_inhibit_update);
   m_target->set_value(0.0);
-  m_inhibit_update = false;
 }
 
 View::AxisRow::AxisRow(Model *model, Printer *printer, int axis) :

@@ -66,6 +66,7 @@ class GCode {
   class printer_state {
   public:
     Vector3d pos;
+    Vector3d offset;
     double layer_z;
     double ext;
     double ext_offset;

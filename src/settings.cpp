@@ -159,43 +159,45 @@ void Settings::set_defaults() {
 }
 
 void Settings::load_settings(Glib::RefPtr<Gio::File> file) {
-  inhibit_callback = true;
-  filename = file->get_path();
-
-  try {
-    if (!load_from_file(filename)) {
-      cout << _("Failed to load settings from file '") << filename << "\n";
+  {
+    Inhibitor inhibit(&inhibit_callback);
+    
+    filename = file->get_path();
+  
+    try {
+      if (!load_from_file(filename)) {
+	cout << _("Failed to load settings from file '") << filename << "\n";
+	return;
+      }
+    } catch (const Glib::KeyFileError &err) {
+      cout << _("Exception ") << err.what() << _(" loading settings from file '") << filename << "\n";
       return;
     }
-  } catch (const Glib::KeyFileError &err) {
-    cout << _("Exception ") << err.what() << _(" loading settings from file '") << filename << "\n";
-    return;
-  }
-
-  cerr << _("Parsing config from '") << filename << "\n";
-
-  vector<string> CustomButtonLabels;
-  vector<string> CustomButtonGCodes;
-  if (has_group("UserButtons")) {
-    CustomButtonLabels = get_string_list("UserButtons","Labels");
-    CustomButtonGCodes = get_string_list("UserButtons","GCodes");
+    
+    cerr << _("Parsing config from '") << filename << "\n";
+    
+    vector<string> CustomButtonLabels;
+    vector<string> CustomButtonGCodes;
+    if (has_group("UserButtons")) {
+      CustomButtonLabels = get_string_list("UserButtons","Labels");
+      CustomButtonGCodes = get_string_list("UserButtons","GCodes");
+    }
   }
   
-  inhibit_callback = false;
   m_user_changed = false;
   m_signal_visual_settings_changed.emit();
   m_signal_update_settings_gui.emit();
 }
 
 void Settings::save_settings(Glib::RefPtr<Gio::File> file) {
-  inhibit_callback = true;
+  Inhibitor inhibit(&inhibit_callback);
+  
   set_string("Global","Version",VERSION);
 
   Glib::ustring contents = to_data();
   // cerr << contents << endl;
   Glib::file_set_contents(file->get_path(), contents);
 
-  inhibit_callback = false;
   // all changes safely saved
   m_user_changed = false;
 }
@@ -278,7 +280,8 @@ void Settings::load_printer_settings(void) {
 
 void Settings::set_to_gui(Builder &builder,
 			  const string &group, const string &key) {
-  inhibit_callback = true;
+  Inhibitor inhibit(&inhibit_callback);
+
   Glib::ustring glade_name = group + "." + key;
   // inhibit warning for settings not defined in glade UI:
   if (!builder->get_object (glade_name)) {
@@ -485,7 +488,8 @@ void Settings::get_colour_from_gui(Builder &builder, const string &glade_name) {
 
 // whole group or all groups
 void Settings::set_to_gui(Builder &builder, const string filter) {
-  inhibit_callback = true;
+  Inhibitor inhibit(&inhibit_callback);
+
   vector< Glib::ustring > groups = get_groups();
   for (uint g = 0; g < groups.size(); g++) {
     vector< Glib::ustring > keys = get_keys(groups[g]);
@@ -522,7 +526,6 @@ void Settings::set_to_gui(Builder &builder, const string filter) {
       combobox_set_to(portspeed, ostr.str());
     }
   }
-  inhibit_callback = false;
 }
 
 void Settings::connect_to_ui(Builder &builder) {

@@ -215,7 +215,7 @@ QualDlg::QualDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg 
 }
 
 void QualDlg::SelectionChanged(void) {
-  inhibit_spin_changed = true;
+  Inhibitor inhibit(&inhibit_spin_changed);
   
   Glib::ustring name = GetSelectionName();
   
@@ -227,8 +227,6 @@ void QualDlg::SelectionChanged(void) {
   m_wallspeedratio->set_value(PS_AsFloat(PS_GetMember(v, "wall-speed-ratio", NULL)));
 
   m_cust.SetValue("#global", PS_GetMember(PS_GetMember(v, "settings", NULL), "#global", NULL));
-
-  inhibit_spin_changed = false;
 }
 
 //////////////////////////////// MatDlg ///////////////////////////////////
@@ -266,7 +264,7 @@ MatDlg::MatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *s
 }
 
 void MatDlg::SelectionChanged(void) {
-  inhibit_spin_changed = true;
+  Inhibitor inhibit(&inhibit_spin_changed);
   
   Glib::ustring name = GetSelectionName();
   
@@ -278,8 +276,6 @@ void MatDlg::SelectionChanged(void) {
 
   m_cust_global.SetValue("#global", PS_GetMember(PS_GetMember(v, "settings", NULL), "#global", NULL));
   m_cust_active.SetValue("0", PS_GetMember(PS_GetMember(v, "settings", NULL), "#active", NULL));
-
-  inhibit_spin_changed = false;
 }
 
 void MatDlg::FeedrateChanged(void) {

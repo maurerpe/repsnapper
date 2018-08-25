@@ -33,6 +33,16 @@ using namespace std;
 // avoid including glibmm in every header.
 typedef Glib::RefPtr<Gtk::Builder> Builder;
 
+class Inhibitor {
+ private:
+  bool m_init;
+  bool *m_ptr;
+
+ public:
+  Inhibitor(bool *ptr) {m_ptr = ptr; m_init = *m_ptr; *m_ptr = true;};
+  ~Inhibitor() {*m_ptr = m_init;};
+};
+
 class Settings : public Glib::KeyFile {
   Glib::ustring filename; // where it's loaded from
   

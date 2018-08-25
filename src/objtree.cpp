@@ -113,7 +113,7 @@ void ObjectsTree::on_row_changed(const Gtk::TreeModel::Path& path,
 }
 
 void ObjectsTree::update_model() {
-  inhibit_row_changed = true;
+  Inhibitor inhibit(&inhibit_row_changed);
   // re-build the model each time for ease ...
   m_model->clear();
 
@@ -157,7 +157,6 @@ void ObjectsTree::update_model() {
       row[m_cols->m_extruder] = "Extruder " + to_string(Objects[i]->shapes[j]->extruder);
     }
   }
-  inhibit_row_changed = false;
 }
 
 void ObjectsTree::update_shapenames(Gtk::TreeModel::Children children) {
@@ -193,9 +192,8 @@ void ObjectsTree::extruders_changed_raw(Gtk::TreeModel::Children children) {
 }
 
 void ObjectsTree::extruders_changed() {
-  inhibit_row_changed = true;
+  Inhibitor inhibit(&inhibit_row_changed);
   extruders_changed_raw(m_model->children());
-  inhibit_row_changed = false;
 }
 
 Matrix4d ObjectsTree::getTransformationMatrix(int object, int shape) const {

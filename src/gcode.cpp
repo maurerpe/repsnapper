@@ -132,6 +132,9 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   if (isfinite(codes['T']))
     state.e_no = codes['T'];
   
+  dest   += state.offset;
+  center += state.pos;
+  
   cmd.type = other;
   cmd.e_no = state.e_no;
   cmd.start = pos;
@@ -468,8 +471,8 @@ void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
   
   double max_feedrate;
   try {
-    max_feedrate = min(PS_AsFloat(dflt->Get("#global", "machine_max_feedrate_x")),
-		       PS_AsFloat(dflt->Get("#global", "machine_max_feedrate_y"))); // mm/s
+    max_feedrate = min(PS_AsFloat(dflt->GetThrow("#global", "machine_max_feedrate_x")),
+		       PS_AsFloat(dflt->GetThrow("#global", "machine_max_feedrate_y"))); // mm/s
   } catch (exception &e) {
     cout << "Cannot determine printer max feedrate" << endl;
     max_feedrate = 200;
@@ -478,8 +481,8 @@ void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
   state.feedrate = max_feedrate;
 
   try {
-    state.accel = min(PS_AsFloat(dflt->Get("#global", "machine_max_acceleration_x")),
-		      PS_AsFloat(dflt->Get("#global", "machine_max_acceleration_y")));
+    state.accel = min(PS_AsFloat(dflt->GetThrow("#global", "machine_max_acceleration_x")),
+		      PS_AsFloat(dflt->GetThrow("#global", "machine_max_acceleration_y")));
   } catch (exception &e) {
     cout << "Cannot determine printer max acceleration" << endl;
     state.accel = 9000;
@@ -487,12 +490,19 @@ void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
   
   // jerk = min speed change that requires acceleration
   try {
-    state.jerk = PS_AsFloat(dflt->Get("#global", "machine_max_jerk_xy")); // mm/s
+    state.jerk = PS_AsFloat(dflt->GetThrow("#global", "machine_max_jerk_xy")); // mm/s
   } catch (exception &e) {
     cout << "Cannot determine printer max jerk" << endl;
     state.jerk = 10;
   }
-
+  
+  state.offset = {0, 0, 0};
+  if (PS_AsBoolean(dflt->Get("#global", "machine_center_is_zero"))) {
+    Vector3d vol = model->settings.getPrintVolume();
+    state.offset.x() = vol.x() / 2;
+    state.offset.y() = vol.y() / 2;
+  }
+  
   cmds.clear();
   while (getline(is,s)) {
     alltext << s << endl;

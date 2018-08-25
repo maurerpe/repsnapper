@@ -103,9 +103,8 @@ PrinterSpin::PrinterSpin(Gtk::Widget *widget, ps_value_t **dflt,
 void PrinterSpin::LoadValue(void) {
   Gtk::SpinButton *w = dynamic_cast<Gtk::SpinButton *>(m_widget);
 
-  m_inhibit_change = true;
+  Inhibitor inhibit(&m_inhibit_change);
   w->set_value(PS_AsFloat(GetValue()));
-  m_inhibit_change = false;
 }
 
 void PrinterSpin::Changed(void) {
@@ -133,9 +132,8 @@ PrinterSwitch::PrinterSwitch(Gtk::Widget *widget, ps_value_t **dflt,
 void PrinterSwitch::LoadValue(void) {
   Gtk::Switch *w = dynamic_cast<Gtk::Switch *>(m_widget);
   
-  m_inhibit_change = true;
+  Inhibitor inhibit(&m_inhibit_change);
   w->set_active(PS_AsBoolean(GetValue()));
-  m_inhibit_change = false;
 }
 
 void PrinterSwitch::Changed(void) {
@@ -168,9 +166,8 @@ void PrinterCombo::LoadValue(void) {
 
   const char *str = PS_GetString(GetValue());
   if (str) {
-    m_inhibit_change = true;
+    Inhibitor inhibit(&m_inhibit_change);
     w->set_active_text(Glib::ustring(str));
-    m_inhibit_change = false;
   }
 }
 
@@ -185,17 +182,14 @@ void PrinterCombo::Changed(void) {
 
 void PrinterCombo::SetupCombo(void) {
   Gtk::ComboBoxText *w = dynamic_cast<Gtk::ComboBoxText *>(m_widget);
-  
-  m_inhibit_change = true;
+
+  Inhibitor inhibit(&m_inhibit_change);
   w->remove_all();
-  m_inhibit_change = false;
   
   Psvi vi(PS_GetMember(PS_GetMember(PS_GetMember(PS_GetMember((*m_ps)(), m_ext.c_str(), NULL), "#set", NULL), m_name.c_str(), NULL), "options", NULL));
 
-  m_inhibit_change = true;
   while (vi.Next())
     w->append(vi.Key());
-  m_inhibit_change = false;
 }
 
 //////////////////////////////// PrinterEntry ////////////////////////////////
@@ -217,9 +211,8 @@ PrinterEntry::PrinterEntry(Gtk::Widget *widget, ps_value_t **dflt,
 void PrinterEntry::LoadValue(void) {
   const char *decoded = PS_GetString(GetValue());
 
-  m_inhibit_change = true;
+  Inhibitor inhibit(&m_inhibit_change);
   m_buffer->set_text(decoded ? decoded : "");
-  m_inhibit_change = false;
 }
 
 void PrinterEntry::Changed(void) {
@@ -248,9 +241,8 @@ PrinterText::PrinterText(Gtk::Widget *widget, ps_value_t **dflt,
 void PrinterText::LoadValue(void) {
   string decoded = Decode(GetValue());
 
-  m_inhibit_change = true;
+  Inhibitor inhibit(&m_inhibit_change);
   m_buffer->set_text(decoded);
-  m_inhibit_change = false;
 }
 
 void PrinterText::Changed(void) {
@@ -313,9 +305,8 @@ void PrinterCheck::LoadValue(void) {
   else
     active = PS_AsBoolean(GetValue());
 
-  m_inhibit_change = true;
+  Inhibitor inhibit(&m_inhibit_change);
   w->set_active(active);
-  m_inhibit_change = false;
 }
 
 void PrinterCheck::SetActive(bool active) {

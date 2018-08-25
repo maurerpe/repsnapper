@@ -1343,10 +1343,9 @@ void View::tree_selection_changed() {
       ostr << shapes.back()->filename << ": " << shapes.back()->size() << " triangles ";
       statusBarMessage(ostr.str());
     }
-    m_model->m_inhibit_modelchange = true;
+    Inhibitor inhibit(&m_model->m_inhibit_modelchange);
     update_scale_value();
     update_rot_value();
-    m_model->m_inhibit_modelchange = false;
   }
 }
 
