@@ -129,9 +129,6 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     cmd.spec_e = 1;
   }
   
-  if (isfinite(codes['T']))
-    state.e_no = codes['T'];
-  
   cmd.type = other;
   cmd.e_no = state.e_no;
   cmd.start = pos;
@@ -145,7 +142,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   cmd.e_stop = state.ext + state.ext_offset;
   cmd.layerno = state.layerno;
   
-  if (isfinite('G')) {
+  if (isfinite(codes['G'])) {
     if (codes['G'] == 0.0) {
       // Rapid positioning
       cmd.type = line;
@@ -255,6 +252,8 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
       if (isfinite(codes['S']))
 	state.accel = codes['S'] * state.scale;
     }
+  } else if (isfinite(codes['T'])) {
+    cmd.e_no = state.e_no = codes['T'];
   }
   
   cmd.jerk = state.jerk;
@@ -628,6 +627,7 @@ void GCode::drawCommands(Render &render,
   } else {
     int num = settings.getNumExtruders();
     for (int e_no = 0; e_no < num; e_no++) {
+      vert.clear();
       for (count = start; count < end; count++) {
 	cmd = &cmds[count];
 	if (!cmd->spec_e)
@@ -637,7 +637,7 @@ void GCode::drawCommands(Render &render,
 
 	addSeg(vert, cmd);
       }
-      
+
       string colorname = "E" + to_string(e_no % 5) + "Color";
       color = settings.get_colour("Display", colorname);
       render.draw_lines(color, vert, linewidth);

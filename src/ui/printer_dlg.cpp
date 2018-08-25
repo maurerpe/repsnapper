@@ -633,7 +633,7 @@ void PrinterDlg::Save() {
   string path = m_settings->GetConfigPath("printer.json");
   Psf file(path.c_str(), "w");
   Pso os(PS_NewFileOStream(file()));
-  PS_WriteValue(os(), m_printer);
+  PS_WriteValuePretty(os(), m_printer);
 }
 
 void PrinterDlg::SaveAs() {
@@ -654,7 +654,7 @@ void PrinterDlg::SaveAs() {
   
   Psf outfile(filename.c_str(), "w");
   Pso os(PS_NewFileOStream(outfile()));
-  PS_WriteValue(os(), m_printer);
+  PS_WriteValuePretty(os(), m_printer);
 }
 
 void PrinterDlg::Load() {

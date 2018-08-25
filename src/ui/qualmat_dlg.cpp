@@ -390,7 +390,7 @@ void QualMatDlg::Save(void) {
   
   Psf outfile(filename.c_str(), "w");
   Pso os(PS_NewFileOStream(outfile()));
-  PS_WriteValue(os(), (*m_settings->GetQualMat())());
+  PS_WriteValuePretty(os(), (*m_settings->GetQualMat())());
 }
 
 void QualMatDlg::SaveAs(void) {
@@ -411,7 +411,7 @@ void QualMatDlg::SaveAs(void) {
   
   Psf outfile(filename.c_str(), "w");
   Pso os(PS_NewFileOStream(outfile()));
-  PS_WriteValue(os(), (*m_settings->GetQualMat())());
+  PS_WriteValuePretty(os(), (*m_settings->GetQualMat())());
 }
 
 void QualMatDlg::Load(void) {
