@@ -87,7 +87,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     if (state.is_rel)
       dest[0] += codes['X'] * state.scale;
     else
-      dest[0] = codes['X'] * state.scale;
+      dest[0] = codes['X'] * state.scale + state.offset[0];
     cmd.spec_xy = 1;
   }
   
@@ -95,7 +95,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     if (state.is_rel)
       dest[1] += codes['Y'] * state.scale;
     else
-      dest[1] = codes['Y'] * state.scale;
+      dest[1] = codes['Y'] * state.scale + state.offset[1];
     cmd.spec_xy = 1;
   }
 
@@ -104,7 +104,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
     if (state.is_rel)
       dest[2] += codes['Z'] * state.scale;
     else
-      dest[2] = codes['Z'] * state.scale;
+      dest[2] = codes['Z'] * state.scale + state.offset[2];
     cmd.spec_z = 1;
   }
   
@@ -131,9 +131,6 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
   
   if (isfinite(codes['T']))
     state.e_no = codes['T'];
-  
-  dest   += state.offset;
-  center += state.pos;
   
   cmd.type = other;
   cmd.e_no = state.e_no;
