@@ -228,6 +228,10 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
       // Home
       cmd.length = len3(dest[0] - pos[0], dest[1] - pos[1], dest[2] - pos[2]);
       cmd.feedrate = home_feedrate;
+    } else if (codes['G'] == 29.0) {
+      // Calibrate
+      cmd.type = dwell;
+      cmd.t_dwell = state.t_calibrate;
     } else if (codes['G'] == 90.0) {
       state.is_rel = 0;
       state.is_e_rel = 0; /* FIXME: Use firmware flavor */
@@ -498,6 +502,8 @@ void GCode::Parse(Model *model, ViewProgress *progress, istream &is) {
     state.offset.x() = vol.x() / 2;
     state.offset.y() = vol.y() / 2;
   }
+  
+  state.t_calibrate = PS_AsFloat(model->settings.GetPrinter()->Get("repsnapper", "#global", "calibrate_time"));
   
   cmds.clear();
   while (getline(is,s)) {

@@ -74,6 +74,7 @@ class GCode {
     double accel;
     double jerk;
     double scale;
+    double t_calibrate;
     int e_no;
     int is_rel;
     int is_e_rel;
