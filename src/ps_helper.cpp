@@ -78,6 +78,10 @@ ps_value_t *Psv::Get(const char *m1, const char *m2, const char *m3) const {
   return PS_GetMember(PS_GetMember(PS_GetMember(v, m1, NULL), m2, NULL), m3, NULL);
 }
 
+ps_value_t *Psv::Get(const char *m1, const char *m2, const char *m3, const char *m4) const {
+  return PS_GetMember(PS_GetMember(PS_GetMember(PS_GetMember(v, m1, NULL), m2, NULL), m3, NULL), m4, NULL);
+}
+
 ps_value_t *Psv::GetThrow(const char *m1, const char *m2) const {
   if (v == NULL)
     throw invalid_argument(string("ps_value v was null"));

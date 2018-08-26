@@ -90,16 +90,20 @@ class MatDlg : public SelectionBox {
   SetDlg *m_set;
   CustProp m_cust_global;
   CustProp m_cust_active;
-  
+
+  Gtk::TextView    *m_description;
   Gtk::SpinButton  *m_feedrate;
   Gtk::SpinButton  *m_width;
   Gtk::CheckButton *m_width_enable;
+  
+  Glib::RefPtr<Gtk::TextBuffer> m_buffer;
   
  public:
   MatDlg(Psv *v, Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
   
  private:
   void SelectionChanged(void);
+  void DescriptionChanged(void);
   void FeedrateChanged(void);
   void WidthSpinChanged(void);
   void WidthEnableChanged(void);

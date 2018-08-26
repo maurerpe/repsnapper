@@ -68,14 +68,23 @@ bool splitpoint(const string &glade_name, string &group, string &key) {
   return true;
 }
 
-void set_up_combobox(Gtk::ComboBoxText *combo, vector<string> values) {
-  combo->remove_all();
+void Settings::set_up_combobox(Gtk::ComboBoxText *combo, vector<string> values) {
+  Glib::ustring prev = combo->get_active_text();
+
+  {
+    Inhibitor inhibit(&inhibit_callback);
+    
+    combo->remove_all();
+    for (size_t i = 0; i < values.size(); i++)
+      combo->append(Glib::ustring(values[i].c_str()));
+  }
   
-  for (uint i=0; i<values.size(); i++)
-    combo->append(Glib::ustring(values[i].c_str()));
-  
-  if (!combo->get_has_entry())
-    combo->set_active(0);
+  if (!combo->get_has_entry()) {
+    if (prev.size() > 0)
+      combo->set_active_text(prev);
+    if (combo->get_active_text().size() == 0)
+      combo->set_active(0);
+  }
 }
 
 string combobox_get_active_value(Gtk::ComboBoxText *combo){
@@ -246,6 +255,16 @@ void Settings::SetPrinter(const ps_value_t *v) {
 
 void Settings::SetQualMat(const ps_value_t *v) {
   qualmat.Take(PS_CopyValue(v));
+
+  Gtk::ComboBoxText *w;
+  m_builder->get_widget("Slicing.Quality", w);
+  set_up_combobox(w, Psv::GetNames(qualmat.Get("quality")));
+  m_builder->get_widget("Slicing.E0Material", w);
+  set_up_combobox(w, Psv::GetNames(qualmat.Get("materials")));
+  m_builder->get_widget("Slicing.E1Material", w);
+  set_up_combobox(w, Psv::GetNames(qualmat.Get("materials")));
+  
+  m_qualmat_changed.emit();
 }
 
 void Settings::WriteTempPrinter(FILE *file, vector<string> ext) {
@@ -466,7 +485,13 @@ void Settings::get_from_gui(Builder &builder, const string &glade_name) {
   }
   
   if (key == "Quality") {
-    ps_to_gui(builder, PS_GetMember(qualmat.Get("quality", get_string("Slicing", "Quality").c_str()), "settings", NULL));
+    ps_value_t *qual = qualmat.Get("quality", get_string("Slicing", "Quality").c_str());
+    double rel_height = PS_AsFloat(PS_GetMember(qual, "height/nozzle", NULL));
+    double nozzle = PS_AsFloat(dflt.Get("0", "machine_nozzle_size"));
+    set_double("Slicing", "LayerHeight", rel_height * nozzle);
+    set_to_gui(builder, "Slicing", "LayerHeight");
+    
+    ps_to_gui(builder, PS_GetMember(qual, "settings", NULL));
   }
   
   m_signal_visual_settings_changed.emit();
@@ -497,6 +522,7 @@ void Settings::get_colour_from_gui(Builder &builder, const string &glade_name) {
 // whole group or all groups
 void Settings::set_to_gui(Builder &builder, const string filter) {
   Inhibitor inhibit(&inhibit_callback);
+  m_builder = builder;
 
   vector< Glib::ustring > groups = get_groups();
   for (uint g = 0; g < groups.size(); g++) {
@@ -620,11 +646,11 @@ void Settings::connect_to_ui(Builder &builder) {
 				  serialspeeds+sizeof(serialspeeds)/sizeof(string));
 	    set_up_combobox(combot, speeds);
 	  } else if (glade_name == "Slicing.Quality") {
-	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(qualmat(), "quality", NULL)));
+	    set_up_combobox(combot, Psv::GetNames(qualmat.Get("quality")));
 	  } else if (glade_name == "Slicing.E0Material" || glade_name == "Slicing.E1Material") {
-	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(qualmat(), "materials", NULL)));
+	    set_up_combobox(combot, Psv::GetNames(qualmat.Get("materials")));
 	  } else if (glade_name == "Slicing.Adhesion") {
-	    set_up_combobox(combot, Psv::GetNames(PS_GetMember(PS_GetMember(PS_GetMember(PS_GetMember(ps(), "#global", NULL), "#set", NULL), "adhesion_type", NULL), "options", NULL)));
+	    set_up_combobox(combot, Psv::GetNames(ps.Get("#global", "#set", "adhesion_type", "options")));
 	  }
 	  combot->signal_changed().connect
 	    (sigc::bind(sigc::bind<string>(sigc::mem_fun(*this, &Settings::get_from_gui), glade_name), builder));

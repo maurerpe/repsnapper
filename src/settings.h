@@ -45,6 +45,7 @@ class Inhibitor {
 
 class Settings : public Glib::KeyFile {
   Glib::ustring filename; // where it's loaded from
+  Builder m_builder;
   
   bool m_user_changed;
   bool inhibit_callback; // don't update settings from gui while setting to gui
@@ -84,6 +85,7 @@ class Settings : public Glib::KeyFile {
   string SettingsPath;
 
  private:
+  void set_up_combobox(Gtk::ComboBoxText *combo, vector<string> values);
   void set_to_gui              (Builder &builder,
 				const string &group, const string &key);
   void get_colour_from_gui     (Builder &builder, const string &glade_name);
@@ -131,4 +133,5 @@ class Settings : public Glib::KeyFile {
 
   sigc::signal< void > m_extruders_changed;
   sigc::signal< void > m_printer_changed;
+  sigc::signal< void > m_qualmat_changed;
 };

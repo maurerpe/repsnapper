@@ -229,10 +229,16 @@ MatDlg::MatDlg(Psv *vv, Glib::RefPtr<Gtk::Builder> builder, Settings *settings, 
   Psv v(PS_ParseJsonString("{\"nozzle-feedrate\": [[0.4, 25]], \"settings\": {}}"));
   SetTemplate(v());
   
+  builder->get_widget("mat_description", m_description);
   builder->get_widget("mat_feedrate", m_feedrate);
   builder->get_widget("mat_width", m_width);
   builder->get_widget("mat_width_enable", m_width_enable);
   
+  m_buffer = Gtk::TextBuffer::create();
+  m_description->set_buffer(m_buffer);
+  
+  m_buffer->signal_changed().connect
+    (sigc::mem_fun(*this, &MatDlg::DescriptionChanged));
   m_feedrate->signal_value_changed().connect
     (sigc::mem_fun(*this, &MatDlg::FeedrateChanged));
   m_width->signal_value_changed().connect
@@ -261,13 +267,29 @@ void MatDlg::SelectionChanged(void) {
   Glib::ustring name = GetSelectionName();
   
   const ps_value_t *v = m_v->Get(m_key.c_str(), name.c_str());
-  
+
+  const char *str = PS_GetString(PS_GetMember(v, "description", NULL));
+  m_buffer->set_text(str ? str : "");
   m_feedrate->set_value(PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(v, "nozzle-feedrate", NULL), 0), 1)));
   m_width->set_value(PS_AsFloat(PS_GetMember(v, "width/height", NULL)));
   m_width_enable->set_active(PS_GetMember(v, "width/height", NULL) != NULL);
 
   m_cust_global.SetValue("#global", PS_GetMember(PS_GetMember(v, "settings", NULL), "#global", NULL));
   m_cust_active.SetValue("0", PS_GetMember(PS_GetMember(v, "settings", NULL), "#active", NULL));
+}
+
+void MatDlg::DescriptionChanged(void) {
+  if (inhibit_spin_changed)
+    return;
+  
+  Glib::ustring name = GetSelectionName();
+  if (name == "")
+    return;
+  
+  ps_value_t *str = PS_NewString(m_buffer->get_text().c_str());
+  
+  ps_value_t *v = m_v->Get(m_key.c_str(), name.c_str());
+  PS_AddMember(v, "description", str);
 }
 
 void MatDlg::FeedrateChanged(void) {

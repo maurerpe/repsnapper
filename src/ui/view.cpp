@@ -975,7 +975,11 @@ void View::printer_changed() {
   m_model->settings.get_from_gui(m_builder, "Slicing.E0Material");
   if (m_model->settings.getNumExtruders() > 1)
     m_model->settings.get_from_gui(m_builder, "Slicing.E1Material");
+  
   m_renderer->queue_draw();
+}
+
+void View::qualmat_changed() {
 }
 
 bool View::move_selection(float x, float y, float z) {
@@ -1303,6 +1307,8 @@ void View::setModel(Model *model) {
     (sigc::mem_fun(*this, &View::extruders_changed));
   m_model->settings.m_printer_changed.connect
     (sigc::mem_fun(*this, &View::printer_changed));
+  m_model->settings.m_qualmat_changed.connect
+    (sigc::mem_fun(*this, &View::qualmat_changed));
   
   m_settings_ui = new PrefsDlg(m_builder, m_model);
   m_set = new SetDlg(m_builder, m_model->settings.GetPs());

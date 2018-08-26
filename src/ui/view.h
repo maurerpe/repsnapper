@@ -131,6 +131,7 @@ class View : public Gtk::ApplicationWindow
   void temp_changed();
   void extruders_changed();
   void printer_changed();
+  void qualmat_changed();
   
   void edit_custombutton(string name="", string code="", Gtk::ToolButton *button=NULL);
   void new_custombutton() {edit_custombutton();};

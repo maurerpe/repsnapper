@@ -48,6 +48,7 @@ public:
   ps_value_t *Get(const char *m) const;
   ps_value_t *Get(const char *m1, const char *m2) const;
   ps_value_t *Get(const char *m1, const char *m2, const char *m3) const;
+  ps_value_t *Get(const char *m1, const char *m2, const char *m3, const char *m4) const;
   ps_value_t *GetThrow(const char *m1, const char *m2) const;
   void Set(const char *ext, const char *setting, ps_value_t *val);
   void Set(const char *ext, const char *setting, bool val);
