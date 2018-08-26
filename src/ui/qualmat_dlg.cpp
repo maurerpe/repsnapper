@@ -25,12 +25,13 @@
 
 //////////////////////// SelectionBox ///////////////////////////////////
 
-SelectionBox::SelectionBox(Glib::RefPtr<Gtk::Builder> builder,
-			   Settings *settings,
+SelectionBox::SelectionBox(Psv *v,
+			   Glib::RefPtr<Gtk::Builder> builder,
 			   Glib::ustring prefix,
 			   Glib::ustring key) {
-  m_settings = settings;
+  m_v = v;
   m_key = key;
+  inhibit_spin_changed = false;
   
   builder->get_widget("qualmat_dlg", m_dlg);
   builder->get_widget(prefix + "_tree", m_tree);
@@ -72,7 +73,10 @@ void SelectionBox::SelectFirst(void) {
 }
 
 void SelectionBox::BuildStore(void) {
-  const ps_value_t *v = PS_GetMember((*m_settings->GetQualMat())(), m_key.c_str(), NULL);
+  if (m_v->IsNull())
+    return;
+  
+  const ps_value_t *v = m_v->Get(m_key.c_str());
 
   bool at_least_one = false;
   
@@ -94,10 +98,9 @@ void SelectionBox::New(void) {
   if (name == "")
     return;
   
-  m_settings->GetQualMat()->Set(m_key.c_str(), name.c_str(), PS_CopyValue(m_template()));
+  m_v->Set(m_key.c_str(), name.c_str(), PS_CopyValue(m_template()));
   
   BuildStore();
-  m_sig_changed.emit();
 }
 
 void SelectionBox::Copy(void) {
@@ -106,11 +109,10 @@ void SelectionBox::Copy(void) {
     return;
   
   Glib::ustring new_name = GetString();
-  ps_value_t *v = PS_CopyValue(m_settings->GetQualMat()->Get(m_key.c_str(), name.c_str()));
-  m_settings->GetQualMat()->Set(m_key.c_str(), new_name.c_str(), v);
+  ps_value_t *v = PS_CopyValue(m_v->Get(m_key.c_str(), name.c_str()));
+  m_v->Set(m_key.c_str(), new_name.c_str(), v);
   
   BuildStore();
-  m_sig_changed.emit();
 }
 
 void SelectionBox::Rename(void) {
@@ -119,12 +121,11 @@ void SelectionBox::Rename(void) {
     return;
 
   Glib::ustring new_name = GetString();
-  ps_value_t *v = PS_CopyValue(m_settings->GetQualMat()->Get(m_key.c_str(), name.c_str()));
-  m_settings->GetQualMat()->Set(m_key.c_str(), new_name.c_str(), v);
-  PS_RemoveMember(PS_GetMember((*m_settings->GetQualMat())(), m_key.c_str(), NULL), name.c_str());
+  ps_value_t *v = PS_CopyValue(m_v->Get(m_key.c_str(), name.c_str()));
+  m_v->Set(m_key.c_str(), new_name.c_str(), v);
+  PS_RemoveMember(m_v->Get(m_key.c_str()), name.c_str());
   
   BuildStore();
-  m_sig_changed.emit();
 }
 
 void SelectionBox::Delete(void) {
@@ -132,10 +133,9 @@ void SelectionBox::Delete(void) {
   if (name == "")
     return;
   
-  PS_RemoveMember(PS_GetMember((*m_settings->GetQualMat())(), m_key.c_str(), NULL), name.c_str());
+  PS_RemoveMember(m_v->Get(m_key.c_str()), name.c_str());
   
   BuildStore();
-  m_sig_changed.emit();
 }
 
 void SelectionBox::SpinChanged(Gtk::SpinButton *button, const char *set_name) {
@@ -150,15 +150,7 @@ void SelectionBox::SpinChanged(Gtk::SpinButton *button, const char *set_name) {
   if (num == NULL)
     return;
 
-  ps_value_t *v;
-  try {
-    v = (ps_value_t *) m_settings->GetQualMat()->Get(m_key.c_str(), name.c_str());
-  } catch (exception &e) {
-    PS_FreeValue(num);
-    return;
-  }
-  PS_AddMember(v, set_name, num);
-  m_sig_changed.emit();
+  PS_AddMember(m_v->Get(m_key.c_str(), name.c_str()), set_name, num);
 }
 
 Glib::ustring SelectionBox::GetString(void) {
@@ -182,9 +174,9 @@ Glib::ustring SelectionBox::GetString(void) {
 
 //////////////////////////////// QualDlg ///////////////////////////////////
 
-QualDlg::QualDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set) : SelectionBox(builder, settings, "qual", "quality"), m_cust(set, settings->GetPs()) {
+QualDlg::QualDlg(Psv *vv, Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set) : SelectionBox(vv, builder, "qual", "quality"), m_cust(set, settings->GetPs()) {
   m_set = set;
-
+  
   Psv v(PS_ParseJsonString("{\"height/nozzle\": 0.5, \"width/height\": 1.8, \"speed\": 60, \"wall-speed-ratio\": 0.5, \"settings\": {}}"));
   SetTemplate(v());
   
@@ -219,7 +211,7 @@ void QualDlg::SelectionChanged(void) {
   
   Glib::ustring name = GetSelectionName();
   
-  const ps_value_t *v = PS_GetMember(PS_GetMember((*m_settings->GetQualMat())(), m_key.c_str(), NULL), name.c_str(), NULL);
+  const ps_value_t *v = m_v->Get(m_key.c_str(), name.c_str());
   
   m_height->set_value(PS_AsFloat(PS_GetMember(v, "height/nozzle", NULL)));
   m_width->set_value(PS_AsFloat(PS_GetMember(v, "width/height", NULL)));
@@ -231,7 +223,7 @@ void QualDlg::SelectionChanged(void) {
 
 //////////////////////////////// MatDlg ///////////////////////////////////
 
-MatDlg::MatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set) : SelectionBox(builder, settings, "mat", "materials"), m_cust_global(set, settings->GetPs()), m_cust_active(set, settings->GetPs()) {
+MatDlg::MatDlg(Psv *vv, Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set) : SelectionBox(vv, builder, "mat", "materials"), m_cust_global(set, settings->GetPs()), m_cust_active(set, settings->GetPs()) {
   m_set = set;
 
   Psv v(PS_ParseJsonString("{\"nozzle-feedrate\": [[0.4, 25]], \"settings\": {}}"));
@@ -268,7 +260,7 @@ void MatDlg::SelectionChanged(void) {
   
   Glib::ustring name = GetSelectionName();
   
-  const ps_value_t *v = PS_GetMember(PS_GetMember((*m_settings->GetQualMat())(), m_key.c_str(), NULL), name.c_str(), NULL);
+  const ps_value_t *v = m_v->Get(m_key.c_str(), name.c_str());
   
   m_feedrate->set_value(PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(v, "nozzle-feedrate", NULL), 0), 1)));
   m_width->set_value(PS_AsFloat(PS_GetMember(v, "width/height", NULL)));
@@ -288,16 +280,9 @@ void MatDlg::FeedrateChanged(void) {
   
   ps_value_t *num = PS_NewFloat(m_feedrate->get_value());
   
-  ps_value_t *v;
-  try {
-    v = PS_GetItem(PS_GetMember(m_settings->GetQualMat()->Get(m_key.c_str(), name.c_str()), "nozzle-feedrate", NULL), 0);
-  } catch (exception &e) {
-    PS_FreeValue(num);
-    return;
-  }
+  ps_value_t *v = PS_GetItem(m_v->Get(m_key.c_str(), name.c_str(), "nozzle-feedrate"), 0);
   PS_ResizeList(v, 0, NULL);
   PS_AppendToList(v, num);  
-  m_sig_changed.emit();
 }
 
 void MatDlg::WidthSpinChanged(void) {
@@ -315,15 +300,7 @@ void MatDlg::WidthSpinChanged(void) {
   if (num == NULL)
     return;
 
-  ps_value_t *v;
-  try {
-    v = (ps_value_t *) m_settings->GetQualMat()->Get(m_key.c_str(), name.c_str());
-  } catch (exception &e) {
-    PS_FreeValue(num);
-    return;
-  }
-  PS_AddMember(v, "width/height", num);
-  m_sig_changed.emit();
+  PS_AddMember(m_v->Get(m_key.c_str(), name.c_str()), "width/height", num);
 }
 
 void MatDlg::WidthEnableChanged(void) {
@@ -339,46 +316,43 @@ void MatDlg::WidthEnableChanged(void) {
   if (name == "")
     return;
   
-  ps_value_t *num = PS_NewFloat(m_width->get_value());
-  if (num == NULL)
-    return;
-
-  ps_value_t *v;
-  try {
-    v = (ps_value_t *) m_settings->GetQualMat()->Get(m_key.c_str(), name.c_str());
-  } catch (exception &e) {
-    PS_FreeValue(num);
-    return;
-  }
-  PS_RemoveMember(v, "width/height");
-  m_sig_changed.emit();
+  PS_RemoveMember(m_v->Get(m_key.c_str(), name.c_str()), "width/height");
 }
 
 ////////////////////////////// QualMatDlg /////////////////////////////////
 
-QualMatDlg::QualMatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set) : qual(builder, settings, set), mat(builder, settings, set) {
+QualMatDlg::QualMatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set) : m_qual(&m_qualmat, builder, settings, set), m_mat(&m_qualmat, builder, settings, set) {
   m_settings = settings;
   
   builder->get_widget("qualmat_dlg", m_dlg);
 
+  builder->get_widget("qualmat_ok",     m_ok);
   builder->get_widget("qualmat_close",  m_close);
   builder->get_widget("qualmat_save",   m_save);
   builder->get_widget("qualmat_saveas", m_saveas);
   builder->get_widget("qualmat_load",   m_load);
 
+  m_ok->    signal_clicked().connect(sigc::mem_fun(*this, &QualMatDlg::OK));
   m_close-> signal_clicked().connect(sigc::mem_fun(*this, &QualMatDlg::Close));
   m_save->  signal_clicked().connect(sigc::mem_fun(*this, &QualMatDlg::Save));
   m_saveas->signal_clicked().connect(sigc::mem_fun(*this, &QualMatDlg::SaveAs));
   m_load->  signal_clicked().connect(sigc::mem_fun(*this, &QualMatDlg::Load));
-  
-  qual.signal_changed().connect(sigc::mem_fun(*this, &QualMatDlg::Changed));
-  mat. signal_changed().connect(sigc::mem_fun(*this, &QualMatDlg::Changed));
 }
 
 void QualMatDlg::show(Gtk::Window &trans) {
+  m_qualmat.Take(PS_CopyValue((*m_settings->GetQualMat())()));
+  m_qual.BuildStore();
+  m_mat.BuildStore();
+  
   m_dlg->set_transient_for(trans);
   m_dlg->show();
   m_dlg->raise();
+}
+
+void QualMatDlg::OK(void) {
+  m_settings->SetQualMat(m_qualmat());
+  
+  m_dlg->hide();
 }
 
 void QualMatDlg::Close(void) {
@@ -390,7 +364,7 @@ void QualMatDlg::Save(void) {
   
   Psf outfile(filename.c_str(), "w");
   Pso os(PS_NewFileOStream(outfile()));
-  PS_WriteValuePretty(os(), (*m_settings->GetQualMat())());
+  PS_WriteValuePretty(os(), m_qualmat());
 }
 
 void QualMatDlg::SaveAs(void) {
@@ -411,7 +385,7 @@ void QualMatDlg::SaveAs(void) {
   
   Psf outfile(filename.c_str(), "w");
   Pso os(PS_NewFileOStream(outfile()));
-  PS_WriteValuePretty(os(), (*m_settings->GetQualMat())());
+  PS_WriteValuePretty(os(), m_qualmat());
 }
 
 void QualMatDlg::Load(void) {
@@ -430,11 +404,5 @@ void QualMatDlg::Load(void) {
   m_folder = dlg.get_current_folder();
   
   Psf file(filename.c_str(), "r");
-  m_settings->GetQualMat()->Take(PS_ParseJsonFile(file()));
-  
-  Changed();
-}
-
-void QualMatDlg::Changed(void) {
-  m_sig_changed.emit();
+  m_qualmat.Take(PS_ParseJsonFile(file()));
 }

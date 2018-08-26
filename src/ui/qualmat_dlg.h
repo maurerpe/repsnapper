@@ -28,7 +28,7 @@
 
 class SelectionBox {
  protected:
-  Settings *m_settings;
+  Psv *m_v;
   Glib::ustring m_key;
   Psv m_template;
   
@@ -46,21 +46,17 @@ class SelectionBox {
   
   bool inhibit_spin_changed;
   
-  sigc::signal<void> m_sig_changed;
-  
  public:
-  SelectionBox(Glib::RefPtr<Gtk::Builder> builder,
-	       Settings *settings,
+  SelectionBox(Psv *v,
+	       Glib::RefPtr<Gtk::Builder> builder,
 	       Glib::ustring prefix,
 	       Glib::ustring key);
-
-  sigc::signal<void> signal_changed() {return m_sig_changed;};  
+  void BuildStore(void);
   
  protected:
   void SetTemplate(const ps_value_t *v);
   Glib::ustring GetSelectionName(void);
   void SelectFirst(void);
-  void BuildStore(void);
   
   void New(void);
   void Copy(void);
@@ -83,8 +79,8 @@ class QualDlg : public SelectionBox {
   Gtk::SpinButton *m_wallspeedratio;
   
  public:
-  QualDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
-  
+  QualDlg(Psv *v, Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
+
  private:
   void SelectionChanged(void);  
 };
@@ -100,7 +96,7 @@ class MatDlg : public SelectionBox {
   Gtk::CheckButton *m_width_enable;
   
  public:
-  MatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
+  MatDlg(Psv *v, Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
   
  private:
   void SelectionChanged(void);
@@ -112,28 +108,27 @@ class MatDlg : public SelectionBox {
 class QualMatDlg {
  private:
   Settings *m_settings;
-  QualDlg qual;
-  MatDlg mat;
+  Psv m_qualmat;
+  QualDlg m_qual;
+  MatDlg m_mat;
   Gtk::Dialog *m_dlg;
-  
+
+  Gtk::Button *m_ok;
   Gtk::Button *m_close;
   Gtk::Button *m_save;
   Gtk::Button *m_saveas;
   Gtk::Button *m_load;
   
-  sigc::signal<void> m_sig_changed;
-
   string m_folder;
   
  public:
   QualMatDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, SetDlg *set);
   void show(Gtk::Window &trans);
-  sigc::signal<void> signal_qualmat_changed() {return m_sig_changed;};
 
  private:
+  void OK(void);
   void Close(void);
   void Save(void);
   void SaveAs(void);
   void Load(void);
-  void Changed(void);
 };

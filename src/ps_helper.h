@@ -42,6 +42,7 @@ public:
   void Take(ps_value_t *val);
   void Forget();
   void Disown() {v = NULL;};
+  bool IsNull() {return v == NULL;};
   
   ps_value_t *operator()(void) const;
   ps_value_t *Get(const char *m) const;

@@ -58,9 +58,10 @@ class Settings : public Glib::KeyFile {
   const Psv *GetPrinter() {return &printer;};
   const Psv *GetPs() {return &ps;};
   const Psv *GetDflt() {return &dflt;};
-  Psv *GetQualMat() {return &qualmat;};
+  const Psv *GetQualMat() {return &qualmat;};
 
   void SetPrinter(const ps_value_t *v);
+  void SetQualMat(const ps_value_t *v);
   
   string GetConfigPath(string filename);
   

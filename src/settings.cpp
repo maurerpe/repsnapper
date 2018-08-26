@@ -244,6 +244,10 @@ void Settings::SetPrinter(const ps_value_t *v) {
   m_printer_changed.emit();
 }
 
+void Settings::SetQualMat(const ps_value_t *v) {
+  qualmat.Take(PS_CopyValue(v));
+}
+
 void Settings::WriteTempPrinter(FILE *file, vector<string> ext) {
   fprintf(file, "{\"name\":\"%s\",\"version\":2,\"inherits\":\"fdmprinter\",\"metadata\":{\"machine_extruder_trains\":{", PS_GetString(PS_GetMember(printer(), "name", NULL)));
 
