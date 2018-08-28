@@ -840,8 +840,6 @@ ps_value_t *Settings::FullSettings(int model_specific) {
   string qualname = get_string("Slicing", "Quality");
   const ps_value_t *qual = qualmat.Get("quality", qualname.c_str());
   
-  double dia = PS_AsFloat(dflt.Get("#global", "material_diameter"));
-  
   double wh = PS_AsFloat(PS_GetMember(qual, "width/height", NULL));
   double speed = PS_AsFloat(PS_GetMember(qual, "speed", NULL));
   double ratio = PS_AsFloat(PS_GetMember(qual, "wall-speed-ratio", NULL));
@@ -861,7 +859,8 @@ ps_value_t *Settings::FullSettings(int model_specific) {
     const ps_value_t *mat = qualmat.Get("materials", matname.c_str());
     if (mat == NULL)
       cout << endl << "Unknown material: " << matname << endl;
-    
+
+    double dia = PS_AsFloat(dflt.Get(EStr(e_no), "material_diameter"));
     double efeed = PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(mat, "nozzle-feedrate", NULL), 0), 1));
     const ps_value_t *matwh = PS_GetMember(mat, "width/height", NULL);
     
@@ -880,7 +879,6 @@ ps_value_t *Settings::FullSettings(int model_specific) {
   int esupport = GetENo("Support", model_specific);
   
   Psv set(PS_BlankSettings(ps()));
-  set.Set("#global", "material_diameter", dia);
   set.Set("#global", "extruders_enabled_count", (int) PS_ItemCount(dflt()) - 1);
   
   set.Set("#global", "speed_print",     speed);
