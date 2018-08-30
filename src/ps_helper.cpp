@@ -98,6 +98,9 @@ void Psv::Set(const char *ext, const char *setting, ps_value_t *val) {
   if (v == NULL)
     throw invalid_argument(string("ps_value was null"));
   
+  if (PS_GetMember(v, ext, NULL) == NULL)
+    PS_AddMember(v, ext, PS_NewObject());
+  
   if (PS_AddSetting(v, ext, setting, val) < 0) {
     PS_FreeValue(val);
     throw invalid_argument(string("Could not set ") + string(ext) + "->" + string(setting));

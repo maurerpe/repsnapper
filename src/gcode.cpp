@@ -21,6 +21,7 @@
 */
 
 #include <stdlib.h>
+#include <glib/gi18n.h>
 
 #include <ctype.h>
 #include <math.h>

@@ -83,10 +83,11 @@ class PrinterCombo : public PrinterWidget {
 	       ps_value_t **printer, string section, string ext, string name);
   
   virtual void LoadValue(void);
+  void SetupCombo(void);
+  void SetupCombo(vector<string> values);
 
  protected:
   void Changed(void);
-  void SetupCombo(void);
 };
 
 class PrinterEntry : public PrinterWidget {
@@ -153,11 +154,12 @@ class PrinterDlg {
   ps_value_t *m_dflt;
   vector< PrinterWidget* > m_widgets;
   vector< PrinterWidget* > m_ext_widgets;
+  vector< PrinterCombo* > m_elist_widgets;
   string m_folder;
   string m_import_folder;
   CustProp m_cust_global;
   CustProp m_cust_extruder;
-  int m_inhibit_extruder;
+  bool m_inhibit_extruder;
   
   Glib::RefPtr< Gtk::ListStore > m_store;
   Gtk::TreeModelColumnRecord m_cols;
@@ -177,9 +179,11 @@ class PrinterDlg {
   void AddJson(Glib::RefPtr<Gtk::Builder> builder, string id, string section, string ext, string name);
   void AddCheck(Glib::RefPtr<Gtk::Builder> builder, string id, string section, string ext, string name, size_t num);
   void AddExt(Glib::RefPtr<Gtk::Builder> builder, string id, string section, string ext, string name);
+  void AddEList(Glib::RefPtr<Gtk::Builder> builder, string id, string section, string ext, string name);
   
   void LoadAll(void);
 
+  void BuildEList(void);
   void BuildExtruderList(void);
   void New(void);
   void Remove(void);

@@ -19,6 +19,7 @@
 */
 
 #include <cstdlib>
+#include <glib/gi18n.h>
 
 #include "set_dlg.h"
 

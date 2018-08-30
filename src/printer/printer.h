@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <gtkmm.h>
+
 #include "stdafx.h"
 #include "threaded_printer_serial.h"
 

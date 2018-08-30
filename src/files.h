@@ -20,17 +20,15 @@
 
 #pragma once
 
+#include <glibmm.h>
+#include <giomm.h>
+
 #include "stdafx.h"
-
 #include "triangle.h"
-
 
 void save_locales();
 void set_locales(const char * loc);
 void reset_locales();
-
-
-using namespace Glib;
 
 enum filetype_t{
     ASCII_STL,
@@ -41,27 +39,25 @@ enum filetype_t{
     UNKNOWN_TYPE
 };
 
-
-class File
-{
+class File {
 public:
   File(){};
   File(Glib::RefPtr<Gio::File> file);
   virtual ~File(){};
 
   Glib::RefPtr<Gio::File> _file;
-  ustring _path;
+  string _path;
   filetype_t _type;
 
-  static filetype_t getFileType(ustring path);
+  static filetype_t getFileType(string path);
 
   void loadTriangles(vector< vector<Triangle> > &triangles,
-		     vector<ustring> &names,
+		     vector<string> &names,
 		     uint max_triangles=0);
 
 
   bool load_asciiSTL(vector< vector<Triangle> > &triangles,
-		     vector<ustring> &names,
+		     vector<string> &names,
 		     uint max_triangles=0, bool readnormals=false);
 
   bool load_binarySTL(vector<Triangle> &triangles,
@@ -72,16 +68,8 @@ public:
   static bool parseSTLtriangles_ascii(istream &text,
 				      uint max_triangles, bool readnormals,
 				      vector<Triangle> &triangles,
-				      ustring &name);
+				      string &name);
 
-
-  /* static bool loadVRMLtriangles(ustring filename, */
-  /* 				uint max_triangles, */
-  /* 				vector<Triangle> &triangles); */
-
-
-
-  static bool saveBinarySTL(ustring filename, const vector<Triangle> &triangles,
+  static bool saveBinarySTL(string filename, const vector<Triangle> &triangles,
 			    const Matrix4d &T);
-
 };

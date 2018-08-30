@@ -21,17 +21,12 @@
 #pragma once
 
 #include <string>
-#include <giomm/file.h>
-#include <glibmm/keyfile.h>
+#include <sigc++/sigc++.h>
 
 #include "stdafx.h"
 #include "ps_helper.h"
 
 using namespace std;
-
-// Allow passing as a pointer to something to
-// avoid including glibmm in every header.
-typedef Glib::RefPtr<Gtk::Builder> Builder;
 
 class Inhibitor {
  private:
@@ -43,19 +38,21 @@ class Inhibitor {
   ~Inhibitor() {*m_ptr = m_init;};
 };
 
-class Settings : public Glib::KeyFile {
-  Glib::ustring filename; // where it's loaded from
-  Builder m_builder;
+class Settings {
+  string filename; // where it's loaded from
   
   bool m_user_changed;
   bool inhibit_callback; // don't update settings from gui while setting to gui
 
+  Psv settings;
   Psv printer;
   Psv ps;
   Psv dflt;
   Psv qualmat;
   
  public:
+  static vector<string> get_serial_speeds();
+  
   const Psv *GetPrinter() {return &printer;};
   const Psv *GetPs() {return &ps;};
   const Psv *GetDflt() {return &dflt;};
@@ -66,10 +63,26 @@ class Settings : public Glib::KeyFile {
   
   string GetConfigPath(string filename);
   
-  void copyGroup(const string &from, const string &to);
-
+  string get_string(const string &group, const string &name) const;
+  double get_double(const string &group, const string &name) const;
+  int    get_integer(const string &group, const string &name) const;
+  bool   get_boolean(const string &group, const string &name) const;
   Vector4f get_colour(const string &group, const string &name) const;
+  vector<double> get_double_list(const string &group, const string &name) const;
+  vector<string> get_string_list(const string &group, const string &name) const;
+  
+  void set_string(const string &group, const string &name, const string &value);
+  void set_double(const string &group, const string &name, double value);
+  void set_integer(const string &group, const string &name, int value);
+  void set_boolean(const string &group, const string &name, bool value);
   void set_colour(const string &group, const string &name, const Vector4f &value);
+  void set_double_list(const string &group, const string &name, const vector<double> &values);
+  void set_double_list(const string &group, const string &name, const Vector4f &values);
+  void set_string_list(const string &group, const string &name, const vector<string> &values);
+
+  bool has_group(const string &group) const;
+  vector<string> get_groups(void) const;
+  vector<string> get_keys(const string &group) const;
 
   vmml::vec3d getPrintVolume() const;
   vmml::vec3d getPrintMargin() const;
@@ -77,6 +90,7 @@ class Settings : public Glib::KeyFile {
   static double RoundedLinewidthCorrection(double extr_width,
 					   double layerheight);
   uint getNumExtruders() const;
+  int getSerialSpeed() const;
 
   // Paths we loaded / saved things to last time
   string STLPath;
@@ -85,48 +99,32 @@ class Settings : public Glib::KeyFile {
   string SettingsPath;
 
  private:
-  void set_up_combobox(Gtk::ComboBoxText *combo, vector<string> values);
-  void set_to_gui              (Builder &builder,
-				const string &group, const string &key);
-  void get_colour_from_gui     (Builder &builder, const string &glade_name);
   void set_defaults();
-  int  GetENo(string name, int model_specific = 1) const;
+  int  GetENo(string name, int model_specific = 0) const;
   
  public:
   Settings();
   ~Settings();
   
-  string GetExtruderText() const;
+  static string GetExtruderText();
   
   bool has_user_changed() const { return m_user_changed; }
-  void assign_from(Settings *pSettings);
 
   bool set_user_button(const string &name, const string &gcode);
   bool del_user_button(const string &name);
   string get_user_gcode(const string &name);
 
-  // sync changed settings with the GUI eg. used post load
-  void set_to_gui(Builder &builder, const string filter="");
-  void get_from_gui(Builder &builder, const string &glade_name);
-
-  // connect settings to relevant GUI widgets
-  void connect_to_ui(Builder &builder);
-
-  void merge(const Glib::KeyFile &keyfile);
   bool load_from_file(string file);
-  bool load_from_data(string data);
 
-  void load_settings(Glib::RefPtr<Gio::File> file);
-  void save_settings(Glib::RefPtr<Gio::File> file);
+  void load_settings(const string &file);
+  void save_settings(const string &file);
 
   void WriteTempPrinter(FILE *file, vector<string> ext);
   ps_value_t *load_printer(string filename);
   ps_value_t *load_printer(vector<string> ext);
   void load_printer_settings(void);
   
-  void ps_to_gui(Builder &builder, const ps_value_t *set);
   ps_value_t *FullSettings(int model_specific = 0);
-  void SetTargetTemps(Builder &builder);
   
   sigc::signal< void > m_signal_visual_settings_changed;
   sigc::signal< void > m_signal_update_settings_gui;

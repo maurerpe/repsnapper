@@ -18,6 +18,8 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <glib/gi18n.h>
+
 #include "config.h"
 
 #include "view.h"
@@ -33,6 +35,7 @@
 #include "connectview.h"
 #include "widgets.h"
 #include "platform.h"
+#include "settings_ui.h"
 
 static int GetENo(Gtk::ComboBoxText *w, string ext_text) {
   size_t len = ext_text.size();
@@ -163,7 +166,7 @@ void View::do_load_stl() {
   m_builder->get_widget("Display.ExtruderLoad", w);
   int ext = 1;
   if (w)
-    ext = GetENo(w, m_model->settings.GetExtruderText());
+    ext = GetENo(w, Settings::GetExtruderText());
   cout << "Loading shape with extruder " << ext << endl;
   
   vector< Glib::RefPtr < Gio::File > > files = m_filechooser->get_files();
@@ -383,7 +386,7 @@ void View::fan_enabled_toggled(Gtk::ToggleButton *button) {
 }
 
 void View::run_extruder() {
-  int e_no = GetENo(m_extruder, m_model->settings.GetExtruderText());
+  int e_no = GetENo(m_extruder, Settings::GetExtruderText());
   
   double amount = m_extruder_length->get_value();
   m_printer->RunExtruder(m_extruder_speed->get_value() * 60,
@@ -514,7 +517,7 @@ void View::set_icon_file(Glib::RefPtr<Gio::File> file) {
   iconfile = file;
   if (iconfile) {
     set_icon_from_file(iconfile->get_path());
-    m_settings_ui->set_icon_from_file(iconfile->get_path());
+    m_prefs_dlg->set_icon_from_file(iconfile->get_path());
   } else {
     set_icon_name("gtk-convert");
   }
@@ -538,7 +541,7 @@ void View::show_dialog(const char *name)
 }
 
 void View::show_preferences() {
-  m_settings_ui->show(*this);
+  m_prefs_dlg->show(*this);
 }
 
 void View::show_qualmat() {
@@ -569,7 +572,7 @@ void View::load_settings() {
   
   vector< Glib::RefPtr < Gio::File > > files = dlg.get_files();
   for (uint i= 0; i < files.size(); i++)
-    m_model->LoadConfig(files[i]);
+    m_model->LoadConfig(files[i]->get_path());
 }
 
 // save to standard config file
@@ -614,7 +617,7 @@ void View::save_settings_as() {
 void View::save_settings_to(Glib::RefPtr < Gio::File > file) {
   m_model->settings.SettingsPath = file->get_parent()->get_path();
   saveWindowSizeAndPosition(m_model->settings);
-  m_model->SaveConfig(file);
+  m_model->SaveConfig(file->get_path());
 }
 
 void View::inhibit_print_changed() {
@@ -820,8 +823,7 @@ void View::home_all() {
 }
 
 void View::update_settings_gui() {
-  // awful cast-ness to avoid having glibmm headers everywhere.
-  m_model->settings.set_to_gui(m_builder);
+  m_settings_ui->set_to_gui();
 
   Gtk::AboutDialog *about;
   m_builder->get_widget("about_dialog", about);
@@ -949,7 +951,7 @@ void View::extruders_changed() {
   
   // Enable/disable E1Material combo
   Gtk::ComboBoxText *w = NULL;
-  m_builder->get_widget("Slicing.E1Material", w);
+  m_builder->get_widget("printer_E1Material", w);
   if (w) {
     if (num >= 2)
       w->set_sensitive(true);
@@ -958,28 +960,31 @@ void View::extruders_changed() {
   }
   
   // Update comboboxes
-  string et = m_model->settings.GetExtruderText();
-  update_extruder_combo(m_builder, et, "Extruder.Shell", num);
-  update_extruder_combo(m_builder, et, "Extruder.Skin", num);
-  update_extruder_combo(m_builder, et, "Extruder.Infill", num);
-  update_extruder_combo(m_builder, et, "Extruder.Support", num);
+  string et = Settings::GetExtruderText();
   update_extruder_combo(m_builder, et, "Display.ExtruderLoad", num, false);
   update_extruder_combo(m_builder, et, "m_extruder", num, false);
   update_extruder_combo(m_builder, et, "Printer.Extruder", num, false);
 }
 
 void View::printer_changed() {
-  m_model->settings.ps_to_gui(m_builder, (*m_model->settings.GetDflt())());
-  
-  m_model->settings.get_from_gui(m_builder, "Slicing.Quality");
-  m_model->settings.get_from_gui(m_builder, "Slicing.E0Material");
-  if (m_model->settings.getNumExtruders() > 1)
-    m_model->settings.get_from_gui(m_builder, "Slicing.E1Material");
-  
-  m_renderer->queue_draw();
+  if (m_settings_ui) {
+    m_settings_ui->printer_changed();
+    
+    m_settings_ui->ps_to_gui((*m_model->settings.GetDflt())());
+    
+    m_settings_ui->get_from_gui("Slicing.Quality");
+    m_settings_ui->get_from_gui("printer_E0Material");
+    if (m_model->settings.getNumExtruders() > 1)
+      m_settings_ui->get_from_gui("printer_E1Material");
+  }
+
+  if (m_renderer)
+    m_renderer->queue_draw();
 }
 
 void View::qualmat_changed() {
+  if (m_settings_ui)
+    m_settings_ui->qualmat_changed();  
 }
 
 bool View::move_selection(float x, float y, float z) {
@@ -1177,7 +1182,7 @@ void View::on_controlnotebook_switch(Gtk::Widget* page, guint page_num) {
 }
 
 View::~View() {
-  delete m_settings_ui;
+  delete m_prefs_dlg;
   delete m_qualmat;
   delete m_printer_dlg;
   delete m_set;
@@ -1219,10 +1224,9 @@ void View::setModel(Model *model) {
     (sigc::mem_fun(*this, &View::update_settings_gui));
 
   m_treeview->set_model(m_model->objtree.m_model);
-  m_treeview->append_column_editable("Name", m_model->objtree.m_cols->m_name);
+  m_treeview->append_column_editable(_("Name"), m_model->objtree.m_cols->m_name);
 
-  // m_treeview->append_column_editable("Extruder", m_model->objtree.m_cols->m_material);
-  m_treeview->append_column("Extruder", m_model->objtree.m_cols->m_extruder);
+  m_treeview->append_column(_("Extruder"), m_model->objtree.m_cols->m_extruder);
   m_treeview->set_headers_visible(true);
 
   m_gcodetextview = NULL;
@@ -1298,11 +1302,6 @@ void View::setModel(Model *model) {
   m_model->signal_alert.connect (sigc::mem_fun(*this, &View::alert));
   m_printer->signal_alert.connect (sigc::mem_fun(*this, &View::alert));
   
-  // connect settings
-  m_model->settings.connect_to_ui(m_builder);
-
-  m_printer->setModel(m_model);
-
   m_model->settings.m_extruders_changed.connect
     (sigc::mem_fun(*this, &View::extruders_changed));
   m_model->settings.m_printer_changed.connect
@@ -1310,7 +1309,15 @@ void View::setModel(Model *model) {
   m_model->settings.m_qualmat_changed.connect
     (sigc::mem_fun(*this, &View::qualmat_changed));
   
-  m_settings_ui = new PrefsDlg(m_builder, m_model);
+  // connect settings
+  m_settings_ui = new Settings_ui(m_builder, &m_model->settings);
+  m_settings_ui->connect_to_ui();
+  m_model->settings.SetQualMat((*m_model->settings.GetQualMat())());
+  m_model->settings.SetPrinter((*m_model->settings.GetPrinter())());
+  
+  m_printer->setModel(m_model);
+
+  m_prefs_dlg = new PrefsDlg(m_builder, m_model);
   m_set = new SetDlg(m_builder, m_model->settings.GetPs());
   m_qualmat = new QualMatDlg(m_builder, &m_model->settings, m_set);
   m_printer_dlg = new PrinterDlg(m_builder, &m_model->settings, m_set);
@@ -1419,7 +1426,7 @@ void View::divide_selected_objects() {
 void View::change_extruder_selected_objects(Gtk::ComboBoxText *w) {
   vector<Shape*> shapes;
   vector<TreeObject*> objects;
-  int e_no = GetENo(w, m_model->settings.GetExtruderText());
+  int e_no = GetENo(w, Settings::GetExtruderText());
   get_selected_objects (objects, shapes);
   if (shapes.size()>0)
     for (uint i=0; i<shapes.size() ; i++)

@@ -18,6 +18,7 @@
 */
 
 #include <cstdlib>
+#include <glib/gi18n.h>
 #include <gtkmm.h>
 
 #include "qualmat_dlg.h"

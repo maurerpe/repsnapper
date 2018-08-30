@@ -31,7 +31,6 @@ SHARED_SRC= \
 	src/geometry.cpp \
 	src/transform3d.cpp \
 	src/platform.cpp \
-	src/objtree.cpp \
 	src/model.cpp \
 	src/model_slice.cpp \
 	src/shape.cpp \
@@ -45,7 +44,6 @@ SHARED_INC= \
 	src/geometry.h \
 	src/transform3d.h \
 	src/model.h \
-	src/objtree.h \
 	src/shape.h \
 	src/gcode.h \
 	src/triangle.h \

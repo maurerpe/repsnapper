@@ -19,6 +19,8 @@
 #include "triangle.h"
 #include "geometry.h"
 
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
 
 Triangle::Triangle(const Vector3d &Point1,
 		   const Vector3d &Point2, const Vector3d &Point3)
@@ -295,9 +297,9 @@ int Triangle::SplitAtPlane(double z,
   }
   else cerr << "lower size " << lower.size() << endl;
   Vector3d TN = T*Normal; TN.normalize();
-  for (guint i=0; i < uppertr.size(); i++)
+  for (size_t i=0; i < uppertr.size(); i++)
     if ((uppertr[i].Normal + TN).length()<0.1) uppertr[i].invertNormal();
-  for (guint i=0; i < lowertr.size(); i++)
+  for (size_t i=0; i < lowertr.size(); i++)
     if ((lowertr[i].Normal + TN).length()<0.1) lowertr[i].invertNormal();
   uppertriangles.insert(uppertriangles.end(),uppertr.begin(),uppertr.end());
   lowertriangles.insert(lowertriangles.end(),lowertr.begin(),lowertr.end());

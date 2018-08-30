@@ -49,8 +49,6 @@ typedef unsigned int        guint;
 #define srandom  srand
 #endif
 #include <stdio.h>
-#include <glib/gi18n.h>
-#include <gtkmm.h>
 #include "math.h" // Needed for sqrtf
 #include "types.h"
 

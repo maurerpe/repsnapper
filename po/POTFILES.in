@@ -5,10 +5,9 @@
 
 repsnapper.desktop.in
 src/files.cpp
+src/gcode.cpp
 src/model.cpp
 src/model_slice.cpp
-src/objtree.cpp
-src/objtree.h
 src/printer/printer.cpp
 src/printer/printer_serial.cpp
 src/printer/threaded_printer_serial.cpp
@@ -18,10 +17,12 @@ src/shape.cpp
 src/ui/connectview.cpp
 src/ui/cust_prop.cpp
 src/ui/filters.cpp
+src/ui/objtree.cpp
 src/ui/printer_dlg.cpp
 src/ui/progress.cpp
 src/ui/qualmat_dlg.cpp
 src/ui/set_dlg.cpp
+src/ui/settings_ui.cpp
 src/ui/view.cpp
 src/ui/widgets.cpp
 src/repsnapper.ui

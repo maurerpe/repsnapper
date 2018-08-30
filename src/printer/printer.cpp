@@ -17,6 +17,8 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <glib/gi18n.h>
+
 #include "stdafx.h"
 
 #include "printer.h"
@@ -65,7 +67,7 @@ bool Printer::Connect( bool connect ) {
     return false;
 
   return Connect( m_model->settings.get_string("Hardware","PortName"),
-		  m_model->settings.get_integer("Hardware","SerialSpeed") );
+		  m_model->settings.getSerialSpeed() );
 }
 
 bool Printer::Connect( string device, int baudrate ) {

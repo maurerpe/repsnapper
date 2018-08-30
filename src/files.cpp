@@ -18,10 +18,11 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "files.h"
-
 #include <iostream>
 #include <stdlib.h>
+#include <glib/gi18n.h>
+
+#include "files.h"
 
 
 static string numlocale   = "";
@@ -77,7 +78,7 @@ File::File(Glib::RefPtr<Gio::File> file)
 }
 
 void File::loadTriangles(vector< vector<Triangle> > &triangles,
-			 vector<ustring> &names,
+			 vector<string> &names,
 			 uint max_triangles)
 {
   Gio::FileType type = _file->query_file_type();
@@ -85,9 +86,9 @@ void File::loadTriangles(vector< vector<Triangle> > &triangles,
       type != Gio::FILE_TYPE_SYMBOLIC_LINK)
     return;
 
-  ustring name_by_file = _file->get_basename();
+  string name_by_file = _file->get_basename();
   size_t found = name_by_file.find_last_of(".");
-  name_by_file = (ustring)name_by_file.substr(0,found);
+  name_by_file = (string)name_by_file.substr(0,found);
 
   set_locales("C");
   if(_type == ASCII_STL) {
@@ -119,10 +120,10 @@ void File::loadTriangles(vector< vector<Triangle> > &triangles,
 
 
 
-filetype_t File::getFileType(ustring filename)
+filetype_t File::getFileType(string filename)
 {
     // Extract file extension (i.e. "stl")
-  ustring extension = filename.substr(filename.find_last_of(".")+1);
+  string extension = filename.substr(filename.find_last_of(".")+1);
 
 
     if(extension == "wrl" || extension == "WRL") {
@@ -142,13 +143,13 @@ filetype_t File::getFileType(ustring filename)
     }
 
     // ASCII files start with "solid [Name_of_file]"
-    ustring first_word;
+    string first_word;
     try {
       file >> first_word;
 
       // Find bad Solid Works STL header
       // 'solid binary STL from Solid Edge, Unigraphics Solutions Inc.'
-      ustring second_word;
+      string second_word;
       if(first_word == "solid")
 	file >> second_word;
 
@@ -169,7 +170,7 @@ bool File::load_binarySTL(vector<Triangle> &triangles,
 			  uint max_triangles, bool readnormals)
 {
     ifstream file;
-    ustring filename = _file->get_path();
+    string filename = _file->get_path();
     file.open(filename.c_str(), ifstream::in | ifstream::binary);
 
     if(file.fail()) {
@@ -246,10 +247,10 @@ bool File::load_binarySTL(vector<Triangle> &triangles,
 
 
 bool File::load_asciiSTL(vector< vector<Triangle> > &triangles,
-			 vector<ustring> &names,
+			 vector<string> &names,
 			 uint max_triangles, bool readnormals)
 {
-  ustring filename = _file->get_path();
+  string filename = _file->get_path();
   ifstream file;
   file.open(filename.c_str(), ifstream::in);
   if(file.fail()) {
@@ -261,7 +262,7 @@ bool File::load_asciiSTL(vector< vector<Triangle> > &triangles,
   // get as many shapes as found in file
   while (true) {
     vector<Triangle> tr;
-    ustring name;
+    string name;
     if (!File::parseSTLtriangles_ascii(file, max_triangles, readnormals,
 				       tr, name))
       break;
@@ -283,7 +284,7 @@ bool File::load_asciiSTL(vector< vector<Triangle> > &triangles,
 bool File::parseSTLtriangles_ascii (istream &text,
 				    uint max_triangles, bool readnormals,
 				    vector<Triangle> &triangles,
-				    ustring &shapename)
+				    string &shapename)
 {
   //cerr << "loading ascii " << endl;
   //cerr << " locale " << std::locale().name() << endl;
@@ -312,7 +313,7 @@ bool File::parseSTLtriangles_ascii (istream &text,
       if (solid == "solid") {
 	string name;
 	getline(text,name);
-	shapename = (ustring)name;
+	shapename = (string)name;
 	break;
       }
     }
@@ -417,7 +418,7 @@ bool File::load_VRML(vector<Triangle> &triangles, uint max_triangles)
 {
 
   triangles.clear();
-  ustring filename = _file->get_path();
+  string filename = _file->get_path();
     ifstream file;
 
     file.open(filename.c_str());
@@ -428,7 +429,7 @@ bool File::load_VRML(vector<Triangle> &triangles, uint max_triangles)
     }
 
     file.imbue(std::locale("C"));
-    ustring word;
+    string word;
     std::vector<float> vertices;
     std::vector<int> indices;
     bool finished = false;
@@ -491,7 +492,7 @@ bool File::load_VRML(vector<Triangle> &triangles, uint max_triangles)
     return true;
 }
 
-bool File::saveBinarySTL(ustring filename, const vector<Triangle> &triangles,
+bool File::saveBinarySTL(string filename, const vector<Triangle> &triangles,
 			 const Matrix4d &T)
 {
 

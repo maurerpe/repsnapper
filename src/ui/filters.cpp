@@ -17,6 +17,8 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <glib/gi18n.h>
+
 #include "filters.h"
 
 void Filters::attach_filters(Gtk::FileChooser &chooser, Filters::FileType type) {

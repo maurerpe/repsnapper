@@ -25,17 +25,10 @@
 
 #include "stdafx.h"
 
-#include "files.h"
-
-
-#include "objtree.h"
 #include "gcode.h"
 #include "settings.h"
+#include "ui/objtree.h"
 #include "ui/render.h"
-
-#ifdef _MSC_VER // Visual C++ compiler
-#  pragma warning( disable : 4244 4267)
-#endif
 
 class Model {
   ViewProgress *m_progress;
@@ -48,9 +41,8 @@ class Model {
   Model();
   ~Model();
   
-  void SaveConfig(Glib::RefPtr<Gio::File> file);
-  void LoadConfig() { LoadConfig(Gio::File::create_for_path("repsnapper3.conf")); }
-  void LoadConfig(Glib::RefPtr<Gio::File> file);
+  void SaveConfig(const string &file);
+  void LoadConfig(const string &file = "repsnapper3.conf");
   
   // STL Functions
   void ReadStl(Glib::RefPtr<Gio::File> file, int extruder = -1);

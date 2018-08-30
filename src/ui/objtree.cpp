@@ -19,10 +19,15 @@
 
 #include <exception>
 #include <stdexcept>
+#include <glib/gi18n.h>
 
 #include "stdafx.h"
 #include "objtree.h"
 #include "model.h"
+
+TreeObject::TreeObject() {
+  name = _("Unnamed object");
+}
 
 TreeObject::~TreeObject() {
   for (uint i = 0; i<shapes.size(); i++)
@@ -154,7 +159,7 @@ void ObjectsTree::update_model() {
       row[m_cols->m_object] = i;
       row[m_cols->m_shape] = j;
       row[m_cols->m_pickindex] = index++;
-      row[m_cols->m_extruder] = "Extruder " + to_string(Objects[i]->shapes[j]->extruder);
+      row[m_cols->m_extruder] = Settings::GetExtruderText() + " " + to_string(Objects[i]->shapes[j]->extruder);
     }
   }
 }
@@ -165,7 +170,7 @@ void ObjectsTree::update_shapenames(Gtk::TreeModel::Children children) {
     int nobj   = (*iter)[m_cols->m_object];
     int nshape = (*iter)[m_cols->m_shape];
     if (nobj >= 0 && nshape >= 0) {
-      ustring name = (*iter)[m_cols->m_name];
+      Glib::ustring name = (*iter)[m_cols->m_name];
       if ((int)Objects.size() > nobj &&
 	  (int)Objects[nobj]->shapes.size() > nshape)
 	Objects[nobj]->shapes[nshape]->filename =  name;
@@ -183,7 +188,7 @@ void ObjectsTree::extruders_changed_raw(Gtk::TreeModel::Children children) {
     if (nobj >= 0 && nshape >= 0) {
       if ((int)Objects.size() > nobj &&
 	  (int)Objects[nobj]->shapes.size() > nshape)
-	(*iter)[m_cols->m_extruder] = "Extruder " +
+	(*iter)[m_cols->m_extruder] = Settings::GetExtruderText() + " " +
 	  to_string(Objects[nobj]->shapes[nshape]->extruder);
     }
     else

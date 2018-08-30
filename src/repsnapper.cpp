@@ -16,19 +16,20 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-#include "config.h"
-#include "stdafx.h"
-
 #include <string>
 #include <vector>
-
+#include <glib/gi18n.h>
 #include <giomm/file.h>
+
+#include "config.h"
+#include "stdafx.h"
 
 #include "ui/view.h"
 #include "ui/progress.h"
 #include "gcode.h"
 #include "model.h"
 #include "platform.h"
+#include "files.h"
 
 using namespace std;
 
@@ -228,9 +229,9 @@ int main(int argc, char **argv)
 
   // first load global config to make sure all settings exist
   if (global_conf->query_exists())
-    model->LoadConfig(global_conf);
+    model->LoadConfig(global_conf->get_path());
   if (conf->query_exists())
-    model->LoadConfig(conf);
+    model->LoadConfig(conf->get_path());
   model->settings.load_printer_settings();
   
   if (opts.printerdevice_path.size() > 0) {
@@ -239,7 +240,7 @@ int main(int argc, char **argv)
 
   if (!opts.use_gui) {
       if (opts.settings_path.size() > 0)
-        model->LoadConfig(Gio::File::create_for_path(opts.settings_path));
+        model->LoadConfig(opts.settings_path);
 
       ViewProgress vprog(new Gtk::Box(),new Gtk::ProgressBar());
       vprog.set_terminal_output(true);

@@ -27,6 +27,7 @@
 
 #include "rsfilechooser.h"
 
+class Settings_ui;
 class SetDlg;
 class QualMatDlg;
 class PrinterDlg;
@@ -71,9 +72,10 @@ class View : public Gtk::ApplicationWindow
   void temp_button(int e_no);
   
   string m_folder;
-  
+
+  Settings_ui *m_settings_ui;
   Printer *m_printer;
-  PrefsDlg *m_settings_ui;
+  PrefsDlg *m_prefs_dlg;
   QualMatDlg *m_qualmat;
   PrinterDlg *m_printer_dlg;
   SetDlg *m_set;

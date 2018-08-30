@@ -24,11 +24,13 @@
 #include <cerrno>
 #include <functional>
 #include <numeric>
+#include <glib/gi18n.h>
 
 #include "stdafx.h"
+#include "files.h"
 #include "model.h"
-#include "objtree.h"
 #include "settings.h"
+#include "ui/objtree.h"
 #include "ui/progress.h"
 #include "ui/render.h"
 #include "shape.h"
@@ -60,11 +62,11 @@ void Model::error (const char *message, const char *secondary) {
   signal_alert.emit(Gtk::MESSAGE_ERROR, message, secondary);
 }
 
-void Model::SaveConfig(Glib::RefPtr<Gio::File> file) {
+void Model::SaveConfig(const string &file) {
   settings.save_settings(file);
 }
 
-void Model::LoadConfig(Glib::RefPtr<Gio::File> file) {
+void Model::LoadConfig(const string &file) {
   settings.load_settings(file);
   ModelChanged();
 }
@@ -108,7 +110,7 @@ void Model::init() {
 }
 
 void Model::WriteGCode(Glib::RefPtr<Gio::File> file) {
-  Glib::ustring contents = gcode.get_text();
+  string contents = gcode.get_text();
   Glib::file_set_contents (file->get_path(), contents);
   settings.GCodePath = file->get_parent()->get_path();
 }
@@ -120,7 +122,7 @@ vector<Shape*> Model::ReadShapes(Glib::RefPtr<Gio::File> file,
   if (!file) return shapes;
   File sfile(file);
   vector< vector<Triangle> > triangles;
-  vector<ustring> shapenames;
+  vector<string> shapenames;
   sfile.loadTriangles(triangles, shapenames, max_triangles);
   for (uint i = 0; i < triangles.size(); i++) {
     if (triangles[i].size() > 0) {
@@ -189,7 +191,7 @@ void Model::Read(Glib::RefPtr<Gio::File> file, int extruder) {
   if (pos != std::string::npos) {
     std::string extn = basename.substr(pos);
     if (extn == ".conf") {
-      LoadConfig(file);
+      LoadConfig(file->get_path());
       settings.SettingsPath = directory_path;
       return;
     } else if (extn == ".gcode") {

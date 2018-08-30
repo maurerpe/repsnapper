@@ -19,11 +19,12 @@
 
 #pragma once
 
+#include <gtkmm.h>
 #include "shape.h"
 
 class TreeObject {
 public:
-  TreeObject(){name = _("Unnamed object");};
+  TreeObject();
   ~TreeObject();
   string name;
   Transform3D transform3D;

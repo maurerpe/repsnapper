@@ -18,6 +18,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
+#include <glib/gi18n.h>
 #include "stdafx.h"
 #else
 #define _( t ) t

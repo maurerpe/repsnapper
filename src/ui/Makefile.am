@@ -16,11 +16,13 @@ SHARED_SRC += \
 	src/ui/set_dlg.cpp \
 	src/ui/cust_prop.cpp \
 	src/ui/qualmat_dlg.cpp \
+	src/ui/objtree.cpp \
 	src/ui/printer_dlg.cpp \
 	src/ui/connectview.cpp \
 	src/ui/rsfilechooser.cpp \
 	src/ui/progress.cpp \
 	src/ui/render.cpp \
+	src/ui/settings_ui.cpp \
 	src/ui/filters.cpp
 
 SHARED_INC += \
@@ -30,9 +32,11 @@ SHARED_INC += \
 	src/ui/set_dlg.h \
 	src/ui/cust_prop.h \
 	src/ui/qualmat_dlg.h \
+	src/ui/objtree.h \
 	src/ui/printer_dlg.h \
 	src/ui/connectview.h \
 	src/ui/rsfilechooser.h \
 	src/ui/progress.h \
 	src/ui/render.h \
+	src/ui/settings_ui.h \
 	src/ui/filters.h

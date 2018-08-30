@@ -18,6 +18,7 @@
 */
 
 #include <cstdlib>
+#include <glib/gi18n.h>
 #include <gtkmm.h>
 
 #include "printer_dlg.h"
@@ -181,15 +182,29 @@ void PrinterCombo::Changed(void) {
 }
 
 void PrinterCombo::SetupCombo(void) {
-  Gtk::ComboBoxText *w = dynamic_cast<Gtk::ComboBoxText *>(m_widget);
-
-  Inhibitor inhibit(&m_inhibit_change);
-  w->remove_all();
+  if (m_section == "repsnapper")
+    return;
   
-  Psvi vi(PS_GetMember(PS_GetMember(PS_GetMember(PS_GetMember((*m_ps)(), m_ext.c_str(), NULL), "#set", NULL), m_name.c_str(), NULL), "options", NULL));
+  SetupCombo(Psv::GetNames(m_ps->Get(m_ext.c_str(), "#set", m_name.c_str(), "options")));
+}
 
-  while (vi.Next())
-    w->append(vi.Key());
+void PrinterCombo::SetupCombo(vector<string> values) {
+  Gtk::ComboBoxText *w = dynamic_cast<Gtk::ComboBoxText *>(m_widget);
+  
+  Glib::ustring prev = w->get_active_text();
+
+  {
+    Inhibitor inhibit(&m_inhibit_change);
+    w->remove_all();
+    
+    for (size_t count = 0; count < values.size(); count++)
+      w->append(values[count]);
+  }
+  
+  if (prev.size() > 0)
+    w->set_active_text(prev);
+  if (w->get_active_text().size() == 0)
+    w->set_active(0);
 }
 
 //////////////////////////////// PrinterEntry ////////////////////////////////
@@ -427,7 +442,8 @@ PrinterDlg::PrinterDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, S
   Add(builder, "print_caltime", "repsnapper", "#global", "calibrate_time");
   Add(builder, "print_adhesion", "overrides", "#global", "adhesion_type");
   Add(builder, "print_skirt", "overrides", "#global", "skirt_line_count");
-
+  Add(builder, "print_serialspeed", "repsnapper", "#global", "serial_speed");
+  
   Add(builder, "gcode_start", "overrides", "#global", "machine_start_gcode");
   Add(builder, "gcode_end", "overrides", "#global", "machine_end_gcode");
   
@@ -443,6 +459,12 @@ PrinterDlg::PrinterDlg(Glib::RefPtr<Gtk::Builder> builder, Settings *settings, S
   AddJson(builder, "poly_disallowed", "overrides", "#global", "machine_disallowed_areas");
   AddCheck(builder, "poly_disallowed_enable", "", "", "", 1);
   
+  AddEList(builder, "ext_shell",   "repsnapper", "#global", "shell_extruder");
+  AddEList(builder, "ext_skin",    "repsnapper", "#global", "skin_extruder");
+  AddEList(builder, "ext_infill",  "repsnapper", "#global", "infill_extruder");
+  AddEList(builder, "ext_support", "repsnapper", "#global", "support_extruder");
+  
+  AddExt(builder, "ext_material", "repsnapper", "0", "material");
   AddExt(builder, "ext_nozzle", "overrides", "0", "machine_nozzle_size");
   AddExt(builder, "ext_filament", "overrides", "0", "material_diameter");
   AddExt(builder, "ext_offsetx", "overrides", "0", "machine_nozzle_offset_x");
@@ -548,31 +570,57 @@ void PrinterDlg::AddExt(Glib::RefPtr<Gtk::Builder> builder, string id, string se
   m_ext_widgets.push_back(m_widgets.back());
 }
 
+void PrinterDlg::AddEList(Glib::RefPtr<Gtk::Builder> builder, string id, string section, string ext, string name) {
+  Add(builder, id, section, ext, name);
+  
+  m_elist_widgets.push_back(dynamic_cast<PrinterCombo *> (m_widgets.back()));  
+}
+
 void PrinterDlg::LoadAll(void) {
   for (size_t count = 0; count < m_widgets.size(); count++)
     m_widgets[count]->LoadValue();
   
   m_cust_global.SetValue("#global", PS_GetMember(PS_GetMember(m_printer, "overrides", NULL), "#global", NULL));
-  
+
+  BuildEList();
   BuildExtruderList();
 }
 
-void PrinterDlg::BuildExtruderList(void) {
+void PrinterDlg::BuildEList(void) {
+  vector<string> values;
+
+  values.push_back("Model Specific");
+  
   Psvi vi(PS_GetMember(m_printer, "overrides", NULL));
-
-  m_inhibit_extruder = true;
-  m_store->clear();
-
-  size_t count = 0;
+  
   while (vi.Next()) {
     if (strcmp(vi.Key(), "#global") == 0)
       continue;
     
-    Gtk::TreeModel::Row row = *m_store->append();
-    row[m_name_col] = Glib::ustring(vi.Key());
-    count++;
+    values.push_back(Settings::GetExtruderText() + " " + vi.Key());
   }
-  m_inhibit_extruder = false;
+  
+  for (size_t count = 0; count < m_elist_widgets.size(); count++)
+    m_elist_widgets[count]->SetupCombo(values);
+}
+
+void PrinterDlg::BuildExtruderList(void) {
+  Psvi vi(PS_GetMember(m_printer, "overrides", NULL));
+  size_t count = 0;
+  
+  {
+    Inhibitor inhibit(&m_inhibit_extruder);
+    m_store->clear();
+    
+    while (vi.Next()) {
+      if (strcmp(vi.Key(), "#global") == 0)
+	continue;
+      
+      Gtk::TreeModel::Row row = *m_store->append();
+      row[m_name_col] = Glib::ustring(vi.Key());
+      count++;
+    }
+  }
   
   if (count > 0) {
     // Select last
@@ -591,7 +639,8 @@ void PrinterDlg::New(void) {
   string name = to_string(num);
 
   PS_AddMember(PS_GetMember(m_printer, "overrides", NULL), name.c_str(), PS_ParseJsonString("{\"material_diameter\":1.75,\"machine_nozzle_size\":0.4}"));
-  
+
+  BuildEList();
   BuildExtruderList();
 }
 
@@ -603,7 +652,8 @@ void PrinterDlg::Remove(void) {
   
   string name = to_string(num - 2);
   PS_RemoveMember(PS_GetMember(m_printer, "overrides", NULL), name.c_str());
-  
+
+  BuildEList();
   BuildExtruderList();
 }
 
