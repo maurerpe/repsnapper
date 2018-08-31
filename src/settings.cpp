@@ -286,7 +286,7 @@ void Settings::SetQualMat(const ps_value_t *v) {
 }
 
 string Settings::GetPrinterName(void) {
-  const char *str = PS_GetString(printer.Get("name"));
+  const char *str = PS_GetString(printer.Get("repsnapper", "#global", "name"));
   if (str == NULL)
     return "<Unknown>";
 
