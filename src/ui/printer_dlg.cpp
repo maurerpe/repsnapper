@@ -201,10 +201,11 @@ void PrinterCombo::SetupCombo(vector<string> values) {
       w->append(values[count]);
   }
   
-  if (prev.size() > 0)
+  if (prev.size() > 0) {
     w->set_active_text(prev);
-  if (w->get_active_text().size() == 0)
-    w->set_active(0);
+    if (w->get_active_text().size() == 0)
+      w->set_active(0);
+  }
 }
 
 //////////////////////////////// PrinterEntry ////////////////////////////////
@@ -638,7 +639,8 @@ void PrinterDlg::New(void) {
     num--;
   string name = to_string(num);
 
-  PS_AddMember(PS_GetMember(m_printer, "overrides", NULL), name.c_str(), PS_ParseJsonString("{\"material_diameter\":1.75,\"machine_nozzle_size\":0.4}"));
+  PS_AddMember(PS_GetMember(m_printer, "overrides", NULL), name.c_str(), PS_ParseJsonString("{\"material_diameter\":1.75,\"machine_nozzle_size\":0.4,\"machine_nozzle_offset_x\":0,\"machine_nozzle_offset_y\":0}"));
+  PS_AddMember(PS_GetMember(m_printer, "repsnapper", NULL), name.c_str(), PS_ParseJsonString("{\"material\":\"PLA\"}"));
 
   BuildEList();
   BuildExtruderList();
@@ -652,6 +654,7 @@ void PrinterDlg::Remove(void) {
   
   string name = to_string(num - 2);
   PS_RemoveMember(PS_GetMember(m_printer, "overrides", NULL), name.c_str());
+  PS_RemoveMember(PS_GetMember(m_printer, "repsnapper", NULL), name.c_str());
 
   BuildEList();
   BuildExtruderList();
