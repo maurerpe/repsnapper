@@ -171,7 +171,7 @@ Shape Model::GetCombinedShape(int extruder) const {
   Shape shape;
   for (uint o = 0; o<objtree.Objects.size(); o++) {
     for (uint s = 0; s<objtree.Objects[o]->shapes.size(); s++) {
-      if (extruder > 0 && objtree.Objects[o]->shapes[s]->extruder != extruder)
+      if (extruder >= 0 && objtree.Objects[o]->shapes[s]->extruder != extruder)
 	continue;
       
       vector<Triangle> tr =
