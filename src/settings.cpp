@@ -208,13 +208,8 @@ void Settings::load_settings(const string &file) {
     
     filename = file;
   
-    try {
-      if (!load_from_file(filename)) {
-	cout << _("Failed to load settings from file '") << filename << "\n";
-	return;
-      }
-    } catch (const Glib::KeyFileError &err) {
-      cout << _("Exception ") << err.what() << _(" loading settings from file '") << filename << "\n";
+    if (!load_from_file(filename)) {
+      cout << _("Failed to load settings from file '") << filename << "\n";
       return;
     }
     
@@ -268,11 +263,11 @@ void Settings::SetPrinter(const ps_value_t *v) {
   bool ext_changed = false;
   
   printer.Take(PS_CopyValue(v));
-  vector<string> ext = Psv::GetNames(PS_GetMember(printer(), "overrides", NULL));
+  vector<string> ext = Psv::GetNames(printer.Get("overrides"));
   
   if (!StringsEqual(prev_ext, ext)) {
     ext_changed = true;
-    ps.Take(load_printer(Psv::GetNames(PS_GetMember(printer(), "overrides", NULL))));
+    ps.Take(load_printer(Psv::GetNames(printer.Get("overrides"))));
   }
   
   dflt.Take(PS_GetDefaults(ps()));
@@ -291,6 +286,14 @@ void Settings::SetQualMat(const ps_value_t *v) {
 }
 
 void Settings::WriteTempPrinter(FILE *file, vector<string> ext) {
+  cout << "Loading printer with extruders: ";
+  for (size_t count = 0; count < ext.size(); count++) {
+    if (count > 0)
+      cout << ", ";
+    cout << ext[count];
+  }
+  cout << endl;
+  
   fprintf(file, "{\"name\":\"%s\",\"version\":2,\"inherits\":\"fdmprinter\",\"metadata\":{\"machine_extruder_trains\":{", PS_GetString(PS_GetMember(printer(), "name", NULL)));
 
   bool first = true;
@@ -364,53 +367,47 @@ vmml::vec3d Settings::getPrintMargin() const {
 }
 
 bool Settings::set_user_button(const string &name, const string &gcode) {
-  try {
-    vector<string> buttonlabels = get_string_list("UserButtons","Labels");
-    vector<string> buttongcodes = get_string_list("UserButtons","GCodes");
-    for (uint i = 0; i < buttonlabels.size(); i++){
-      if (buttonlabels[i] == name) {
-	// change button
-	buttongcodes[i] = gcode;
-	set_string_list("UserButtons","GCodes",buttongcodes);
-      } else {
+  vector<string> buttonlabels = get_string_list("UserButtons","Labels");
+  vector<string> buttongcodes = get_string_list("UserButtons","GCodes");
+  for (uint i = 0; i < buttonlabels.size(); i++){
+    if (buttonlabels[i] == name) {
+      // change button
+      buttongcodes[i] = gcode;
+      set_string_list("UserButtons","GCodes",buttongcodes);
+    } else {
 	// add button
-	buttonlabels.push_back(name);
-	buttongcodes.push_back(gcode);
-	set_string_list("UserButtons","Labels",buttonlabels);
-	set_string_list("UserButtons","GCodes",buttongcodes);
-      }
+      buttonlabels.push_back(name);
+      buttongcodes.push_back(gcode);
+      set_string_list("UserButtons","Labels",buttonlabels);
+      set_string_list("UserButtons","GCodes",buttongcodes);
     }
-  } catch (const Glib::KeyFileError &err) {
   }
   return true;
 }
 
 string Settings::get_user_gcode(const string &name) {
-  try {
-    vector<string> buttonlabels = get_string_list("UserButtons","Labels");
-    vector<string> buttongcodes = get_string_list("UserButtons","GCodes");
-    for (uint i = 0; i < buttonlabels.size(); i++){
-      if (buttonlabels[i] == name)
-	return buttongcodes[i];
-    }
-  } catch (const Glib::KeyFileError &err) {
+  vector<string> buttonlabels = get_string_list("UserButtons","Labels");
+  vector<string> buttongcodes = get_string_list("UserButtons","GCodes");
+  
+  for (uint i = 0; i < buttonlabels.size(); i++){
+    if (buttonlabels[i] == name)
+      return buttongcodes[i];
   }
+  
   return "";
 }
 
 bool Settings::del_user_button(const string &name) {
-  try {
-    vector<string> buttonlabels = get_string_list("UserButtons","Labels");
-    vector<string> buttongcodes = get_string_list("UserButtons","GCodes");
-    for (uint i = 0; i < buttonlabels.size(); i++){
-      if (buttonlabels[i] == name) {
-	buttonlabels.erase(buttonlabels.begin()+i);
-	buttongcodes.erase(buttongcodes.begin()+i);
-	return true;
-      }
+  vector<string> buttonlabels = get_string_list("UserButtons","Labels");
+  vector<string> buttongcodes = get_string_list("UserButtons","GCodes");
+  for (uint i = 0; i < buttonlabels.size(); i++){
+    if (buttonlabels[i] == name) {
+      buttonlabels.erase(buttonlabels.begin()+i);
+      buttongcodes.erase(buttongcodes.begin()+i);
+      return true;
     }
-  } catch (const Glib::KeyFileError &err) {
   }
+  
   return false;
 }
 
@@ -457,7 +454,7 @@ ps_value_t *Settings::FullSettings(int model_specific) {
     const char *matname = PS_GetString(printer.Get("repsnapper", EStr(e_no).c_str(), "material"));
     const ps_value_t *mat = qualmat.Get("materials", matname);
     if (mat == NULL)
-      cout << endl << "Unknown material: " << matname << endl;
+      cout << "Unknown material: " << matname << endl;
 
     double dia = PS_AsFloat(dflt.Get(EStr(e_no).c_str(), "material_diameter"));
     double efeed = PS_AsFloat(PS_GetItem(PS_GetItem(PS_GetMember(mat, "nozzle-feedrate", NULL), 0), 1));
