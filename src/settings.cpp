@@ -294,14 +294,6 @@ string Settings::GetPrinterName(void) {
 }
 
 void Settings::WriteTempPrinter(FILE *file, vector<string> ext) {
-  cout << "Loading printer with extruders: ";
-  for (size_t count = 0; count < ext.size(); count++) {
-    if (count > 0)
-      cout << ", ";
-    cout << ext[count];
-  }
-  cout << endl;
-  
   fprintf(file, "{\"name\":\"%s\",\"version\":2,\"inherits\":\"fdmprinter\",\"metadata\":{\"machine_extruder_trains\":{", GetPrinterName().c_str());
 
   bool first = true;
@@ -483,7 +475,7 @@ ps_value_t *Settings::FullSettings(int model_specific) {
   int esupport = GetENo("support_extruder", model_specific);
   
   Psv set(PS_BlankSettings(ps()));
-  set.Set("#global", "extruders_enabled_count", (int) PS_ItemCount(dflt()) - 1);
+  set.Set("#global", "extruders_enabled_count", (int) getNumExtruders());
   
   set.Set("#global", "speed_print",     speed);
   set.Set("#global", "speed_wall",      espeed[eshell  ] * ratio);
@@ -498,6 +490,8 @@ ps_value_t *Settings::FullSettings(int model_specific) {
 
     string ext = to_string(e_no);
     set.MergeActive(ext.c_str(), PS_GetMember(mat, "settings", NULL));
+    
+    set.Set(ext.c_str(), "extruder_nr", e_no);
   }
   
   set.Set("#global", "wall_extruder_nr",       EStr(eshell));

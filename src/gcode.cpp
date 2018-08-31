@@ -243,7 +243,7 @@ void GCode::ParseCmd(const char *str, GCodeCmd &cmd, printer_state &state, doubl
       if (isfinite(codes['E'])) {
 	state.ext_offset += state.ext - codes['E'];
 	state.ext = codes['E'];
-	cout << "Extruder reset, new offset = " << state.ext_offset << endl;
+	//cout << "Extruder reset, new offset = " << state.ext_offset << endl;
       }
     }
   } else if (isfinite(codes['M'])) {
