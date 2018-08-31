@@ -285,6 +285,14 @@ void Settings::SetQualMat(const ps_value_t *v) {
   m_qualmat_changed.emit();
 }
 
+string Settings::GetPrinterName(void) {
+  const char *str = PS_GetString(printer.Get("name"));
+  if (str == NULL)
+    return "<Unknown>";
+
+  return str;
+}
+
 void Settings::WriteTempPrinter(FILE *file, vector<string> ext) {
   cout << "Loading printer with extruders: ";
   for (size_t count = 0; count < ext.size(); count++) {
@@ -294,7 +302,7 @@ void Settings::WriteTempPrinter(FILE *file, vector<string> ext) {
   }
   cout << endl;
   
-  fprintf(file, "{\"name\":\"%s\",\"version\":2,\"inherits\":\"fdmprinter\",\"metadata\":{\"machine_extruder_trains\":{", PS_GetString(PS_GetMember(printer(), "name", NULL)));
+  fprintf(file, "{\"name\":\"%s\",\"version\":2,\"inherits\":\"fdmprinter\",\"metadata\":{\"machine_extruder_trains\":{", GetPrinterName().c_str());
 
   bool first = true;
   for (size_t count = 0; count < ext.size(); count++) {
@@ -506,6 +514,8 @@ ps_value_t *Settings::FullSettings(int model_specific) {
   set.Set("#global", "adhesion_type", adhesion);
   set.Set("#global", "support_enable", support);
   set.Set("#global", "magic_spiralize", spiralize);
+  
+  set.Set("#global", "machine_extruder_count", (int) getNumExtruders());
   
   Psv eval(PS_EvalAllDflt(ps(), set(), dflt()));
   Psv all(PS_CopyValue(dflt()));

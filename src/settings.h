@@ -57,9 +57,11 @@ class Settings {
   const Psv *GetPs() {return &ps;};
   const Psv *GetDflt() {return &dflt;};
   const Psv *GetQualMat() {return &qualmat;};
-
+  
   void SetPrinter(const ps_value_t *v);
   void SetQualMat(const ps_value_t *v);
+  
+  string GetPrinterName(void);
   
   string GetConfigPath(string filename);
   
