@@ -19,9 +19,10 @@
 
 #pragma once
 
+#include <math.h>
+#include <string.h>
+
 #include "stdafx.h"
-#include "string.h"
-#include "math.h"
 
 
 enum AXIS {NEGX, POSX, NEGY, POSY, NEGZ, POSZ, NOT_ALIGNED};
@@ -36,7 +37,9 @@ public:
 	Triangle(const Vector3d &Point1,
 		 const Vector3d &Point2, const Vector3d &Point3);
 	Triangle() {};
-
+	
+	bool isValid() {return Normal != Vector3d(0, 0, 0);};
+	
 	Triangle transformed(const Matrix4d &T) const;
 
 	/* Represent the triangle as an array of length 3 {A, B, C} */
@@ -51,8 +54,6 @@ public:
 	double area() const;
 	double slopeAngle(const Matrix4d &T=Matrix4d::IDENTITY) const;
 
-	void rotate(const Vector3d &axis, double angle);
-
 	AXIS axis;			// Used for auto-rotation
 	Vector3d A,B,C,Normal;	// p1,p2,p3, Normal
 	Vector3d GetMax(const Matrix4d &T=Matrix4d::IDENTITY) const;
@@ -60,20 +61,15 @@ public:
 
 	void AccumulateMinMax(Vector3d &min, Vector3d &max,
 			      const Matrix4d &T=Matrix4d::IDENTITY);
-	void Translate(const Vector3d &vector);
-	int CutWithPlane(double z, const Matrix4d &T,
-			 Vector2d &lineStart, Vector2d &lineEnd) const;
-	bool isInZrange(double zmin, double zmax, const Matrix4d &T) const;
-	int SplitAtPlane(double z,
-			 vector<Triangle> &uppertriangles,
-			 vector<Triangle> &lowertriangles,
-			 const Matrix4d &T=Matrix4d::IDENTITY) const;
 	string getSTLfacet(const Matrix4d &T=Matrix4d::IDENTITY) const;
 
 	double projectedvolume(const Matrix4d &T=Matrix4d::IDENTITY) const;
 
 	bool isConnectedTo(Triangle const &other, double maxsqerr=0.0001) const;
-	bool wrongOrientationWith(Triangle const &other, double maxsqerr) const;
 
+	void shift1(void);
+	void shift2(void);
+	void divide(vector<Triangle> &above, vector<Triangle> &below, Vector2d &start, Vector2d &stop);
+	
 	string info() const;
 };

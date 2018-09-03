@@ -651,7 +651,6 @@ LIBZIP_CFLAGS
 OPENMP_CXXFLAGS
 GTKMM_LIBS
 GTKMM_CFLAGS
-CLIPPER_LIBS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
@@ -22323,32 +22322,6 @@ fi
 
 
 
-$as_echo "#define HAVE_CLIPPERLIB 0" >>confdefs.h
-
-CLIPPER_LIBS="libraries/libclipper.la"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <polyclipping/clipper.hpp>
-int
-main ()
-{
-ClipperLib::PolyNode cnode
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  $as_echo "#define HAVE_CLIPPERLIB 1" >>confdefs.h
- CLIPPER_LIBS="-lpolyclipping"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libclipper is not installed. Using internal copy." >&5
-$as_echo "$as_me: WARNING: libclipper is not installed. Using internal copy." >&2;}
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-
-
-
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gtkmm-3.0 gtk+-3.0 epoxy" >&5
 $as_echo_n "checking for gtkmm-3.0 gtk+-3.0 epoxy... " >&6; }
@@ -22744,6 +22717,7 @@ fi
 
 
 
+# Convert install path to use \\ for substitution in the win32 nsi script
 prefix_win=`echo $prefix | sed -e 's|/|\\\\|g'`
 
 

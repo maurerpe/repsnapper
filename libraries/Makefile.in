@@ -118,10 +118,14 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libclipper_la_LIBADD =
+libpoly2tri_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
-am_libclipper_la_OBJECTS = clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo
-libclipper_la_OBJECTS = $(am_libclipper_la_OBJECTS)
+am_libpoly2tri_la_OBJECTS = poly2tri/poly2tri/sweep/sweep.lo \
+	poly2tri/poly2tri/sweep/sweep_context.lo \
+	poly2tri/poly2tri/sweep/cdt.lo \
+	poly2tri/poly2tri/sweep/advancing_front.lo \
+	poly2tri/poly2tri/common/shapes.lo
+libpoly2tri_la_OBJECTS = $(am_libpoly2tri_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -160,26 +164,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(CFLAGS)
-AM_V_CC = $(am__v_CC_@AM_V@)
-am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
-am__v_CC_0 = @echo "  CC      " $@;
-am__v_CC_1 = 
-CCLD = $(CC)
-LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-AM_V_CCLD = $(am__v_CCLD_@AM_V@)
-am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
-am__v_CCLD_0 = @echo "  CCLD    " $@;
-am__v_CCLD_1 = 
-SOURCES = $(libclipper_la_SOURCES)
-DIST_SOURCES = $(libclipper_la_SOURCES)
+SOURCES = $(libpoly2tri_la_SOURCES)
+DIST_SOURCES = $(libpoly2tri_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -204,8 +190,7 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/clipper/Makefile.am \
-	$(srcdir)/vmmlib/Makefile.am \
+am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/vmmlib/Makefile.am \
 	$(srcdir)/vmmlib/include/Makefile.am \
 	$(srcdir)/vmmlib/include/vmmlib/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -225,7 +210,6 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CFLAG_VISIBILITY = @CFLAG_VISIBILITY@
-CLIPPER_LIBS = @CLIPPER_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -395,24 +379,22 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I m4
-EXTRA_DIST = vmmlib/README.md vmmlib/LICENSE.txt $(wildcard \
-	vmmlib/include/vmmlib/*.h) $(wildcard \
+EXTRA_DIST = poly2tri/LICENSE vmmlib/README.md vmmlib/LICENSE.txt \
+	$(wildcard vmmlib/include/vmmlib/*.h) $(wildcard \
 	vmmlib/include/vmmlib/*.hpp)
-noinst_LTLIBRARIES = libclipper.la
-libclipper_la_CPPFLAGS = \
-	-I$(srcdir) \
-	-I$(top_srcdir)/libraries/clipper/clipper/polyclipping-code/cpp/ \
-        $(EXTRA_CFLAGS)
-
-libclipper_la_SOURCES = \
-	clipper/clipper/polyclipping-code/cpp/clipper.cpp \
-	clipper/clipper/polyclipping-code/cpp/clipper.hpp
+noinst_LTLIBRARIES = libpoly2tri.la
+libpoly2tri_la_SOURCES = \
+	poly2tri/poly2tri/sweep/sweep.cc \
+	poly2tri/poly2tri/sweep/sweep_context.cc \
+	poly2tri/poly2tri/sweep/cdt.cc \
+	poly2tri/poly2tri/sweep/advancing_front.cc \
+	poly2tri/poly2tri/common/shapes.cc
 
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .cpp .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/vmmlib/Makefile.am $(srcdir)/vmmlib/include/Makefile.am $(srcdir)/vmmlib/include/vmmlib/Makefile.am $(srcdir)/clipper/Makefile.am $(am__configure_deps)
+.SUFFIXES: .cc .lo .o .obj
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/vmmlib/Makefile.am $(srcdir)/vmmlib/include/Makefile.am $(srcdir)/vmmlib/include/vmmlib/Makefile.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -432,7 +414,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
-$(srcdir)/vmmlib/Makefile.am $(srcdir)/vmmlib/include/Makefile.am $(srcdir)/vmmlib/include/vmmlib/Makefile.am $(srcdir)/clipper/Makefile.am $(am__empty):
+$(srcdir)/vmmlib/Makefile.am $(srcdir)/vmmlib/include/Makefile.am $(srcdir)/vmmlib/include/vmmlib/Makefile.am $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -453,30 +435,54 @@ clean-noinstLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
-clipper/clipper/polyclipping-code/cpp/$(am__dirstamp):
-	@$(MKDIR_P) clipper/clipper/polyclipping-code/cpp
-	@: > clipper/clipper/polyclipping-code/cpp/$(am__dirstamp)
-clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) clipper/clipper/polyclipping-code/cpp/$(DEPDIR)
-	@: > clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/$(am__dirstamp)
-clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo:  \
-	clipper/clipper/polyclipping-code/cpp/$(am__dirstamp) \
-	clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/$(am__dirstamp)
+poly2tri/poly2tri/sweep/$(am__dirstamp):
+	@$(MKDIR_P) poly2tri/poly2tri/sweep
+	@: > poly2tri/poly2tri/sweep/$(am__dirstamp)
+poly2tri/poly2tri/sweep/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) poly2tri/poly2tri/sweep/$(DEPDIR)
+	@: > poly2tri/poly2tri/sweep/$(DEPDIR)/$(am__dirstamp)
+poly2tri/poly2tri/sweep/sweep.lo:  \
+	poly2tri/poly2tri/sweep/$(am__dirstamp) \
+	poly2tri/poly2tri/sweep/$(DEPDIR)/$(am__dirstamp)
+poly2tri/poly2tri/sweep/sweep_context.lo:  \
+	poly2tri/poly2tri/sweep/$(am__dirstamp) \
+	poly2tri/poly2tri/sweep/$(DEPDIR)/$(am__dirstamp)
+poly2tri/poly2tri/sweep/cdt.lo:  \
+	poly2tri/poly2tri/sweep/$(am__dirstamp) \
+	poly2tri/poly2tri/sweep/$(DEPDIR)/$(am__dirstamp)
+poly2tri/poly2tri/sweep/advancing_front.lo:  \
+	poly2tri/poly2tri/sweep/$(am__dirstamp) \
+	poly2tri/poly2tri/sweep/$(DEPDIR)/$(am__dirstamp)
+poly2tri/poly2tri/common/$(am__dirstamp):
+	@$(MKDIR_P) poly2tri/poly2tri/common
+	@: > poly2tri/poly2tri/common/$(am__dirstamp)
+poly2tri/poly2tri/common/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) poly2tri/poly2tri/common/$(DEPDIR)
+	@: > poly2tri/poly2tri/common/$(DEPDIR)/$(am__dirstamp)
+poly2tri/poly2tri/common/shapes.lo:  \
+	poly2tri/poly2tri/common/$(am__dirstamp) \
+	poly2tri/poly2tri/common/$(DEPDIR)/$(am__dirstamp)
 
-libclipper.la: $(libclipper_la_OBJECTS) $(libclipper_la_DEPENDENCIES) $(EXTRA_libclipper_la_DEPENDENCIES) 
-	$(AM_V_CXXLD)$(CXXLINK)  $(libclipper_la_OBJECTS) $(libclipper_la_LIBADD) $(LIBS)
+libpoly2tri.la: $(libpoly2tri_la_OBJECTS) $(libpoly2tri_la_DEPENDENCIES) $(EXTRA_libpoly2tri_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(CXXLINK)  $(libpoly2tri_la_OBJECTS) $(libpoly2tri_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f clipper/clipper/polyclipping-code/cpp/*.$(OBJEXT)
-	-rm -f clipper/clipper/polyclipping-code/cpp/*.lo
+	-rm -f poly2tri/poly2tri/common/*.$(OBJEXT)
+	-rm -f poly2tri/poly2tri/common/*.lo
+	-rm -f poly2tri/poly2tri/sweep/*.$(OBJEXT)
+	-rm -f poly2tri/poly2tri/sweep/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/libclipper_la-clipper.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@poly2tri/poly2tri/common/$(DEPDIR)/shapes.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@poly2tri/poly2tri/sweep/$(DEPDIR)/advancing_front.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@poly2tri/poly2tri/sweep/$(DEPDIR)/cdt.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@poly2tri/poly2tri/sweep/$(DEPDIR)/sweep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@poly2tri/poly2tri/sweep/$(DEPDIR)/sweep_context.Plo@am__quote@
 
-.cpp.o:
+.cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
@@ -484,7 +490,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ $<
 
-.cpp.obj:
+.cc.obj:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
@@ -492,7 +498,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-.cpp.lo:
+.cc.lo:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
 @am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
@@ -500,19 +506,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
-clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo: clipper/clipper/polyclipping-code/cpp/clipper.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libclipper_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo -MD -MP -MF clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/libclipper_la-clipper.Tpo -c -o clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo `test -f 'clipper/clipper/polyclipping-code/cpp/clipper.cpp' || echo '$(srcdir)/'`clipper/clipper/polyclipping-code/cpp/clipper.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/libclipper_la-clipper.Tpo clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/libclipper_la-clipper.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='clipper/clipper/polyclipping-code/cpp/clipper.cpp' object='clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libclipper_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o clipper/clipper/polyclipping-code/cpp/libclipper_la-clipper.lo `test -f 'clipper/clipper/polyclipping-code/cpp/clipper.cpp' || echo '$(srcdir)/'`clipper/clipper/polyclipping-code/cpp/clipper.cpp
-
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
-	-rm -rf clipper/clipper/polyclipping-code/cpp/.libs clipper/clipper/polyclipping-code/cpp/_libs
+	-rm -rf poly2tri/poly2tri/common/.libs poly2tri/poly2tri/common/_libs
+	-rm -rf poly2tri/poly2tri/sweep/.libs poly2tri/poly2tri/sweep/_libs
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -626,8 +626,10 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f clipper/clipper/polyclipping-code/cpp/$(DEPDIR)/$(am__dirstamp)
-	-rm -f clipper/clipper/polyclipping-code/cpp/$(am__dirstamp)
+	-rm -f poly2tri/poly2tri/common/$(DEPDIR)/$(am__dirstamp)
+	-rm -f poly2tri/poly2tri/common/$(am__dirstamp)
+	-rm -f poly2tri/poly2tri/sweep/$(DEPDIR)/$(am__dirstamp)
+	-rm -f poly2tri/poly2tri/sweep/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -638,7 +640,7 @@ clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf clipper/clipper/polyclipping-code/cpp/$(DEPDIR)
+	-rm -rf poly2tri/poly2tri/common/$(DEPDIR) poly2tri/poly2tri/sweep/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -684,7 +686,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf clipper/clipper/polyclipping-code/cpp/$(DEPDIR)
+	-rm -rf poly2tri/poly2tri/common/$(DEPDIR) poly2tri/poly2tri/sweep/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

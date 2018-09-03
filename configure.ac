@@ -30,14 +30,6 @@ PKG_PROG_PKG_CONFIG([0.22])
 AC_LANG_CPLUSPLUS
 AC_TYPE_SSIZE_T
 
-dnl check for installed clipperlib newer than 5.1.0 (has PolyNode)
-AC_DEFINE([HAVE_CLIPPERLIB],[0],[Have external clipper])
-CLIPPER_LIBS="libraries/libclipper.la"
-AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <polyclipping/clipper.hpp>], [ClipperLib::PolyNode cnode])],
-    [AC_DEFINE([HAVE_CLIPPERLIB],[1]) CLIPPER_LIBS="-lpolyclipping"],
-    [AC_MSG_WARN([libclipper is not installed. Using internal copy.])])
-AC_SUBST(CLIPPER_LIBS)
-
 PKG_CHECK_MODULES(GTKMM, [gtkmm-3.0 gtk+-3.0 epoxy])
 
 AC_OPENMP()
@@ -68,7 +60,7 @@ AC_SUBST(GL_LIBS)
 AC_SUBST(EXTRA_LDFLAGS)
 AC_SUBST(EXTRA_CFLAGS)
 
-dnl Convert install path to use \\ for substitution in the win32 nsi script
+# Convert install path to use \\ for substitution in the win32 nsi script
 prefix_win=`echo $prefix | sed -e 's|/|\\\\|g'`
 AC_SUBST(prefix_win)
 

@@ -73,7 +73,8 @@ class Shape {
   void invertNormals();
   virtual void mirror();
   virtual void splitshapes(vector<Shape*> &shapes, ViewProgress *progress=NULL);
-
+  virtual void divideAtBed(vector<Shape*> &shapes, ViewProgress *progress=NULL);
+  
   int saveBinarySTL(Glib::ustring filename) const;
 
   virtual string info() const;

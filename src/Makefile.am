@@ -15,6 +15,7 @@ WARNING_FLAGS = -Wall -Wsign-compare -Wno-invalid-offsetof
 
 repsnapper_CPPFLAGS = \
 	-I$(LIB_DIR)/vmmlib/include \
+	-I$(LIB_DIR)/poly2tri/poly2tri \
 	-I$(top_srcdir) \
 	-I$(top_srcdir)/src \
 	-I$(top_builddir)/src \
@@ -38,7 +39,9 @@ SHARED_SRC= \
 	src/triangle.cpp \
 	src/files.cpp \
 	src/settings.cpp \
-	src/ps_helper.cpp
+	src/ps_helper.cpp \
+	src/lines2poly.cpp \
+	src/polygroup.cpp
 
 SHARED_INC= \
 	src/geometry.h \
@@ -52,7 +55,9 @@ SHARED_INC= \
 	src/platform.h \
 	src/settings.h \
 	src/types.h \
-	src/ps_helper.h
+	src/ps_helper.h \
+	src/lines2poly.h \
+	src/polygroup.h
 
 include src/ui/Makefile.am
 include src/printer/Makefile.am
@@ -61,7 +66,7 @@ repsnapper_SOURCES = $(SHARED_SRC) $(SHARED_INC) src/repsnapper.cpp
 
 repsnapper_LDFLAGS = $(EXTRA_LDFLAGS)
 
-repsnapper_LDADD = $(CLIPPER_LIBS) $(OPENMP_CFLAGS) $(GTKMM_LIBS) $(LIBZIP_LIBS)
+repsnapper_LDADD = $(LIB_DIR)/libpoly2tri.la $(OPENMP_CFLAGS) $(GTKMM_LIBS) $(LIBZIP_LIBS)
 
 repsnapperdatadir = $(datadir)/@PACKAGE@
 dist_repsnapperdata_DATA = src/repsnapper.ui src/repsnapper.svg

@@ -1421,6 +1421,19 @@ void View::merge_selected_objects() {
 }
 
 void View::divide_selected_objects() {
+  vector<Shape*> shapes;
+  vector<TreeObject*> objects;
+  get_selected_objects(objects, shapes);
+  if (shapes.size()>0) {
+    for (uint i=0; i<shapes.size() ; i++) {
+      TreeObject* object = m_model->objtree.getParent(shapes[i]);
+      if (object !=NULL)
+	if (m_model->DivideShape(object, shapes[i], shapes[i]->filename) > 1) {
+	// delete shape?
+      }
+    }
+    queue_draw();
+  }
 }
 
 void View::change_extruder_selected_objects(Gtk::ComboBoxText *w) {

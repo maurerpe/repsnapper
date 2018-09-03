@@ -26,6 +26,7 @@
 #include "ui/render.h"
 #include "settings.h"
 #include "geometry.h"
+#include "lines2poly.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -129,7 +130,9 @@ void Shape::splitshapes(vector<Shape*> &shapes, ViewProgress *progress) {
   // triangle indices of shapes
   vector< vector<uint> > shape_tri;
 
-  for (int i = 0; i < n_tr; i++) done[i] = false;
+  for (int i = 0; i < n_tr; i++)
+    done[i] = false;
+  
   for (int i = 0; i < n_tr; i++) {
     if (progress && i%progress_steps==0)
       cont = prog.update(i);
@@ -138,6 +141,7 @@ void Shape::splitshapes(vector<Shape*> &shapes, ViewProgress *progress) {
       vector<uint> current;
       addtoshape(i, adj, current, done);
       Shape *shape = new Shape();
+      shape->extruder = extruder;
       shapes.push_back(shape);
       shapes.back()->triangles.resize(current.size());
       for (uint i = 0; i < current.size(); i++)
@@ -145,6 +149,47 @@ void Shape::splitshapes(vector<Shape*> &shapes, ViewProgress *progress) {
       shapes.back()->CalcBBox();
     }
     if (!cont) i=n_tr;
+  }
+}
+
+void Shape::divideAtBed(vector<Shape*> &shapes, ViewProgress *progress) {
+  size_t n_tr = triangles.size();
+  size_t inter = n_tr / 100;
+  if (inter == 0)
+    inter = 1;
+  Shape *above = new Shape();
+  Shape *below = new Shape();
+  above->extruder = extruder;
+  below->extruder = extruder;
+  shapes.push_back(above);
+  shapes.push_back(below);
+  
+  Vector2d start;
+  Vector2d stop;
+  
+  Lines2Poly l2p;
+  
+  Prog prog(progress, _("Dividing:"), 100);
+  for (size_t count = 0; count < n_tr; count++) {
+    if (count % inter == 0) {
+      if (!prog.update(100.0 * count / n_tr))
+	break;
+    }
+    
+    Triangle tri = triangles[count].transformed(transform3D.getTransform());
+    tri.divide(above->triangles, below->triangles, start, stop);
+    
+    if (start != Vector2d(0, 0) || stop != Vector2d(0, 0))
+      l2p.AddLine(start, stop);
+  }
+  
+  shared_ptr<vector<Triangle>> ret = l2p.GetAsTriangles();
+  n_tr = ret->size();
+  for (size_t count = 0; count < n_tr; count++) {
+    Triangle *tri = &(*ret)[count];
+    below->triangles.push_back(*tri);
+    tri->invertNormal();
+    above->triangles.push_back(*tri);
   }
 }
 

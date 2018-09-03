@@ -342,15 +342,26 @@ int Model::AddShape(TreeObject *parent, Shape *shape, string filename, bool auto
 }
 
 int Model::SplitShape(TreeObject *parent, Shape *shape, string filename) {
-  vector<Shape*> splitshapes;
-  shape->splitshapes(splitshapes, m_progress);
-  if (splitshapes.size()<2) return splitshapes.size();
-  for (uint s = 0; s <  splitshapes.size(); s++) {
+  vector<Shape*> sh;
+  shape->splitshapes(sh, m_progress);
+  if (sh.size()<2) return sh.size();
+  for (uint s = 0; s <  sh.size(); s++) {
     ostringstream sfn;
     sfn << filename << "_" << (s+1) ;
-    AddShape(parent, splitshapes[s], sfn.str(), false);
+    AddShape(parent, sh[s], sfn.str(), false);
   }
-  return splitshapes.size();
+  return sh.size();
+}
+
+int Model::DivideShape(TreeObject *parent, Shape *shape, string filename) {
+  vector<Shape*> sh;
+  shape->divideAtBed(sh, m_progress);
+  for (uint s = 0; s <  sh.size(); s++) {
+    ostringstream sfn;
+    sfn << filename << "_" << (s+1) ;
+    AddShape(parent, sh[s], sfn.str(), false);
+  }
+  return sh.size();
 }
 
 int Model::MergeShapes(TreeObject *parent, const vector<Shape*> shapes) {

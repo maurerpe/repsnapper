@@ -173,6 +173,8 @@ am__objects_1 = src/repsnapper-geometry.$(OBJEXT) \
 	src/repsnapper-files.$(OBJEXT) \
 	src/repsnapper-settings.$(OBJEXT) \
 	src/repsnapper-ps_helper.$(OBJEXT) \
+	src/repsnapper-lines2poly.$(OBJEXT) \
+	src/repsnapper-polygroup.$(OBJEXT) \
 	src/ui/repsnapper-widgets.$(OBJEXT) \
 	src/ui/repsnapper-view.$(OBJEXT) \
 	src/ui/repsnapper-prefs_dlg.$(OBJEXT) \
@@ -197,8 +199,8 @@ am_repsnapper_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	src/repsnapper-repsnapper.$(OBJEXT)
 repsnapper_OBJECTS = $(am_repsnapper_OBJECTS)
 am__DEPENDENCIES_1 =
-repsnapper_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+repsnapper_DEPENDENCIES = $(LIB_DIR)/libpoly2tri.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -398,7 +400,6 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CFLAG_VISIBILITY = @CFLAG_VISIBILITY@
-CLIPPER_LIBS = @CLIPPER_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -588,6 +589,7 @@ LIB_DIR = $(top_srcdir)/libraries
 WARNING_FLAGS = -Wall -Wsign-compare -Wno-invalid-offsetof
 repsnapper_CPPFLAGS = \
 	-I$(LIB_DIR)/vmmlib/include \
+	-I$(LIB_DIR)/poly2tri/poly2tri \
 	-I$(top_srcdir) \
 	-I$(top_srcdir)/src \
 	-I$(top_builddir)/src \
@@ -603,21 +605,23 @@ repsnapper_CPPFLAGS = \
 SHARED_SRC = src/geometry.cpp src/transform3d.cpp src/platform.cpp \
 	src/model.cpp src/model_slice.cpp src/shape.cpp src/gcode.cpp \
 	src/triangle.cpp src/files.cpp src/settings.cpp \
-	src/ps_helper.cpp src/ui/widgets.cpp src/ui/view.cpp \
-	src/ui/prefs_dlg.cpp src/ui/set_dlg.cpp src/ui/cust_prop.cpp \
-	src/ui/qualmat_dlg.cpp src/ui/objtree.cpp \
-	src/ui/printer_dlg.cpp src/ui/connectview.cpp \
-	src/ui/rsfilechooser.cpp src/ui/progress.cpp src/ui/render.cpp \
-	src/ui/settings_ui.cpp src/ui/filters.cpp \
-	src/printer/printer_serial.cpp src/printer/thread_buffer.cpp \
+	src/ps_helper.cpp src/lines2poly.cpp src/polygroup.cpp \
+	src/ui/widgets.cpp src/ui/view.cpp src/ui/prefs_dlg.cpp \
+	src/ui/set_dlg.cpp src/ui/cust_prop.cpp src/ui/qualmat_dlg.cpp \
+	src/ui/objtree.cpp src/ui/printer_dlg.cpp \
+	src/ui/connectview.cpp src/ui/rsfilechooser.cpp \
+	src/ui/progress.cpp src/ui/render.cpp src/ui/settings_ui.cpp \
+	src/ui/filters.cpp src/printer/printer_serial.cpp \
+	src/printer/thread_buffer.cpp \
 	src/printer/threaded_printer_serial.cpp \
 	src/printer/printer.cpp src/printer/custom_baud.cpp
 SHARED_INC = src/geometry.h src/transform3d.h src/model.h src/shape.h \
 	src/gcode.h src/triangle.h src/files.h src/stdafx.h \
 	src/platform.h src/settings.h src/types.h src/ps_helper.h \
-	src/ui/widgets.h src/ui/view.h src/ui/prefs_dlg.h \
-	src/ui/set_dlg.h src/ui/cust_prop.h src/ui/qualmat_dlg.h \
-	src/ui/objtree.h src/ui/printer_dlg.h src/ui/connectview.h \
+	src/lines2poly.h src/polygroup.h src/ui/widgets.h \
+	src/ui/view.h src/ui/prefs_dlg.h src/ui/set_dlg.h \
+	src/ui/cust_prop.h src/ui/qualmat_dlg.h src/ui/objtree.h \
+	src/ui/printer_dlg.h src/ui/connectview.h \
 	src/ui/rsfilechooser.h src/ui/progress.h src/ui/render.h \
 	src/ui/settings_ui.h src/ui/filters.h \
 	src/printer/printer_serial.h src/printer/thread.h \
@@ -626,7 +630,7 @@ SHARED_INC = src/geometry.h src/transform3d.h src/model.h src/shape.h \
 	src/printer/custom_baud.h
 repsnapper_SOURCES = $(SHARED_SRC) $(SHARED_INC) src/repsnapper.cpp
 repsnapper_LDFLAGS = $(EXTRA_LDFLAGS)
-repsnapper_LDADD = $(CLIPPER_LIBS) $(OPENMP_CFLAGS) $(GTKMM_LIBS) $(LIBZIP_LIBS)
+repsnapper_LDADD = $(LIB_DIR)/libpoly2tri.la $(OPENMP_CFLAGS) $(GTKMM_LIBS) $(LIBZIP_LIBS)
 repsnapperdatadir = $(datadir)/@PACKAGE@
 dist_repsnapperdata_DATA = src/repsnapper.ui src/repsnapper.svg
 repsnapperconfdir = $(sysconfdir)/xdg/@PACKAGE@
@@ -775,6 +779,10 @@ src/repsnapper-settings.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/repsnapper-ps_helper.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/repsnapper-lines2poly.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/repsnapper-polygroup.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/ui/$(am__dirstamp):
 	@$(MKDIR_P) src/ui
 	@: > src/ui/$(am__dirstamp)
@@ -848,9 +856,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-files.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-gcode.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-geometry.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-lines2poly.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-model.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-model_slice.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-platform.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-polygroup.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-ps_helper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-repsnapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/repsnapper-settings.Po@am__quote@
@@ -1054,6 +1064,34 @@ src/repsnapper-ps_helper.obj: src/ps_helper.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/ps_helper.cpp' object='src/repsnapper-ps_helper.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-ps_helper.obj `if test -f 'src/ps_helper.cpp'; then $(CYGPATH_W) 'src/ps_helper.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ps_helper.cpp'; fi`
+
+src/repsnapper-lines2poly.o: src/lines2poly.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-lines2poly.o -MD -MP -MF src/$(DEPDIR)/repsnapper-lines2poly.Tpo -c -o src/repsnapper-lines2poly.o `test -f 'src/lines2poly.cpp' || echo '$(srcdir)/'`src/lines2poly.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-lines2poly.Tpo src/$(DEPDIR)/repsnapper-lines2poly.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/lines2poly.cpp' object='src/repsnapper-lines2poly.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-lines2poly.o `test -f 'src/lines2poly.cpp' || echo '$(srcdir)/'`src/lines2poly.cpp
+
+src/repsnapper-lines2poly.obj: src/lines2poly.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-lines2poly.obj -MD -MP -MF src/$(DEPDIR)/repsnapper-lines2poly.Tpo -c -o src/repsnapper-lines2poly.obj `if test -f 'src/lines2poly.cpp'; then $(CYGPATH_W) 'src/lines2poly.cpp'; else $(CYGPATH_W) '$(srcdir)/src/lines2poly.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-lines2poly.Tpo src/$(DEPDIR)/repsnapper-lines2poly.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/lines2poly.cpp' object='src/repsnapper-lines2poly.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-lines2poly.obj `if test -f 'src/lines2poly.cpp'; then $(CYGPATH_W) 'src/lines2poly.cpp'; else $(CYGPATH_W) '$(srcdir)/src/lines2poly.cpp'; fi`
+
+src/repsnapper-polygroup.o: src/polygroup.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-polygroup.o -MD -MP -MF src/$(DEPDIR)/repsnapper-polygroup.Tpo -c -o src/repsnapper-polygroup.o `test -f 'src/polygroup.cpp' || echo '$(srcdir)/'`src/polygroup.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-polygroup.Tpo src/$(DEPDIR)/repsnapper-polygroup.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/polygroup.cpp' object='src/repsnapper-polygroup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-polygroup.o `test -f 'src/polygroup.cpp' || echo '$(srcdir)/'`src/polygroup.cpp
+
+src/repsnapper-polygroup.obj: src/polygroup.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/repsnapper-polygroup.obj -MD -MP -MF src/$(DEPDIR)/repsnapper-polygroup.Tpo -c -o src/repsnapper-polygroup.obj `if test -f 'src/polygroup.cpp'; then $(CYGPATH_W) 'src/polygroup.cpp'; else $(CYGPATH_W) '$(srcdir)/src/polygroup.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/repsnapper-polygroup.Tpo src/$(DEPDIR)/repsnapper-polygroup.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/polygroup.cpp' object='src/repsnapper-polygroup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/repsnapper-polygroup.obj `if test -f 'src/polygroup.cpp'; then $(CYGPATH_W) 'src/polygroup.cpp'; else $(CYGPATH_W) '$(srcdir)/src/polygroup.cpp'; fi`
 
 src/ui/repsnapper-widgets.o: src/ui/widgets.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(repsnapper_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/ui/repsnapper-widgets.o -MD -MP -MF src/ui/$(DEPDIR)/repsnapper-widgets.Tpo -c -o src/ui/repsnapper-widgets.o `test -f 'src/ui/widgets.cpp' || echo '$(srcdir)/'`src/ui/widgets.cpp

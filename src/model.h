@@ -54,6 +54,7 @@ class Model {
   int AddShape(TreeObject *parent, Shape * shape, string filename,
 	       bool autoplace = true);
   int SplitShape(TreeObject *parent, Shape *shape, string filename);
+  int DivideShape(TreeObject *parent, Shape *shape, string filename);
   int MergeShapes(TreeObject *parent, const vector<Shape*> shapes);
   Shape GetCombinedShape(int extruder = -1) const;
   
